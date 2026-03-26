@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
-import { fetchSurah, RECITERS, SurahApiData } from "@/constants/api";
+import { fetchSurah, getVerseAudioUrl, RECITERS, SurahApiData } from "@/constants/api";
 import { VerseCard } from "@/components/VerseCard";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { useQuran } from "@/context/QuranContext";
@@ -50,6 +50,7 @@ interface VerseItem {
   arabic: string;
   arabic2?: string;
   english: string;
+  uzbek?: string;
 }
 
 export default function SurahScreen() {
@@ -76,6 +77,7 @@ export default function SurahScreen() {
         arabic: data.arabic1?.[idx] || "",
         arabic2: data.arabic2?.[idx] || "",
         english,
+        uzbek: data.uzbek?.[idx],
       }))
     : [];
 
@@ -88,16 +90,14 @@ export default function SurahScreen() {
       return;
     }
     setPlayingAyah(ayahNo);
-    const paddedSurah = String(surahNo).padStart(3, "0");
-    const paddedVerse = String(ayahNo).padStart(3, "0");
-    const url = `https://cdn.islamicnetwork.com/quran.com/ar.alafasy/${paddedSurah}${paddedVerse}.mp3`;
+    const url = getVerseAudioUrl(surahNo, ayahNo, settings.reciterId);
     setAudioUrl(url);
     saveLastRead({
       surahNo,
       surahName: UZBEK_NAMES[surahNo] || data?.surahName || "",
       ayahNo,
     });
-  }, [playingAyah, surahNo, data?.surahName, saveLastRead]);
+  }, [playingAyah, surahNo, settings.reciterId, data?.surahName, saveLastRead]);
 
   const handleNext = useCallback(() => {
     if (playingAyah && playingAyah < verses.length) {
@@ -120,7 +120,7 @@ export default function SurahScreen() {
         surahName: UZBEK_NAMES[surahNo] || data?.surahName || "",
         ayahNo: verse.ayahNo,
         arabic: verse.arabic,
-        uzbek: verse.english,
+        uzbek: verse.uzbek || verse.english,
       });
     }
   }, [surahNo, isBookmarked, addBookmark, removeBookmark, data?.surahName]);
@@ -219,7 +219,7 @@ export default function SurahScreen() {
               ayahNo={item.ayahNo}
               arabic={item.arabic}
               english={item.english}
-              uzbek={item.english}
+              uzbek={item.uzbek}
               isBookmarked={isBookmarked(surahNo, item.ayahNo)}
               isPlaying={playingAyah === item.ayahNo}
               isActive={playingAyah === item.ayahNo}
