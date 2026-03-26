@@ -16,6 +16,18 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
 
+## Artifacts
+
+### Quran Uzbek Mobile App (`artifacts/quran-uzbek`)
+- Expo React Native app with Expo Router file-based routing
+- Full Quran reading app for Uzbek audience
+- Features: Surah list, verse reader (Arabic + English translation), audio playback, bookmarks, search, settings
+- Data source: quranapi.pages.dev API
+- Audio: cdn.islamicnetwork.com for verse-by-verse recitation
+- Tabs: Qur'on (home), Qidirish (search), Xatcho'p (bookmarks), Sozlamalar (settings)
+- State: AsyncStorage via @nkzw/create-context-hook for bookmarks, last read, settings
+- Audio: expo-audio for verse playback with 5 reciters
+
 ## Structure
 
 ```text
