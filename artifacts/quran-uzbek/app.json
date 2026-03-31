@@ -17,7 +17,9 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.quranuzbekapp.quran",
       "infoPlist": {
-        "UIBackgroundModes": ["audio"]
+        "UIBackgroundModes": [
+          "audio"
+        ]
       }
     },
     "android": {
@@ -26,7 +28,12 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#0A0F1E"
       },
-      "permissions": []
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ]
     },
     "web": {
       "favicon": "./assets/images/icon.png"
@@ -50,6 +57,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3e10840b-c54a-4b2a-8947-03d250aca793"
+      }
+    },
+    "owner": "uzhost3"
   }
 }
