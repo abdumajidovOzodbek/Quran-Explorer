@@ -118,14 +118,6 @@ export default function HomeScreen() {
           tension: 260,
           friction: 22,
         }).start();
-      } else if (dy < -6 && !headerVisible.current) {
-        headerVisible.current = true;
-        Animated.spring(headerAnim, {
-          toValue: 1,
-          useNativeDriver: true,
-          tension: 260,
-          friction: 22,
-        }).start();
       }
       lastScrollY.current = y;
     },
