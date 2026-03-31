@@ -8,6 +8,7 @@ const BOOKMARKS_KEY = "@quran_bookmarks";
 const LAST_READ_KEY = "@quran_last_read";
 const SETTINGS_KEY = "@quran_settings";
 const COMPLETED_KEY = "@quran_completed_surahs";
+const KHATMAH_KEY = "@quran_khatmah_count";
 
 interface LastRead {
   surahNo: number;
@@ -40,6 +41,8 @@ function useQuranState() {
   const [lastRead, setLastRead] = useState<LastRead | null>(null);
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [completedSurahs, setCompletedSurahs] = useState<number[]>([]);
+  const [khatmahCount, setKhatmahCount] = useState(0);
+  const [showKhatmahModal, setShowKhatmahModal] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [cacheProgress, setCacheProgress] = useState(0);
   const [isCacheDownloading, setIsCacheDownloading] = useState(false);
@@ -82,16 +85,18 @@ function useQuranState() {
 
   const loadData = async () => {
     try {
-      const [bkData, lrData, settingsData, completedData] = await Promise.all([
+      const [bkData, lrData, settingsData, completedData, khatmahData] = await Promise.all([
         AsyncStorage.getItem(BOOKMARKS_KEY),
         AsyncStorage.getItem(LAST_READ_KEY),
         AsyncStorage.getItem(SETTINGS_KEY),
         AsyncStorage.getItem(COMPLETED_KEY),
+        AsyncStorage.getItem(KHATMAH_KEY),
       ]);
       if (bkData) setBookmarks(JSON.parse(bkData));
       if (lrData) setLastRead(JSON.parse(lrData));
       if (settingsData) setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(settingsData) });
       if (completedData) setCompletedSurahs(JSON.parse(completedData));
+      if (khatmahData) setKhatmahCount(parseInt(khatmahData, 10) || 0);
     } catch (e) {
       console.error("Failed to load data", e);
     } finally {
@@ -146,6 +151,16 @@ function useQuranState() {
       if (prev.includes(surahNo)) return prev;
       const updated = [...prev, surahNo];
       AsyncStorage.setItem(COMPLETED_KEY, JSON.stringify(updated));
+
+      if (updated.length >= TOTAL_SURAHS) {
+        setKhatmahCount((k) => {
+          const newCount = k + 1;
+          AsyncStorage.setItem(KHATMAH_KEY, String(newCount));
+          return newCount;
+        });
+        setShowKhatmahModal(true);
+      }
+
       return updated;
     });
   }, []);
@@ -162,11 +177,23 @@ function useQuranState() {
     return completedSurahs.includes(surahNo);
   }, [completedSurahs]);
 
+  const dismissKhatmahModal = useCallback(() => {
+    setShowKhatmahModal(false);
+  }, []);
+
+  const resetKhatmah = useCallback(() => {
+    setCompletedSurahs([]);
+    AsyncStorage.setItem(COMPLETED_KEY, JSON.stringify([]));
+    setShowKhatmahModal(false);
+  }, []);
+
   return {
     bookmarks,
     lastRead,
     settings,
     completedSurahs,
+    khatmahCount,
+    showKhatmahModal,
     isLoaded,
     cacheProgress,
     isCacheDownloading,
@@ -179,6 +206,8 @@ function useQuranState() {
     markSurahComplete,
     unmarkSurahComplete,
     isSurahComplete,
+    dismissKhatmahModal,
+    resetKhatmah,
   };
 }
 

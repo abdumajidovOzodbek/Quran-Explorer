@@ -17,8 +17,49 @@ import { useAudio, AudioState } from "@/context/AudioContext";
 
 const TAB_BAR_HEIGHT = Platform.OS === "web" ? 84 : 56;
 
+function formatSleepLabel(minutes: number | null, secondsLeft: number | null): string {
+  if (minutes === null || secondsLeft === null) return "";
+  if (secondsLeft > 60) return `${minutes}m`;
+  if (secondsLeft > 0) return `${secondsLeft}s`;
+  return "";
+}
+
+function SleepTimerButton({
+  sleepMinutes,
+  sleepSecondsLeft,
+  onPress,
+}: {
+  sleepMinutes: number | null;
+  sleepSecondsLeft: number | null;
+  onPress: () => void;
+}) {
+  const c = Colors.dark;
+  const isActive = sleepMinutes !== null;
+  const label = formatSleepLabel(sleepMinutes, sleepSecondsLeft);
+
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[
+        styles.sleepBtn,
+        isActive && { backgroundColor: c.tint + "20", borderColor: c.tint + "60", borderWidth: 1 },
+      ]}
+      accessibilityLabel="Uyqu taymer"
+    >
+      <Ionicons
+        name={isActive ? "moon" : "moon-outline"}
+        size={17}
+        color={isActive ? c.tint : c.textMuted}
+      />
+      {isActive && label ? (
+        <Text style={[styles.sleepLabel, { color: c.tint }]}>{label}</Text>
+      ) : null}
+    </Pressable>
+  );
+}
+
 function WebPlayer({ audio }: { audio: AudioState }) {
-  const { stopAudio, playNext, playPrev } = useAudio();
+  const { stopAudio, playNext, playPrev, sleepMinutes, sleepSecondsLeft, cycleSleepTimer } = useAudio();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const [isPlaying, setIsPlaying] = useState(false);
@@ -58,6 +99,12 @@ function WebPlayer({ audio }: { audio: AudioState }) {
       audioRef.current = null;
     };
   }, [audio.audioUrl]);
+
+  useEffect(() => {
+    if (sleepSecondsLeft === 0) {
+      audioRef.current?.pause();
+    }
+  }, [sleepSecondsLeft]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -110,6 +157,11 @@ function WebPlayer({ audio }: { audio: AudioState }) {
         </View>
 
         <View style={styles.controls}>
+          <SleepTimerButton
+            sleepMinutes={sleepMinutes}
+            sleepSecondsLeft={sleepSecondsLeft}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); cycleSleepTimer(); }}
+          />
           <Pressable onPress={playPrev} style={styles.btn}>
             <Ionicons name="play-skip-back" size={20} color={c.textSecondary} />
           </Pressable>
@@ -137,7 +189,7 @@ function WebPlayer({ audio }: { audio: AudioState }) {
 }
 
 function NativePlayer({ audio }: { audio: AudioState }) {
-  const { stopAudio, playNext, playPrev } = useAudio();
+  const { stopAudio, playNext, playPrev, sleepMinutes, sleepSecondsLeft, cycleSleepTimer } = useAudio();
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const insets = useSafeAreaInsets();
   const c = Colors.dark;
@@ -160,6 +212,12 @@ function NativePlayer({ audio }: { audio: AudioState }) {
       playNext();
     }
   }, [status.didJustFinish]);
+
+  useEffect(() => {
+    if (sleepSecondsLeft === 0) {
+      player.pause();
+    }
+  }, [sleepSecondsLeft]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -210,6 +268,11 @@ function NativePlayer({ audio }: { audio: AudioState }) {
         </View>
 
         <View style={styles.controls}>
+          <SleepTimerButton
+            sleepMinutes={sleepMinutes}
+            sleepSecondsLeft={sleepSecondsLeft}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); cycleSleepTimer(); }}
+          />
           <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); playPrev(); }} style={styles.btn}>
             <Ionicons name="play-skip-back" size={20} color={c.textSecondary} />
           </Pressable>
@@ -286,7 +349,18 @@ const styles = StyleSheet.create({
   controls: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 2,
+  },
+  sleepBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    padding: 5,
+    borderRadius: 8,
+  },
+  sleepLabel: {
+    fontSize: 10,
+    fontFamily: "Inter_600SemiBold",
   },
   btn: {
     padding: 6,
