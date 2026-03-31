@@ -6,6 +6,7 @@ import Colors from "@/constants/colors";
 import { ReadingMode } from "@/types/quran";
 import { parseWordByWord } from "@/constants/api";
 import { cyrillicToLatin } from "@/constants/latinScript";
+import { latinToRussianTranslit } from "@/constants/russianTranslit";
 import { useQuran } from "@/context/QuranContext";
 
 interface VerseCardProps {
@@ -184,7 +185,7 @@ export function VerseCard({
 
       {showTransliteration && transliteration && (
         <Text style={[styles.transliteration, { color: c.textSecondary, fontSize: translationFontSize - 1 }]}>
-          {transliteration}
+          {language === "ru" ? latinToRussianTranslit(transliteration) : transliteration}
         </Text>
       )}
 

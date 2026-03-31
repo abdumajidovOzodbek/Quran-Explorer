@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { DUAS, DUA_CATEGORIES, DuaCategory, Dua } from "@/constants/duas";
 import { cyrillicToLatin } from "@/constants/latinScript";
+import { latinToRussianTranslit } from "@/constants/russianTranslit";
 import { useQuran } from "@/context/QuranContext";
 import { getStrings, I18nStrings } from "@/constants/i18n";
 
@@ -80,7 +81,7 @@ export default function DuasScreen() {
             <View style={[styles.translitBox, { backgroundColor: c.background }]}>
               <Text style={[styles.translitLabel, { color: c.textMuted }]}>Translit</Text>
               <Text style={[styles.translitText, { color: c.textSecondary }]}>
-                {item.transliteration}
+                {language === "ru" ? latinToRussianTranslit(item.transliteration) : item.transliteration}
               </Text>
             </View>
             <Text style={[styles.duaUzbek, { color: c.textSecondary }]}>

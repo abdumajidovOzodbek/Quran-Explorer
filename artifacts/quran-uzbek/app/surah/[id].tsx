@@ -18,6 +18,7 @@ import { fetchSurah, fetchWordByWord, getVerseAudioUrl, RECITERS, SurahApiData }
 import { UZBEK_NAMES } from "@/constants/uzbekNames";
 import { RUSSIAN_NAMES } from "@/constants/russianNames";
 import { cyrillicToLatin } from "@/constants/latinScript";
+import { latinToRussianTranslit } from "@/constants/russianTranslit";
 import { VerseCard } from "@/components/VerseCard";
 import { useQuran } from "@/context/QuranContext";
 import { useAudio } from "@/context/AudioContext";
@@ -268,7 +269,9 @@ export default function SurahScreen() {
                   بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                 </Text>
                 <Text style={[styles.bismillahTranslit, { color: c.textSecondary }]}>
-                  Bismillahir Rohmanir Rohiym
+                  {settings.language === "ru"
+                    ? latinToRussianTranslit("Bismillahir Rohmanir Rohiym")
+                    : "Bismillahir Rohmanir Rohiym"}
                 </Text>
               </View>
             ) : null
