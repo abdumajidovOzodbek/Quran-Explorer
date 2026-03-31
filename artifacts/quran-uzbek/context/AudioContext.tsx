@@ -14,13 +14,25 @@ export interface AudioState {
 
 export type SleepTimerMinutes = 15 | 30 | 60;
 const SLEEP_OPTIONS: Array<SleepTimerMinutes | null> = [null, 15, 30, 60];
+const FADE_DURATION_MS = 5000;
 
 function useAudioState() {
   const [audio, setAudio] = useState<AudioState | null>(null);
   const [sleepMinutes, setSleepMinutes] = useState<SleepTimerMinutes | null>(null);
   const [sleepEndTime, setSleepEndTime] = useState<number | null>(null);
   const [sleepSecondsLeft, setSleepSecondsLeft] = useState<number | null>(null);
+  const [isFading, setIsFading] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const fadeStopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const stopAudio = useCallback(() => {
+    setAudio(null);
+    setSleepMinutes(null);
+    setSleepEndTime(null);
+    setSleepSecondsLeft(null);
+    setIsFading(false);
+    if (fadeStopRef.current) clearTimeout(fadeStopRef.current);
+  }, []);
 
   useEffect(() => {
     if (timerRef.current) {
@@ -39,12 +51,14 @@ function useAudioState() {
       if (remaining === 0) {
         if (timerRef.current) clearInterval(timerRef.current);
         timerRef.current = null;
-        setTimeout(() => {
-          setSleepMinutes(null);
-          setSleepEndTime(null);
-          setSleepSecondsLeft(null);
+        setIsFading(true);
+        setSleepMinutes(null);
+        setSleepEndTime(null);
+        setSleepSecondsLeft(null);
+        fadeStopRef.current = setTimeout(() => {
+          setIsFading(false);
           setAudio(null);
-        }, 100);
+        }, FADE_DURATION_MS + 200);
       }
     };
 
@@ -56,10 +70,12 @@ function useAudioState() {
   }, [sleepEndTime]);
 
   useEffect(() => {
-    if (audio === null && sleepEndTime !== null) {
+    if (audio === null) {
       setSleepMinutes(null);
       setSleepEndTime(null);
       setSleepSecondsLeft(null);
+      setIsFading(false);
+      if (fadeStopRef.current) clearTimeout(fadeStopRef.current);
     }
   }, [audio]);
 
@@ -81,17 +97,12 @@ function useAudioState() {
     setSleepMinutes(null);
     setSleepEndTime(null);
     setSleepSecondsLeft(null);
+    setIsFading(false);
+    if (fadeStopRef.current) clearTimeout(fadeStopRef.current);
   }, []);
 
   const playVerse = useCallback((params: AudioState) => {
     setAudio(params);
-  }, []);
-
-  const stopAudio = useCallback(() => {
-    setAudio(null);
-    setSleepMinutes(null);
-    setSleepEndTime(null);
-    setSleepSecondsLeft(null);
   }, []);
 
   const playNext = useCallback(() => {
@@ -122,10 +133,11 @@ function useAudioState() {
     audio,
     sleepMinutes,
     sleepSecondsLeft,
+    isFading,
     cycleSleepTimer,
     cancelSleepTimer,
-    playVerse,
     stopAudio,
+    playVerse,
     playNext,
     playPrev,
   };

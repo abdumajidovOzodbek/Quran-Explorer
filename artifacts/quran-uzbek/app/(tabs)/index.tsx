@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   FlatList,
   Modal,
@@ -19,53 +19,59 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { fetchSurahList, fetchVerseOfDay, SurahListItem, VerseOfDay } from "@/constants/api";
-import { UZBEK_NAMES, JUZ_START } from "@/constants/uzbekNames";
+import { UZBEK_NAMES } from "@/constants/uzbekNames";
+import { JUZ_DATA, getJuzNavAyah, getJuzSurahRange } from "@/constants/juz";
+import { DUAS } from "@/constants/duas";
 import { SurahCard } from "@/components/SurahCard";
 import { SurahListSkeleton } from "@/components/ShimmerSkeleton";
 import { useQuran } from "@/context/QuranContext";
 
 type ViewMode = "surah" | "juz";
 
-interface JuzHeader {
+interface JuzHeaderRow {
   type: "juz-header";
   juzNo: number;
-  surahs: SurahListItem[];
+  juzName: string;
+  surahs: Array<{ surah: SurahListItem; navAyah: number }>;
   isExpanded: boolean;
 }
-interface JuzSurah {
+interface JuzSurahRow {
   type: "surah";
-  item: SurahListItem;
+  surah: SurahListItem;
+  navAyah: number;
   juzNo: number;
 }
-type JuzRow = JuzHeader | JuzSurah;
-
-function buildJuzSurahs(surahs: SurahListItem[]): Record<number, SurahListItem[]> {
-  const map: Record<number, SurahListItem[]> = {};
-  for (let j = 1; j <= 30; j++) map[j] = [];
-  for (const s of surahs) {
-    const juzNo = JUZ_START[s.surahNo ?? 0] ?? 30;
-    if (!map[juzNo]) map[juzNo] = [];
-    map[juzNo].push(s);
-  }
-  return map;
-}
+type JuzRow = JuzHeaderRow | JuzSurahRow;
 
 function buildFlatJuzData(
-  juzSurahs: Record<number, SurahListItem[]>,
+  surahs: SurahListItem[],
   expandedJuz: Set<number>
 ): JuzRow[] {
   const rows: JuzRow[] = [];
-  for (let j = 1; j <= 30; j++) {
-    const surahs = juzSurahs[j] ?? [];
-    if (surahs.length === 0) continue;
-    const isExpanded = expandedJuz.has(j);
-    rows.push({ type: "juz-header", juzNo: j, surahs, isExpanded });
+
+  for (const juzInfo of JUZ_DATA) {
+    const { juzNo, name } = juzInfo;
+    const { startSurah, endSurah } = getJuzSurahRange(juzNo);
+    const juzSurahs = surahs
+      .filter((s) => {
+        const n = s.surahNo ?? 0;
+        return n >= startSurah && n <= endSurah;
+      })
+      .map((s) => ({
+        surah: s,
+        navAyah: getJuzNavAyah(juzNo, s.surahNo ?? 0),
+      }));
+
+    if (juzSurahs.length === 0) continue;
+    const isExpanded = expandedJuz.has(juzNo);
+    rows.push({ type: "juz-header", juzNo, juzName: name, surahs: juzSurahs, isExpanded });
     if (isExpanded) {
-      for (const s of surahs) {
-        rows.push({ type: "surah", item: s, juzNo: j });
+      for (const item of juzSurahs) {
+        rows.push({ type: "surah", surah: item.surah, navAyah: item.navAyah, juzNo });
       }
     }
   }
+
   return rows;
 }
 
@@ -116,8 +122,7 @@ export default function HomeScreen() {
     return matchesSearch && matchesFilter;
   });
 
-  const juzSurahs = surahs ? buildJuzSurahs(surahs) : {};
-  const flatJuzData = buildFlatJuzData(juzSurahs, expandedJuz);
+  const flatJuzData = surahs ? buildFlatJuzData(surahs, expandedJuz) : [];
 
   const toggleJuz = useCallback((juzNo: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -241,7 +246,7 @@ export default function HomeScreen() {
           <Text style={[styles.continueLabel, { color: "#4caf7699" }]}>KUTUBXONA</Text>
           <Text style={[styles.continueSurah, { color: "#4caf76" }]}>Duolar</Text>
         </View>
-        <Text style={[styles.duaCount, { color: "#4caf7680" }]}>44 ta</Text>
+        <Text style={[styles.duaCount, { color: "#4caf7680" }]}>{DUAS.length} ta</Text>
         <Ionicons name="chevron-forward" size={18} color="#4caf76" />
       </Pressable>
 
@@ -258,9 +263,9 @@ export default function HomeScreen() {
 
   const renderJuzRow = ({ item }: { item: JuzRow }) => {
     if (item.type === "juz-header") {
-      const firstSurah = item.surahs[0];
-      const lastSurah = item.surahs[item.surahs.length - 1];
-      const completedInJuz = item.surahs.filter((s) => isSurahComplete(s.surahNo ?? 0)).length;
+      const completedInJuz = item.surahs.filter((s) => isSurahComplete(s.surah.surahNo ?? 0)).length;
+      const firstSurah = item.surahs[0]?.surah;
+      const lastSurah = item.surahs[item.surahs.length - 1]?.surah;
       return (
         <Pressable
           onPress={() => toggleJuz(item.juzNo)}
@@ -279,10 +284,10 @@ export default function HomeScreen() {
           </View>
           <View style={styles.juzInfo}>
             <Text style={[styles.juzName, { color: c.text }]}>
-              {item.juzNo}-juz
+              {item.juzNo}-juz • {item.juzName}
             </Text>
-            <Text style={[styles.juzRange, { color: c.textMuted }]}>
-              {UZBEK_NAMES[firstSurah?.surahNo ?? 1] ?? firstSurah?.surahName}
+            <Text style={[styles.juzRange, { color: c.textMuted }]} numberOfLines={1}>
+              {UZBEK_NAMES[firstSurah?.surahNo ?? 1] ?? firstSurah?.surahName ?? ""}
               {lastSurah && lastSurah.surahNo !== firstSurah?.surahNo
                 ? ` — ${UZBEK_NAMES[lastSurah.surahNo ?? 0] ?? lastSurah.surahName}`
                 : ""}
@@ -310,12 +315,17 @@ export default function HomeScreen() {
     return (
       <View style={styles.juzSurahCard}>
         <SurahCard
-          surah={item.item}
-          isLastRead={lastRead?.surahNo === item.item.surahNo}
-          isCompleted={isSurahComplete(item.item.surahNo ?? 0)}
+          surah={item.surah}
+          isLastRead={lastRead?.surahNo === item.surah.surahNo}
+          isCompleted={isSurahComplete(item.surah.surahNo ?? 0)}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            router.push(`/surah/${item.item.surahNo ?? 1}`);
+            const surahNo = item.surah.surahNo ?? 1;
+            router.push(
+              item.navAyah > 1
+                ? `/surah/${surahNo}?ayah=${item.navAyah}`
+                : `/surah/${surahNo}`
+            );
           }}
         />
       </View>
@@ -324,7 +334,6 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
-      {/* Sticky top bar: title + search + filters */}
       <View style={[styles.stickyHeader, { paddingTop: topPadding + 8, backgroundColor: c.background }]}>
         <View style={styles.titleRow}>
           <View>
@@ -405,7 +414,6 @@ export default function HomeScreen() {
         </ScrollView>
       </View>
 
-      {/* Scrollable list with header cards */}
       {isLoading ? (
         <SurahListSkeleton />
       ) : isError ? (
@@ -458,7 +466,7 @@ export default function HomeScreen() {
           keyExtractor={(item) =>
             item.type === "juz-header"
               ? `juz-${item.juzNo}`
-              : `surah-${item.item.surahNo}-juz-${item.juzNo}`
+              : `surah-${item.surah.surahNo}-juz-${item.juzNo}`
           }
           renderItem={renderJuzRow}
           ListHeaderComponent={ListHeader}
@@ -470,17 +478,13 @@ export default function HomeScreen() {
         />
       )}
 
-      {/* Khatmah congratulations modal */}
       <Modal
         visible={showKhatmahModal}
         transparent
         animationType="fade"
         onRequestClose={dismissKhatmahModal}
       >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={dismissKhatmahModal}
-        >
+        <Pressable style={styles.modalOverlay} onPress={dismissKhatmahModal}>
           <Pressable
             style={[styles.modalCard, { backgroundColor: c.card, borderColor: c.tint + "40" }]}
             onPress={(e) => e.stopPropagation()}
@@ -494,7 +498,6 @@ export default function HomeScreen() {
             <Text style={[styles.khatmahArabic, { color: "#e8d5a3" }]}>
               خَتَمَ اللَّهُ لَنَا وَلَكُمْ بِالْخَيْرِ
             </Text>
-
             <View style={styles.modalButtons}>
               <Pressable
                 onPress={dismissKhatmahModal}
@@ -521,7 +524,6 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-
   stickyHeader: {
     paddingHorizontal: 16,
     paddingBottom: 10,
@@ -589,7 +591,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Inter_500Medium",
   },
-
   listHeaderContainer: {
     paddingHorizontal: 16,
     paddingTop: 10,
@@ -643,7 +644,6 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
   },
-
   verseOfDayCard: {
     borderRadius: 16,
     borderWidth: 1,
@@ -688,7 +688,6 @@ const styles = StyleSheet.create({
     borderTopColor: "rgba(255,255,255,0.1)",
     paddingTop: 8,
   },
-
   continueCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -723,7 +722,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Inter_400Regular",
   },
-
   duaCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -744,7 +742,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Inter_400Regular",
   },
-
   sectionLabel: {
     flexDirection: "row",
     alignItems: "center",
@@ -762,7 +759,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: "Inter_400Regular",
   },
-
   juzHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -809,11 +805,10 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_600SemiBold",
   },
   juzSurahCard: {
-    marginLeft: 16,
+    marginLeft: 8,
     borderLeftWidth: 2,
-    borderLeftColor: "rgba(255,255,255,0.08)",
+    borderLeftColor: "rgba(255,255,255,0.06)",
   },
-
   listContent: {
     paddingTop: 4,
     paddingBottom: 120,
@@ -849,7 +844,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Inter_400Regular",
   },
-
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.7)",

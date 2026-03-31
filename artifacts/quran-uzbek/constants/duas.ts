@@ -382,4 +382,142 @@ export const DUAS: Dua[] = [
     uzbek: "Qaytuvchimiz, tavbachi, ibodat qiluvchi va Rabbimizga hamd aytuvchimiz.",
     transliteration: "Aa'ibuuna taa'ibuuna aabiduuna li-rabbinaa haamiduun",
   },
+  {
+    id: "s6",
+    category: "safar",
+    title: "Mashinaga minishda",
+    arabic: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ",
+    uzbek: "Buni bizga bo'ysundirgan zot pokdir, holbuki biz uni mahkam ushlay olmasdik.",
+    transliteration: "Subhaanallazii sakhkhara lanaa haazaa wa maa kunnaa lahu muqriniin",
+  },
+  {
+    id: "s7",
+    category: "safar",
+    title: "Safarda qo'rquv paytida",
+    arabic: "اللَّهُمَّ إِنَّا نَعُوذُ بِكَ مِنْ وَعْثَاءِ السَّفَرِ وَكَآبَةِ الْمُنْقَلَبِ",
+    uzbek: "Allohim! Safarning mashaqqatidan va qaytishning g'amginligidan Sening panohing olamiz.",
+    transliteration: "Allaahummaa innaa na'uuzu bika min wa'saais safari wa kaaabatil munqalab",
+  },
+  {
+    id: "s8",
+    category: "safar",
+    title: "Musofrga uyga qaytganda",
+    arabic: "اللَّهُمَّ اجْعَلْ لَنَا فِي سَفَرِنَا هَذَا خَيْرًا",
+    uzbek: "Allohim! Shu safarimizni xayrli qil.",
+    transliteration: "Allaahummaj'al lanaa fii safarinaa haazaa khayran",
+  },
+
+  // ============ Additional UMUMIY ============
+  {
+    id: "u14",
+    category: "umumiy",
+    title: "Sog'lik uchun",
+    arabic: "اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي",
+    uzbek: "Allohim! Tanamga sog'lik ber. Allohim! Eshitishimga sog'lik ber. Allohim! Ko'rishimga sog'lik ber.",
+    transliteration: "Allaahummaa aafini fii badanii, Allaahummaa aafini fii sam'ii, Allaahummaa aafini fii basarii",
+  },
+  {
+    id: "u15",
+    category: "umumiy",
+    title: "Ishni boshlaguncha",
+    arabic: "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي",
+    uzbek: "Parvardigorim! Ko'kragimni keng qil va ishimni osonlashtir.",
+    transliteration: "Rabbish-rah lii sadrii wa yassir lii amrii",
+  },
+  {
+    id: "u16",
+    category: "umumiy",
+    title: "Avrat muhofazasi",
+    arabic: "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَى وَالتُّقَى وَالْعَفَافَ وَالْغِنَى",
+    uzbek: "Allohim! Sendan hidoyat, taqvo, iffat va boylik so'rayman.",
+    transliteration: "Allaahummaa innii as'alukal hudaa wat-tuqaa wal-'afaafa wal-ghinaa",
+  },
+  {
+    id: "u17",
+    category: "umumiy",
+    title: "Qarzdan xalos bo'lish",
+    arabic: "اللَّهُمَّ اكْفِنِي بِحَلاَلِكَ عَنْ حَرَامِكَ وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ",
+    uzbek: "Allohim! Haromonadan halong bilan meni asra va Sening fazlingg bilan boshqalarga muhtoj qilma.",
+    transliteration: "Allaahummak-finii bihalaalika an haraamika wa aghnii bifadlika amman siwaak",
+  },
+  {
+    id: "u18",
+    category: "umumiy",
+    title: "Jannat uchun",
+    arabic: "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْجَنَّةَ وَمَا قَرَّبَ إِلَيْهَا مِنْ قَوْلٍ أَوْ عَمَلٍ",
+    uzbek: "Allohim! Sendan jannatni va unga yaqinlashtiruvchi so'z va amallarni so'rayman.",
+    transliteration: "Allaahummaa innii as'alukal jannata wa maa qarraba ilayhaa min qawlin aw amal",
+  },
+  {
+    id: "u19",
+    category: "umumiy",
+    title: "Do'zaxdan panoh",
+    arabic: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ النَّارِ وَمَا قَرَّبَ إِلَيْهَا مِنْ قَوْلٍ أَوْ عَمَلٍ",
+    uzbek: "Allohim! Do'zaxdan va unga yaqinlashtiruvchi so'z va amallardan Sening panohing olayman.",
+    transliteration: "Allaahummaa innii a'uuzu bika minan-naari wa maa qarraba ilayhaa min qawlin aw amal",
+  },
+  {
+    id: "u20",
+    category: "umumiy",
+    title: "Oilaga baraka",
+    arabic: "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا",
+    uzbek: "Parvardigorimiz! Bizga juft va farzandlarimizdan ko'zlarimizning quvonchini ber va bizni taqvodorlarning imomi qil.",
+    transliteration: "Rabbanaa hab lanaa min azwaajinaa wa zurriyyaatinaa qurrata a'yunin waj'alnaa lil-muttaqiina imaaman",
+  },
+
+  // ============ Additional ERTALAB ============
+  {
+    id: "e9",
+    category: "ertalab",
+    title: "Sabah namozidan keyin",
+    arabic: "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا وَرِزْقًا طَيِّبًا وَعَمَلاً مُتَقَبَّلاً",
+    uzbek: "Allohim! Sendan foydali ilm, halol rizq va qabul qilinadigan amal so'rayman.",
+    transliteration: "Allaahummaa innii as'aluka 'ilman naafi'aw wa rizqan tayyibaw wa amalan mutaqabbalaa",
+  },
+  {
+    id: "e10",
+    category: "ertalab",
+    title: "Yangi kun boshida",
+    arabic: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ عَلَيْكَ تَوَكَّلْتُ وَأَنْتَ رَبُّ الْعَرْشِ الْعَظِيمِ",
+    uzbek: "Allohim! Sen mening Rabbimsan. Sendan boshqa iloh yo'q. Sengа tavakkal qildim. Sen Ulug' Arshning Rabbisin.",
+    transliteration: "Allaahummaa anta rabbii laa ilaaha illaa anta alayka tawakkaltu wa anta rabbul arshil aziim",
+  },
+
+  // ============ Additional KECHQURUN ============
+  {
+    id: "k8",
+    category: "kechqurun",
+    title: "Yotishdan oldin 3 marta",
+    arabic: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
+    uzbek: "Alloh pokdir va hamd U uchundir (30 marta).",
+    transliteration: "Subhaanallaahi wa bihamdih",
+  },
+
+  // ============ Additional OVQAT ============
+  {
+    id: "o7",
+    category: "ovqat",
+    title: "Mehmonga iftorlik berganida",
+    arabic: "أَفْطَرَ عِنْدَكُمُ الصَّائِمُونَ وَأَكَلَ طَعَامَكُمُ الأَبْرَارُ وَصَلَّتْ عَلَيْكُمُ الْمَلاَئِكَةُ",
+    uzbek: "Ro'zadorlar siznikida iftор qilsin, yaxshilar sizning taomingizni yesin va farishtallar sizga salovat yuborgansin.",
+    transliteration: "Aftara 'indakumus saa'imuuna wa akala ta'aamakumul abraaru wa sallat 'alaykumul malaa'ikah",
+  },
+
+  // ============ Additional UYQU ============
+  {
+    id: "y6",
+    category: "uyqu",
+    title: "Tun o'rtasida uyg'onganda",
+    arabic: "لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+    uzbek: "Allohdan boshqa iloh yo'q, U yolg'iz va sherik yo'q. Mulk Uniki, hamd Uniki va U har narsaga qodirdir.",
+    transliteration: "Laa ilaaha illallaahu wahdahu laa shariika lah, lahul mulku wa lahul hamdu wa huwa alaa kulli shay'in qadiir",
+  },
+  {
+    id: "y7",
+    category: "uyqu",
+    title: "Uxlashdan oldin Ayat ul-kursi",
+    arabic: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ",
+    uzbek: "Alloh — Undan boshqa iloh yo'q, tirik va barqayor Zot.",
+    transliteration: "Allaahu laa ilaaha illaa huwal hayyul qayyuum",
+  },
 ];

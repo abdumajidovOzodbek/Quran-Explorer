@@ -16,6 +16,8 @@ import Colors from "@/constants/colors";
 import { useAudio, AudioState } from "@/context/AudioContext";
 
 const TAB_BAR_HEIGHT = Platform.OS === "web" ? 84 : 56;
+const FADE_STEPS = 50;
+const FADE_INTERVAL_MS = 100;
 
 function formatSleepLabel(minutes: number | null, secondsLeft: number | null): string {
   if (minutes === null || secondsLeft === null) return "";
@@ -27,15 +29,17 @@ function formatSleepLabel(minutes: number | null, secondsLeft: number | null): s
 function SleepTimerButton({
   sleepMinutes,
   sleepSecondsLeft,
+  isFading,
   onPress,
 }: {
   sleepMinutes: number | null;
   sleepSecondsLeft: number | null;
+  isFading: boolean;
   onPress: () => void;
 }) {
   const c = Colors.dark;
-  const isActive = sleepMinutes !== null;
-  const label = formatSleepLabel(sleepMinutes, sleepSecondsLeft);
+  const isActive = sleepMinutes !== null || isFading;
+  const label = isFading ? "..." : formatSleepLabel(sleepMinutes, sleepSecondsLeft);
 
   return (
     <Pressable
@@ -59,9 +63,10 @@ function SleepTimerButton({
 }
 
 function WebPlayer({ audio }: { audio: AudioState }) {
-  const { stopAudio, playNext, playPrev, sleepMinutes, sleepSecondsLeft, cycleSleepTimer } = useAudio();
+  const { stopAudio, playNext, playPrev, sleepMinutes, sleepSecondsLeft, isFading, cycleSleepTimer } = useAudio();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const fadeRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [duration, setDuration] = useState(0);
@@ -101,10 +106,32 @@ function WebPlayer({ audio }: { audio: AudioState }) {
   }, [audio.audioUrl]);
 
   useEffect(() => {
-    if (sleepSecondsLeft === 0) {
-      audioRef.current?.pause();
+    if (fadeRef.current) {
+      clearInterval(fadeRef.current);
+      fadeRef.current = null;
     }
-  }, [sleepSecondsLeft]);
+    if (!isFading) return;
+
+    const el = audioRef.current;
+    if (!el) return;
+    el.volume = 1.0;
+    let vol = 1.0;
+
+    fadeRef.current = setInterval(() => {
+      vol = Math.max(0, vol - 1 / FADE_STEPS);
+      if (el) el.volume = vol;
+      if (vol <= 0) {
+        if (fadeRef.current) clearInterval(fadeRef.current);
+        fadeRef.current = null;
+        if (el) el.pause();
+      }
+    }, FADE_INTERVAL_MS);
+
+    return () => {
+      if (fadeRef.current) clearInterval(fadeRef.current);
+      if (el && el.volume < 1) el.volume = 1.0;
+    };
+  }, [isFading]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -160,6 +187,7 @@ function WebPlayer({ audio }: { audio: AudioState }) {
           <SleepTimerButton
             sleepMinutes={sleepMinutes}
             sleepSecondsLeft={sleepSecondsLeft}
+            isFading={isFading}
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); cycleSleepTimer(); }}
           />
           <Pressable onPress={playPrev} style={styles.btn}>
@@ -189,8 +217,9 @@ function WebPlayer({ audio }: { audio: AudioState }) {
 }
 
 function NativePlayer({ audio }: { audio: AudioState }) {
-  const { stopAudio, playNext, playPrev, sleepMinutes, sleepSecondsLeft, cycleSleepTimer } = useAudio();
+  const { stopAudio, playNext, playPrev, sleepMinutes, sleepSecondsLeft, isFading, cycleSleepTimer } = useAudio();
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const fadeRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const insets = useSafeAreaInsets();
   const c = Colors.dark;
 
@@ -214,10 +243,31 @@ function NativePlayer({ audio }: { audio: AudioState }) {
   }, [status.didJustFinish]);
 
   useEffect(() => {
-    if (sleepSecondsLeft === 0) {
-      player.pause();
+    if (fadeRef.current) {
+      clearInterval(fadeRef.current);
+      fadeRef.current = null;
     }
-  }, [sleepSecondsLeft]);
+    if (!isFading) {
+      try { player.volume = 1.0; } catch {}
+      return;
+    }
+
+    let vol = 1.0;
+    fadeRef.current = setInterval(() => {
+      vol = Math.max(0, vol - 1 / FADE_STEPS);
+      try { player.volume = vol; } catch {}
+      if (vol <= 0) {
+        if (fadeRef.current) clearInterval(fadeRef.current);
+        fadeRef.current = null;
+        try { player.pause(); } catch {}
+      }
+    }, FADE_INTERVAL_MS);
+
+    return () => {
+      if (fadeRef.current) clearInterval(fadeRef.current);
+      try { player.volume = 1.0; } catch {}
+    };
+  }, [isFading]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -271,6 +321,7 @@ function NativePlayer({ audio }: { audio: AudioState }) {
           <SleepTimerButton
             sleepMinutes={sleepMinutes}
             sleepSecondsLeft={sleepSecondsLeft}
+            isFading={isFading}
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); cycleSleepTimer(); }}
           />
           <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); playPrev(); }} style={styles.btn}>
