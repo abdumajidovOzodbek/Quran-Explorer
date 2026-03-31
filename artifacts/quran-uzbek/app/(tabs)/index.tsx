@@ -2,8 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
+  Animated,
   FlatList,
   Modal,
   Platform,
@@ -87,6 +88,55 @@ export default function HomeScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>("surah");
   const [expandedJuz, setExpandedJuz] = useState<Set<number>>(new Set());
 
+  const headerAnim = useRef(new Animated.Value(1)).current;
+  const headerVisible = useRef(true);
+  const lastScrollY = useRef(0);
+  const [cardsHeight, setCardsHeight] = useState(280);
+
+  const handleScroll = useCallback(
+    (e: { nativeEvent: { contentOffset: { y: number } } }) => {
+      const y = e.nativeEvent.contentOffset.y;
+      if (y <= 10) {
+        if (!headerVisible.current) {
+          headerVisible.current = true;
+          Animated.spring(headerAnim, {
+            toValue: 1,
+            useNativeDriver: true,
+            tension: 260,
+            friction: 22,
+          }).start();
+        }
+        lastScrollY.current = y;
+        return;
+      }
+      const dy = y - lastScrollY.current;
+      if (dy > 6 && headerVisible.current) {
+        headerVisible.current = false;
+        Animated.spring(headerAnim, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 260,
+          friction: 22,
+        }).start();
+      } else if (dy < -6 && !headerVisible.current) {
+        headerVisible.current = true;
+        Animated.spring(headerAnim, {
+          toValue: 1,
+          useNativeDriver: true,
+          tension: 260,
+          friction: 22,
+        }).start();
+      }
+      lastScrollY.current = y;
+    },
+    [headerAnim],
+  );
+
+  const cardTranslateY = headerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-cardsHeight, 0],
+  });
+
   const {
     lastRead,
     completedSurahs,
@@ -146,51 +196,87 @@ export default function HomeScreen() {
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
   const progressPercent = (completedSurahs.length / 114) * 100;
 
-  const ListHeader = (
-    <View style={styles.listHeaderContainer}>
-      <View style={styles.progressRow}>
-        <Text style={[styles.progressLabel, { color: c.textSecondary }]}>{t.readingProgress}</Text>
-        <Text style={[styles.progressValue, { color: c.textSecondary }]}>
-          {completedSurahs.length}/114
-          {khatmahCount > 0 ? `  ·  ${khatmahCount} ${t.khatmah}` : ""}
-        </Text>
-      </View>
-      <View style={[styles.progressTrack, { backgroundColor: c.card }]}>
-        <View style={[styles.progressFill, { width: `${Math.max(progressPercent, 1)}%` as any, backgroundColor: c.tint }]} />
-      </View>
+  const CollapsibleCards = (
+    <Animated.View
+      style={[
+        styles.collapsibleCards,
+        {
+          opacity: headerAnim,
+          transform: [{ translateY: cardTranslateY }],
+        },
+      ]}
+      onLayout={(e) => {
+        const h = e.nativeEvent.layout.height;
+        if (h > 0) setCardsHeight(h);
+      }}
+    >
+      <View style={styles.listHeaderContainer}>
+        <View style={styles.progressRow}>
+          <Text style={[styles.progressLabel, { color: c.textSecondary }]}>{t.readingProgress}</Text>
+          <Text style={[styles.progressValue, { color: c.textSecondary }]}>
+            {completedSurahs.length}/114
+            {khatmahCount > 0 ? `  ·  ${khatmahCount} ${t.khatmah}` : ""}
+          </Text>
+        </View>
+        <View style={[styles.progressTrack, { backgroundColor: c.card }]}>
+          <View style={[styles.progressFill, { width: `${Math.max(progressPercent, 1)}%` as any, backgroundColor: c.tint }]} />
+        </View>
 
-      {verseOfDay && (
-        <Pressable
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            router.push(`/surah/${verseOfDay.surahNo}?ayah=${verseOfDay.ayahNo}`);
-          }}
-          style={({ pressed }) => [
-            styles.verseOfDayCard,
-            { backgroundColor: c.card, borderColor: c.border },
-            pressed && { opacity: 0.8 },
-          ]}
-        >
-          <View style={styles.vodHeader}>
-            <Text style={[styles.vodBadgeText, { color: c.tint }]}>{t.verseOfDay}</Text>
-            <Text style={[styles.vodRef, { color: c.textMuted }]}>
-              {getLocalSurahName(verseOfDay.surahNo, verseOfDay.surahName, language)} · {verseOfDay.ayahNo}
+        {verseOfDay && (
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.push(`/surah/${verseOfDay.surahNo}?ayah=${verseOfDay.ayahNo}`);
+            }}
+            style={({ pressed }) => [
+              styles.verseOfDayCard,
+              { backgroundColor: c.card, borderColor: c.border },
+              pressed && { opacity: 0.8 },
+            ]}
+          >
+            <View style={styles.vodHeader}>
+              <Text style={[styles.vodBadgeText, { color: c.tint }]}>{t.verseOfDay}</Text>
+              <Text style={[styles.vodRef, { color: c.textMuted }]}>
+                {getLocalSurahName(verseOfDay.surahNo, verseOfDay.surahName, language)} · {verseOfDay.ayahNo}
+              </Text>
+            </View>
+            <Text style={[styles.vodArabic, { color: "#e8d5a3" }]} numberOfLines={2}>
+              {verseOfDay.arabic}
             </Text>
-          </View>
-          <Text style={[styles.vodArabic, { color: "#e8d5a3" }]} numberOfLines={2}>
-            {verseOfDay.arabic}
-          </Text>
-          <Text style={[styles.vodTranslation, { color: c.textSecondary }]} numberOfLines={2}>
-            {getVodTranslation(verseOfDay, language)}
-          </Text>
-        </Pressable>
-      )}
+            <Text style={[styles.vodTranslation, { color: c.textSecondary }]} numberOfLines={2}>
+              {getVodTranslation(verseOfDay, language)}
+            </Text>
+          </Pressable>
+        )}
 
-      {lastRead && (
+        {lastRead && (
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.push(`/surah/${lastRead.surahNo}?ayah=${lastRead.ayahNo}`);
+            }}
+            style={({ pressed }) => [
+              styles.rowCard,
+              { backgroundColor: c.card, borderColor: c.border },
+              pressed && { opacity: 0.75 },
+            ]}
+          >
+            <Ionicons name="book-outline" size={18} color={c.tint} />
+            <View style={styles.rowCardInfo}>
+              <Text style={[styles.rowCardLabel, { color: c.textMuted }]}>{t.continueReading}</Text>
+              <Text style={[styles.rowCardTitle, { color: c.text }]}>
+                {getLocalSurahName(lastRead.surahNo, lastRead.surahName, language)}
+              </Text>
+            </View>
+            <Text style={[styles.rowCardRight, { color: c.textMuted }]}>{lastRead.ayahNo} {t.verse}</Text>
+            <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
+          </Pressable>
+        )}
+
         <Pressable
           onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            router.push(`/surah/${lastRead.surahNo}?ayah=${lastRead.ayahNo}`);
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push("/duas");
           }}
           style={({ pressed }) => [
             styles.rowCard,
@@ -198,37 +284,19 @@ export default function HomeScreen() {
             pressed && { opacity: 0.75 },
           ]}
         >
-          <Ionicons name="book-outline" size={18} color={c.tint} />
+          <Ionicons name="hand-left-outline" size={18} color={c.textSecondary} />
           <View style={styles.rowCardInfo}>
-            <Text style={[styles.rowCardLabel, { color: c.textMuted }]}>{t.continueReading}</Text>
-            <Text style={[styles.rowCardTitle, { color: c.text }]}>
-              {getLocalSurahName(lastRead.surahNo, lastRead.surahName, language)}
-            </Text>
+            <Text style={[styles.rowCardTitle, { color: c.text }]}>{t.duas}</Text>
           </View>
-          <Text style={[styles.rowCardRight, { color: c.textMuted }]}>{lastRead.ayahNo} {t.verse}</Text>
+          <Text style={[styles.rowCardRight, { color: c.textMuted }]}>{DUAS.length}</Text>
           <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
         </Pressable>
-      )}
+      </View>
+    </Animated.View>
+  );
 
-      <Pressable
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          router.push("/duas");
-        }}
-        style={({ pressed }) => [
-          styles.rowCard,
-          { backgroundColor: c.card, borderColor: c.border },
-          pressed && { opacity: 0.75 },
-        ]}
-      >
-        <Ionicons name="hand-left-outline" size={18} color={c.textSecondary} />
-        <View style={styles.rowCardInfo}>
-          <Text style={[styles.rowCardTitle, { color: c.text }]}>{t.duas}</Text>
-        </View>
-        <Text style={[styles.rowCardRight, { color: c.textMuted }]}>{DUAS.length}</Text>
-        <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
-      </Pressable>
-
+  const ListHeader = (
+    <View style={styles.listSectionHeader}>
       <View style={[styles.sectionLabel, { borderBottomColor: c.border }]}>
         <Text style={[styles.sectionLabelText, { color: c.textMuted }]}>
           {viewMode === "surah" ? t.allSurahs.toUpperCase() : t.byJuz.toUpperCase()}
@@ -372,57 +440,73 @@ export default function HomeScreen() {
         </ScrollView>
       </View>
 
-      {isLoading ? (
-        <SurahListSkeleton />
-      ) : isError ? (
-        <View style={styles.errorContainer}>
-          <View style={[styles.errorIconBox, { backgroundColor: c.card, borderColor: c.border }]}>
-            <Ionicons name="wifi-outline" size={36} color={c.textMuted} />
-          </View>
-          <Text style={[styles.errorText, { color: c.textSecondary }]}>{t.networkError}</Text>
-          <Pressable onPress={() => refetch()} style={[styles.retryBtn, { backgroundColor: c.tint }]}>
-            <Text style={styles.retryText}>{t.retry}</Text>
-          </Pressable>
-        </View>
-      ) : viewMode === "surah" ? (
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => String(item.surahNo ?? 0)}
-          renderItem={({ item }) => (
-            <SurahCard
-              surah={item}
-              isLastRead={lastRead?.surahNo === item.surahNo}
-              isCompleted={isSurahComplete(item.surahNo ?? 0)}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push(`/surah/${item.surahNo ?? 1}`);
-              }}
-            />
-          )}
-          ListHeaderComponent={ListHeader}
-          contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={[styles.listContent, Platform.OS === "web" && { paddingBottom: 34 + 84 }]}
-          showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={c.tint} />}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons name="book-outline" size={48} color={c.textMuted} />
-              <Text style={[styles.emptyText, { color: c.textSecondary }]}>{t.notFound}</Text>
+      <View style={styles.listContainer}>
+        {CollapsibleCards}
+
+        {isLoading ? (
+          <SurahListSkeleton />
+        ) : isError ? (
+          <View style={[styles.errorContainer, { paddingTop: cardsHeight }]}>
+            <View style={[styles.errorIconBox, { backgroundColor: c.card, borderColor: c.border }]}>
+              <Ionicons name="wifi-outline" size={36} color={c.textMuted} />
             </View>
-          }
-        />
-      ) : (
-        <FlatList
-          data={flatJuzData}
-          keyExtractor={(item) =>
-            item.type === "juz-header" ? `juz-${item.juzNo}` : `surah-${item.surah.surahNo}-juz-${item.juzNo}`
-          }
-          renderItem={renderJuzRow}
-          ListHeaderComponent={ListHeader}
-          contentContainerStyle={[styles.listContent, Platform.OS === "web" && { paddingBottom: 34 + 84 }]}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+            <Text style={[styles.errorText, { color: c.textSecondary }]}>{t.networkError}</Text>
+            <Pressable onPress={() => refetch()} style={[styles.retryBtn, { backgroundColor: c.tint }]}>
+              <Text style={styles.retryText}>{t.retry}</Text>
+            </Pressable>
+          </View>
+        ) : viewMode === "surah" ? (
+          <FlatList
+            data={filtered}
+            keyExtractor={(item) => String(item.surahNo ?? 0)}
+            renderItem={({ item }) => (
+              <SurahCard
+                surah={item}
+                isLastRead={lastRead?.surahNo === item.surahNo}
+                isCompleted={isSurahComplete(item.surahNo ?? 0)}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push(`/surah/${item.surahNo ?? 1}`);
+                }}
+              />
+            )}
+            ListHeaderComponent={ListHeader}
+            contentInsetAdjustmentBehavior="automatic"
+            contentContainerStyle={[
+              styles.listContent,
+              { paddingTop: cardsHeight },
+              Platform.OS === "web" && { paddingBottom: 34 + 84 },
+            ]}
+            showsVerticalScrollIndicator={false}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+            refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={c.tint} />}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Ionicons name="book-outline" size={48} color={c.textMuted} />
+                <Text style={[styles.emptyText, { color: c.textSecondary }]}>{t.notFound}</Text>
+              </View>
+            }
+          />
+        ) : (
+          <FlatList
+            data={flatJuzData}
+            keyExtractor={(item) =>
+              item.type === "juz-header" ? `juz-${item.juzNo}` : `surah-${item.surah.surahNo}-juz-${item.juzNo}`
+            }
+            renderItem={renderJuzRow}
+            ListHeaderComponent={ListHeader}
+            contentContainerStyle={[
+              styles.listContent,
+              { paddingTop: cardsHeight },
+              Platform.OS === "web" && { paddingBottom: 34 + 84 },
+            ]}
+            showsVerticalScrollIndicator={false}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+          />
+        )}
+      </View>
 
       <Modal visible={showKhatmahModal} transparent animationType="fade" onRequestClose={dismissKhatmahModal}>
         <Pressable style={styles.modalOverlay} onPress={dismissKhatmahModal}>
@@ -459,6 +543,22 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  listContainer: {
+    flex: 1,
+    position: "relative",
+  },
+  collapsibleCards: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+  },
+  listSectionHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 4,
+  },
   stickyHeader: {
     paddingHorizontal: 16,
     paddingBottom: 14,
