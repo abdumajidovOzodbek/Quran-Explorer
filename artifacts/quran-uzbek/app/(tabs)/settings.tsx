@@ -210,7 +210,11 @@ export default function SettingsScreen() {
               ]}
             >
               <View>
-                <Text style={[styles.optionText, { color: c.text }]}>{reciter.name}</Text>
+                <Text style={[styles.optionText, { color: c.text }]}>
+                  {settings.language === "ru" ? reciter.nameRu :
+                   settings.language === "uz_cyrillic" ? reciter.nameUz :
+                   reciter.name}
+                </Text>
                 <Text style={[styles.optionSub, { color: c.textSecondary }]}>{t.reciterStyle}</Text>
               </View>
               {settings.reciterId === reciter.id && (

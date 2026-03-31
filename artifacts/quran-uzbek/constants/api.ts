@@ -4,11 +4,41 @@ export const QURAN_API_BASE = "https://quranapi.pages.dev/api";
 export const ALQURAN_CLOUD_BASE = "https://api.alquran.cloud/v1";
 
 export const RECITERS = [
-  { id: "1", name: "Mishary Rashid Al Afasy", style: "Muratal", everyayahPath: "Alafasy_128kbps" },
-  { id: "2", name: "Abu Bakr Al Shatri", style: "Muratal", everyayahPath: "Abu_Bakr_Ash-Shaatree_128kbps" },
-  { id: "3", name: "Nasser Al Qatami", style: "Muratal", everyayahPath: "Nasser_Alqatami_128kbps" },
-  { id: "4", name: "Yasser Al Dosari", style: "Muratal", everyayahPath: "Yasser_Ad-Dussary_128kbps" },
-  { id: "5", name: "Hani Ar Rifai", style: "Muratal", everyayahPath: "Hani_Rifai_192kbps" },
+  {
+    id: "1",
+    name: "Mishary Rashid Al Afasy",
+    nameRu: "Мишари Рашид аль-Афаси",
+    nameUz: "Мишарий Рашид ал-Афасий",
+    everyayahPath: "Alafasy_128kbps",
+  },
+  {
+    id: "2",
+    name: "Abu Bakr Al Shatri",
+    nameRu: "Абу Бакр аш-Шатри",
+    nameUz: "Абу Бакр аш-Шатрий",
+    everyayahPath: "Abu_Bakr_Ash-Shaatree_128kbps",
+  },
+  {
+    id: "3",
+    name: "Nasser Al Qatami",
+    nameRu: "Насер аль-Катами",
+    nameUz: "Носир ал-Қатамий",
+    everyayahPath: "Nasser_Alqatami_128kbps",
+  },
+  {
+    id: "4",
+    name: "Yasser Al Dosari",
+    nameRu: "Ясер аль-Досари",
+    nameUz: "Ёсир ад-Дўсарий",
+    everyayahPath: "Yasser_Ad-Dussary_128kbps",
+  },
+  {
+    id: "5",
+    name: "Hani Ar Rifai",
+    nameRu: "Хани ар-Рифаи",
+    nameUz: "Ҳоний ар-Рифоий",
+    everyayahPath: "Hani_Rifai_192kbps",
+  },
 ];
 
 export const DEFAULT_RECITER = RECITERS[0];

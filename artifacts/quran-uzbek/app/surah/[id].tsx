@@ -107,11 +107,13 @@ export default function SurahScreen() {
       surahName: sName,
       totalVerses: verses.length,
       reciterId: settings.reciterId,
-      reciterName: reciter.name,
+      reciterName: settings.language === "ru" ? reciter.nameRu :
+                   settings.language === "uz_cyrillic" ? reciter.nameUz :
+                   reciter.name,
       audioUrl: getVerseAudioUrl(surahNo, ayahNo, settings.reciterId),
     });
     saveLastRead({ surahNo, surahName: sName, ayahNo });
-  }, [playingAyah, surahNo, settings.reciterId, data?.surahName, verses.length, reciter.name, playVerse, stopAudio, saveLastRead]);
+  }, [playingAyah, surahNo, settings.reciterId, data?.surahName, verses.length, reciter.name, settings.language, playVerse, stopAudio, saveLastRead]);
 
   useEffect(() => {
     if (playingAyah && verses.length > 0) {
