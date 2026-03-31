@@ -248,24 +248,24 @@ function NativePlayer({ audio }: { audio: AudioState }) {
       fadeRef.current = null;
     }
     if (!isFading) {
-      try { player.volume = 1.0; } catch {}
+      if (typeof player.volume !== "undefined") player.volume = 1.0;
       return;
     }
 
     let vol = 1.0;
     fadeRef.current = setInterval(() => {
       vol = Math.max(0, vol - 1 / FADE_STEPS);
-      try { player.volume = vol; } catch {}
+      if (typeof player.volume !== "undefined") player.volume = vol;
       if (vol <= 0) {
         if (fadeRef.current) clearInterval(fadeRef.current);
         fadeRef.current = null;
-        try { player.pause(); } catch {}
+        player.pause();
       }
     }, FADE_INTERVAL_MS);
 
     return () => {
       if (fadeRef.current) clearInterval(fadeRef.current);
-      try { player.volume = 1.0; } catch {}
+      if (typeof player.volume !== "undefined") player.volume = 1.0;
     };
   }, [isFading]);
 

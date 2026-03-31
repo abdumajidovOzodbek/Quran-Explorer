@@ -51,12 +51,9 @@ function buildFlatJuzData(
 
   for (const juzInfo of JUZ_DATA) {
     const { juzNo, name } = juzInfo;
-    const { startSurah, endSurah } = getJuzSurahRange(juzNo);
+    const juzSurahSet = new Set(juzInfo.surahs);
     const juzSurahs = surahs
-      .filter((s) => {
-        const n = s.surahNo ?? 0;
-        return n >= startSurah && n <= endSurah;
-      })
+      .filter((s) => juzSurahSet.has(s.surahNo ?? 0))
       .map((s) => ({
         surah: s,
         navAyah: getJuzNavAyah(juzNo, s.surahNo ?? 0),
