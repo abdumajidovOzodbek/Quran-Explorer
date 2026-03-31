@@ -1,5 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
 import { Magnetometer } from "expo-sensors";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -14,7 +15,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import Svg, { Circle, G } from "react-native-svg";
+import Svg, { Circle, Defs, G, LinearGradient as SvgGradient, Stop } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { useQuran } from "@/context/QuranContext";
@@ -52,8 +53,8 @@ function calcBearing(lat1: number, lon1: number, lat2: number, lon2: number): nu
 function ProgressRing({
   count,
   target,
-  size = 220,
-  strokeWidth = 14,
+  size = 280,
+  strokeWidth = 18,
 }: {
   count: number;
   target: number;
@@ -67,15 +68,22 @@ function ProgressRing({
   const dashOffset = circumference * (1 - progress);
   const cx = size / 2;
   const cy = size / 2;
+  const isComplete = progress >= 1;
 
   return (
     <Svg width={size} height={size} style={{ position: "absolute" }}>
+      <Defs>
+        <SvgGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <Stop offset="0%" stopColor={isComplete ? "#1DB954" : "#D4AF37"} stopOpacity="1" />
+          <Stop offset="100%" stopColor={isComplete ? "#16a34a" : "#b8952a"} stopOpacity="1" />
+        </SvgGradient>
+      </Defs>
       <G transform={`rotate(-90, ${cx}, ${cy})`}>
         <Circle
           cx={cx}
           cy={cy}
           r={radius}
-          stroke="rgba(255,255,255,0.08)"
+          stroke="rgba(255,255,255,0.06)"
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -83,7 +91,7 @@ function ProgressRing({
           cx={cx}
           cy={cy}
           r={radius}
-          stroke={progress >= 1 ? c.accent : c.tint}
+          stroke="url(#ringGrad)"
           strokeWidth={strokeWidth}
           fill="none"
           strokeDasharray={`${circumference} ${circumference}`}
@@ -107,11 +115,17 @@ function TasbihView({ bottomInset }: { bottomInset: number }) {
   const [completed, setCompleted] = useState(0);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const celebAnim = useRef(new Animated.Value(0)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
 
   const handleTap = useCallback(() => {
     Animated.sequence([
-      Animated.timing(scaleAnim, { toValue: 0.94, duration: 60, useNativeDriver: true }),
-      Animated.timing(scaleAnim, { toValue: 1, duration: 80, useNativeDriver: true }),
+      Animated.timing(scaleAnim, { toValue: 0.93, duration: 70, useNativeDriver: true }),
+      Animated.timing(scaleAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+
+    Animated.sequence([
+      Animated.timing(glowAnim, { toValue: 1, duration: 80, useNativeDriver: true }),
+      Animated.timing(glowAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
     ]).start();
 
     if (Platform.OS !== "web") {
@@ -127,14 +141,14 @@ function TasbihView({ bottomInset }: { bottomInset: number }) {
         }
         Animated.sequence([
           Animated.timing(celebAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
-          Animated.delay(600),
+          Animated.delay(1200),
           Animated.timing(celebAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
         ]).start();
         return 0;
       }
       return next;
     });
-  }, [target, scaleAnim, celebAnim]);
+  }, [target, scaleAnim, celebAnim, glowAnim]);
 
   const handleLongPress = useCallback(() => {
     if (Platform.OS !== "web") {
@@ -180,16 +194,27 @@ function TasbihView({ bottomInset }: { bottomInset: number }) {
       {
         scale: celebAnim.interpolate({
           inputRange: [0, 1],
-          outputRange: [0.8, 1.1],
+          outputRange: [0.7, 1],
+        }),
+      },
+      {
+        translateY: celebAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [20, 0],
         }),
       },
     ],
   };
 
+  const dhikrName =
+    settings.language === "ru" || settings.language === "uz_cyrillic"
+      ? latinToRussianTranslit(dhikr.name)
+      : dhikr.name;
+
   return (
     <ScrollView
       style={{ flex: 1 }}
-      contentContainerStyle={{ paddingBottom: bottomInset + 100 }}
+      contentContainerStyle={{ paddingBottom: bottomInset + 120 }}
       showsVerticalScrollIndicator={false}
     >
       <ScrollView
@@ -197,159 +222,152 @@ function TasbihView({ bottomInset }: { bottomInset: number }) {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.dhikrScroll}
       >
-        {DHIKR_LIST.map((d, i) => (
-          <Pressable
-            key={i}
-            onPress={() => {
-              setSelectedDhikr(i);
-              setCount(0);
-              setCompleted(0);
-            }}
-            style={[
-              styles.dhikrChip,
-              {
-                backgroundColor: selectedDhikr === i ? c.tint + "22" : c.card,
-                borderColor: selectedDhikr === i ? c.tint : c.border,
-              },
-            ]}
-          >
-            <Text
+        {DHIKR_LIST.map((d, i) => {
+          const active = selectedDhikr === i;
+          const dName =
+            settings.language === "ru" || settings.language === "uz_cyrillic"
+              ? latinToRussianTranslit(d.name)
+              : d.name;
+          return (
+            <Pressable
+              key={i}
+              onPress={() => {
+                setSelectedDhikr(i);
+                setCount(0);
+                setCompleted(0);
+              }}
               style={[
-                styles.dhikrChipText,
-                { color: selectedDhikr === i ? c.tint : c.textSecondary },
+                styles.dhikrChip,
+                {
+                  backgroundColor: active ? c.tint + "18" : c.card,
+                  borderColor: active ? c.tint : c.border,
+                },
               ]}
             >
-              {(settings.language === "ru" || settings.language === "uz_cyrillic")
-                ? latinToRussianTranslit(d.name)
-                : d.name}
-            </Text>
-          </Pressable>
-        ))}
+              <Text style={[styles.dhikrChipArabic, { color: active ? c.tint : c.arabicText, opacity: active ? 1 : 0.7 }]}>
+                {d.arabic}
+              </Text>
+              <Text style={[styles.dhikrChipText, { color: active ? c.tint : c.textSecondary }]}>
+                {dName}
+              </Text>
+            </Pressable>
+          );
+        })}
       </ScrollView>
 
-      <View style={styles.arabicRow}>
-        <Text style={[styles.arabicText, { color: c.arabicText }]}>
-          {dhikr.arabic}
-        </Text>
-        <Text style={[styles.meaningText, { color: c.textMuted }]}>
-          {t[dhikr.key]}
-        </Text>
-      </View>
+      <View style={[styles.mainCard, { backgroundColor: "#101828", borderColor: c.border }]}>
+        <Text style={[styles.cardArabic, { color: c.arabicText }]}>{dhikr.arabic}</Text>
+        <Text style={[styles.cardMeaning, { color: c.tint }]}>{dhikrName}</Text>
+        <Text style={[styles.cardTranslation, { color: c.textMuted }]}>{t[dhikr.key]}</Text>
 
-      <View style={styles.ringWrapper}>
-        <ProgressRing count={count} target={target} size={220} />
+        <View style={[styles.divider, { backgroundColor: c.border }]} />
 
-        <Animated.View
-          style={[styles.tapButton, { transform: [{ scale: scaleAnim }] }]}
-        >
-          <Pressable
-            onPress={handleTap}
-            onLongPress={handleLongPress}
-            delayLongPress={600}
-            style={[
-              styles.tapInner,
-              {
-                backgroundColor: c.card,
-                borderColor: c.border,
-              },
-            ]}
-          >
-            <Text style={[styles.countNumber, { color: c.text }]}>{count}</Text>
-            <Text style={[styles.tapHint, { color: c.textMuted }]}>{t.tap}</Text>
-          </Pressable>
-        </Animated.View>
+        <View style={styles.ringWrapper}>
+          <ProgressRing count={count} target={target} size={280} strokeWidth={18} />
 
-        <Animated.View style={[styles.celebBadge, celebStyle]}>
-          <Text style={styles.celebText}>✓ {target} {t.times}!</Text>
-        </Animated.View>
-      </View>
+          <Animated.View style={[styles.tapButtonOuter, { transform: [{ scale: scaleAnim }] }]}>
+            <Pressable
+              onPress={handleTap}
+              onLongPress={handleLongPress}
+              delayLongPress={600}
+              style={styles.tapPressable}
+            >
+              <LinearGradient
+                colors={["#1E2B45", "#111827"]}
+                style={[styles.tapGradient, { borderColor: c.tint + "40" }]}
+              >
+                <Text style={[styles.countNumber, { color: count > 0 ? c.tint : c.text }]}>
+                  {count}
+                </Text>
+                <View style={styles.progressTextRow}>
+                  <Text style={[styles.progressSlash, { color: c.textMuted }]}>/ </Text>
+                  <Text style={[styles.progressTarget, { color: c.textMuted }]}>{target}</Text>
+                </View>
+                <Text style={[styles.tapHint, { color: c.textSecondary }]}>{t.tap}</Text>
+              </LinearGradient>
+            </Pressable>
+          </Animated.View>
 
-      {completed > 0 && (
-        <View style={[styles.completedRow, { backgroundColor: c.card, borderColor: c.border }]}>
-          <Ionicons name="checkmark-circle" size={16} color={c.accent} />
-          <Text style={[styles.completedText, { color: c.accent }]}>
-            {t.tasbihRepeated(completed, target)}
-          </Text>
+          <Animated.View style={[styles.celebBadge, celebStyle]}>
+            <Ionicons name="checkmark-circle" size={18} color="#fff" />
+            <Text style={styles.celebText}>{target} {t.times}!</Text>
+          </Animated.View>
         </View>
-      )}
 
-      <View style={styles.targetRow}>
-        <Text style={[styles.targetLabel, { color: c.textMuted }]}>{t.target}:</Text>
-        {[33, 99].map((val) => (
+        {completed > 0 && (
+          <View style={[styles.completedRow, { backgroundColor: "#1DB95418", borderColor: "#1DB95440" }]}>
+            <Ionicons name="checkmark-circle" size={15} color="#1DB954" />
+            <Text style={[styles.completedText, { color: "#1DB954" }]}>
+              {t.tasbihRepeated(completed, target)}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      <View style={[styles.targetCard, { backgroundColor: c.card, borderColor: c.border }]}>
+        <Text style={[styles.targetLabel, { color: c.textMuted }]}>{t.target}</Text>
+        <View style={styles.targetBtns}>
+          {[33, 99].map((val) => (
+            <Pressable
+              key={val}
+              onPress={() => setTargetOption(val)}
+              style={[
+                styles.targetBtn,
+                target === val
+                  ? { backgroundColor: c.tint }
+                  : { backgroundColor: "transparent", borderColor: c.border, borderWidth: 1 },
+              ]}
+            >
+              <Text style={[styles.targetBtnText, { color: target === val ? "#000" : c.textSecondary }]}>
+                {val}
+              </Text>
+            </Pressable>
+          ))}
           <Pressable
-            key={val}
-            onPress={() => setTargetOption(val)}
+            onPress={() => setShowCustom(!showCustom)}
             style={[
               styles.targetBtn,
-              {
-                backgroundColor: target === val ? c.tint : c.card,
-                borderColor: target === val ? c.tint : c.border,
-              },
+              showCustom || (target !== 33 && target !== 99)
+                ? { backgroundColor: c.tint }
+                : { backgroundColor: "transparent", borderColor: c.border, borderWidth: 1 },
             ]}
           >
             <Text
               style={[
                 styles.targetBtnText,
-                { color: target === val ? "#000" : c.textSecondary },
+                {
+                  color:
+                    showCustom || (target !== 33 && target !== 99) ? "#000" : c.textSecondary,
+                },
               ]}
             >
-              {val}
+              {target !== 33 && target !== 99 ? `${target}` : t.other}
             </Text>
           </Pressable>
-        ))}
-        <Pressable
-          onPress={() => setShowCustom(!showCustom)}
-          style={[
-            styles.targetBtn,
-            {
-              backgroundColor:
-                showCustom || (target !== 33 && target !== 99) ? c.tint : c.card,
-              borderColor:
-                showCustom || (target !== 33 && target !== 99) ? c.tint : c.border,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.targetBtnText,
-              {
-                color:
-                  showCustom || (target !== 33 && target !== 99)
-                    ? "#000"
-                    : c.textSecondary,
-              },
-            ]}
-          >
-            {target !== 33 && target !== 99 ? `${target}` : t.other}
-          </Text>
-        </Pressable>
-      </View>
-
-      {showCustom && (
-        <View style={styles.customRow}>
-          <TextInput
-            value={customTarget}
-            onChangeText={setCustomTarget}
-            placeholder={t.enterNumber}
-            placeholderTextColor={c.textMuted}
-            keyboardType="number-pad"
-            style={[
-              styles.customInput,
-              {
-                color: c.text,
-                backgroundColor: c.card,
-                borderColor: c.border,
-              },
-            ]}
-          />
-          <Pressable
-            onPress={applyCustomTarget}
-            style={[styles.customApply, { backgroundColor: c.tint }]}
-          >
-            <Text style={styles.customApplyText}>OK</Text>
-          </Pressable>
         </View>
-      )}
+
+        {showCustom && (
+          <View style={styles.customRow}>
+            <TextInput
+              value={customTarget}
+              onChangeText={setCustomTarget}
+              placeholder={t.enterNumber}
+              placeholderTextColor={c.textMuted}
+              keyboardType="number-pad"
+              style={[
+                styles.customInput,
+                { color: c.text, backgroundColor: c.background, borderColor: c.border },
+              ]}
+            />
+            <Pressable
+              onPress={applyCustomTarget}
+              style={[styles.customApply, { backgroundColor: c.tint }]}
+            >
+              <Text style={styles.customApplyText}>OK</Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
     </ScrollView>
   );
 }
@@ -434,71 +452,58 @@ function QiblaView() {
 
   return (
     <View style={styles.qiblaContainer}>
-      <View style={[styles.compassOuter, { borderColor: c.border, backgroundColor: c.card }]}>
-        <View style={[styles.compassRing, { borderColor: c.tint + "30" }]}>
-          {compassDirs.map((dir, i) => {
-            const angle = i * 90;
-            const rad = (angle - 90) * (Math.PI / 180);
-            const r = 90;
-            const x = Math.cos(rad) * r;
-            const y = Math.sin(rad) * r;
-            return (
-              <Text
-                key={dir}
-                style={[
-                  styles.compassDir,
-                  {
-                    color: i === 0 ? c.tint : c.textMuted,
-                    transform: [
-                      { translateX: x },
-                      { translateY: y },
-                    ],
-                    position: "absolute",
-                  },
-                ]}
-              >
-                {dir}
-              </Text>
-            );
-          })}
+      <View style={[styles.compassOuter, { borderColor: c.tint + "30", backgroundColor: "#101828" }]}>
+        <View style={[styles.compassMid, { borderColor: c.border }]}>
+          <View style={[styles.compassRing, { borderColor: c.tint + "20" }]}>
+            {compassDirs.map((dir, i) => {
+              const angle = i * 90;
+              const rad = (angle - 90) * (Math.PI / 180);
+              const r = 95;
+              const x = Math.cos(rad) * r;
+              const y = Math.sin(rad) * r;
+              return (
+                <Text
+                  key={dir}
+                  style={[
+                    styles.compassDir,
+                    {
+                      color: i === 0 ? c.tint : c.textSecondary,
+                      fontFamily: i === 0 ? "Inter_700Bold" : "Inter_500Medium",
+                      transform: [{ translateX: x }, { translateY: y }],
+                      position: "absolute",
+                    },
+                  ]}
+                >
+                  {dir}
+                </Text>
+              );
+            })}
 
-          <Animated.View style={[styles.needleWrapper, { transform: [{ rotate: spin }] }]}>
-            <View style={[styles.needleTop, { backgroundColor: c.tint }]} />
-            <View style={[styles.needleBottom, { backgroundColor: c.textMuted }]} />
-          </Animated.View>
+            <Animated.View style={[styles.needleWrapper, { transform: [{ rotate: spin }] }]}>
+              <LinearGradient
+                colors={[c.tint, "#b8952a"]}
+                style={styles.needleTop}
+              />
+              <View style={[styles.needleBottom, { backgroundColor: c.textMuted + "80" }]} />
+            </Animated.View>
 
-          <View style={[styles.compassCenter, { backgroundColor: c.tint }]} />
+            <View style={[styles.compassCenter, { backgroundColor: c.tint, borderColor: "#101828" }]} />
+          </View>
         </View>
       </View>
 
-      <Text style={[styles.qiblaLabel, { color: c.text }]}>{t.qiblaDirection}</Text>
-      <Text style={[styles.qiblaDegrees, { color: c.tint }]}>
-        {t.compassN}: {displayBearing}° ({t.qibla})
-      </Text>
+      <View style={[styles.qiblaInfoCard, { backgroundColor: "#101828", borderColor: c.border }]}>
+        <Text style={[styles.qiblaLabel, { color: c.text }]}>{t.qiblaDirection}</Text>
+        <Text style={[styles.qiblaDegrees, { color: c.tint }]}>
+          {displayBearing}° {t.compassN}
+        </Text>
+      </View>
 
-      {usingFallback && (
-        <View style={[styles.fallbackNote, { backgroundColor: c.card, borderColor: c.border }]}>
-          <Ionicons name="location-outline" size={14} color={c.textMuted} />
-          <Text style={[styles.fallbackText, { color: c.textMuted }]}>
-            {t.qiblaPermission}
-          </Text>
-        </View>
-      )}
-
-      {!hasSensor && (
+      {(usingFallback || !hasSensor) && (
         <View style={[styles.fallbackNote, { backgroundColor: c.card, borderColor: c.border }]}>
           <Ionicons name="information-circle-outline" size={14} color={c.textMuted} />
           <Text style={[styles.fallbackText, { color: c.textMuted }]}>
-            {t.networkError}
-          </Text>
-        </View>
-      )}
-
-      {hasSensor && (
-        <View style={[styles.fallbackNote, { backgroundColor: c.card, borderColor: c.border }]}>
-          <Ionicons name="refresh-circle-outline" size={14} color={c.textMuted} />
-          <Text style={[styles.fallbackText, { color: c.textMuted }]}>
-            {t.enableNotif}
+            {usingFallback ? t.qiblaPermission : t.networkError}
           </Text>
         </View>
       )}
@@ -520,46 +525,30 @@ export default function TasbihScreen() {
       <View style={{ paddingTop: topPadding + 12, paddingHorizontal: 16, marginBottom: 12 }}>
         <Text style={[styles.screenTitle, { color: c.text }]}>{t.tasbih}</Text>
 
-        <View style={[styles.tabRow, { backgroundColor: c.card, borderColor: c.border }]}>
+        <View style={[styles.tabRow, { backgroundColor: "#101828", borderColor: c.border }]}>
           <Pressable
             onPress={() => setActiveTab("tasbih")}
-            style={[
-              styles.tabBtn,
-              activeTab === "tasbih" && { backgroundColor: c.tint },
-            ]}
+            style={[styles.tabBtn, activeTab === "tasbih" && { backgroundColor: c.tint }]}
           >
             <MaterialCommunityIcons
               name="counter"
               size={16}
               color={activeTab === "tasbih" ? "#000" : c.textSecondary}
             />
-            <Text
-              style={[
-                styles.tabBtnText,
-                { color: activeTab === "tasbih" ? "#000" : c.textSecondary },
-              ]}
-            >
+            <Text style={[styles.tabBtnText, { color: activeTab === "tasbih" ? "#000" : c.textSecondary }]}>
               {t.tasbih}
             </Text>
           </Pressable>
           <Pressable
             onPress={() => setActiveTab("qibla")}
-            style={[
-              styles.tabBtn,
-              activeTab === "qibla" && { backgroundColor: c.tint },
-            ]}
+            style={[styles.tabBtn, activeTab === "qibla" && { backgroundColor: c.tint }]}
           >
             <Ionicons
               name="compass-outline"
               size={16}
               color={activeTab === "qibla" ? "#000" : c.textSecondary}
             />
-            <Text
-              style={[
-                styles.tabBtnText,
-                { color: activeTab === "qibla" ? "#000" : c.textSecondary },
-              ]}
-            >
+            <Text style={[styles.tabBtnText, { color: activeTab === "qibla" ? "#000" : c.textSecondary }]}>
               {t.qibla}
             </Text>
           </Pressable>
@@ -598,168 +587,240 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Inter_600SemiBold",
   },
+
   dhikrScroll: {
     paddingHorizontal: 16,
-    gap: 8,
+    gap: 10,
     paddingBottom: 4,
+    paddingTop: 4,
   },
   dhikrChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    alignItems: "center",
+    gap: 3,
+    minWidth: 100,
+  },
+  dhikrChipArabic: {
+    fontSize: 18,
+    fontFamily: "Inter_400Regular",
+    writingDirection: "rtl",
   },
   dhikrChipText: {
-    fontSize: 13,
+    fontSize: 11,
     fontFamily: "Inter_500Medium",
+    letterSpacing: 0.2,
   },
-  arabicRow: {
+
+  mainCard: {
+    marginHorizontal: 16,
+    marginTop: 14,
+    borderRadius: 24,
+    borderWidth: 1,
+    paddingHorizontal: 24,
+    paddingTop: 28,
+    paddingBottom: 24,
     alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    gap: 6,
   },
-  arabicText: {
-    fontSize: 26,
+  cardArabic: {
+    fontSize: 38,
     fontFamily: "Inter_400Regular",
     textAlign: "center",
     writingDirection: "rtl",
+    lineHeight: 56,
   },
-  meaningText: {
+  cardMeaning: {
+    fontSize: 15,
+    fontFamily: "Inter_600SemiBold",
+    marginTop: 4,
+    letterSpacing: 0.3,
+  },
+  cardTranslation: {
     fontSize: 13,
     fontFamily: "Inter_400Regular",
+    marginTop: 2,
   },
+  divider: {
+    width: "100%",
+    height: 1,
+    marginVertical: 24,
+    opacity: 0.5,
+  },
+
   ringWrapper: {
     alignItems: "center",
     justifyContent: "center",
-    height: 220,
-    marginVertical: 8,
+    width: 280,
+    height: 280,
   },
-  tapButton: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
+  tapButtonOuter: {
+    width: 230,
+    height: 230,
+    borderRadius: 115,
   },
-  tapInner: {
+  tapPressable: {
     flex: 1,
-    borderRadius: 90,
-    borderWidth: 1,
+    borderRadius: 115,
+    overflow: "hidden",
+  },
+  tapGradient: {
+    flex: 1,
+    borderRadius: 115,
+    borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
-    gap: 4,
+    gap: 2,
   },
   countNumber: {
-    fontSize: 64,
+    fontSize: 80,
     fontFamily: "Inter_700Bold",
-    lineHeight: 72,
+    lineHeight: 88,
+    includeFontPadding: false,
   },
-  tapHint: {
-    fontSize: 12,
+  progressTextRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  progressSlash: {
+    fontSize: 16,
     fontFamily: "Inter_400Regular",
   },
+  progressTarget: {
+    fontSize: 16,
+    fontFamily: "Inter_500Medium",
+  },
+  tapHint: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    marginTop: 4,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+  },
+
   celebBadge: {
     position: "absolute",
-    bottom: -8,
+    bottom: -14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     backgroundColor: "#1DB954",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 24,
   },
   celebText: {
     color: "#fff",
     fontSize: 14,
     fontFamily: "Inter_700Bold",
   },
+
   completedRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    marginHorizontal: 16,
-    paddingHorizontal: 14,
+    marginTop: 28,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 12,
     borderWidth: 1,
-    marginBottom: 8,
+    alignSelf: "stretch",
   },
   completedText: {
     fontSize: 13,
     fontFamily: "Inter_500Medium",
   },
-  targetRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 16,
-    marginTop: 8,
+
+  targetCard: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 16,
   },
   targetLabel: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-    marginRight: 4,
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 12,
+  },
+  targetBtns: {
+    flexDirection: "row",
+    gap: 8,
   },
   targetBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 10,
-    borderWidth: 1,
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
   },
   targetBtnText: {
-    fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: 15,
+    fontFamily: "Inter_700Bold",
   },
   customRow: {
     flexDirection: "row",
     gap: 8,
-    paddingHorizontal: 16,
-    marginTop: 10,
+    marginTop: 12,
     alignItems: "center",
   },
   customInput: {
     flex: 1,
-    height: 44,
-    borderRadius: 10,
+    height: 46,
+    borderRadius: 12,
     borderWidth: 1,
     paddingHorizontal: 14,
     fontSize: 15,
     fontFamily: "Inter_400Regular",
   },
   customApply: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingHorizontal: 22,
+    paddingVertical: 13,
+    borderRadius: 12,
   },
   customApplyText: {
     color: "#000",
     fontSize: 14,
     fontFamily: "Inter_700Bold",
   },
+
   qiblaContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 16,
-    gap: 16,
+    gap: 20,
   },
   compassOuter: {
-    width: 240,
-    height: 240,
-    borderRadius: 120,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  compassMid: {
+    width: 260,
+    height: 260,
+    borderRadius: 130,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },
   compassRing: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },
   compassDir: {
-    fontSize: 13,
-    fontFamily: "Inter_700Bold",
-    position: "absolute",
+    fontSize: 15,
+    textAlign: "center",
   },
   needleWrapper: {
     width: 8,
@@ -768,47 +829,51 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   needleTop: {
-    flex: 1,
     width: 6,
-    borderTopLeftRadius: 3,
-    borderTopRightRadius: 3,
+    flex: 1,
+    borderRadius: 3,
   },
   needleBottom: {
-    flex: 1,
     width: 6,
-    borderBottomLeftRadius: 3,
-    borderBottomRightRadius: 3,
-    opacity: 0.4,
+    flex: 1,
+    borderRadius: 3,
   },
   compassCenter: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     position: "absolute",
+    borderWidth: 3,
+  },
+  qiblaInfoCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    alignItems: "center",
+    gap: 4,
   },
   qiblaLabel: {
-    fontSize: 22,
-    fontFamily: "Inter_700Bold",
-    textAlign: "center",
+    fontSize: 13,
+    fontFamily: "Inter_500Medium",
   },
   qiblaDegrees: {
-    fontSize: 16,
-    fontFamily: "Inter_500Medium",
+    fontSize: 22,
+    fontFamily: "Inter_700Bold",
   },
   fallbackNote: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 12,
     borderWidth: 1,
-    alignSelf: "stretch",
+    marginHorizontal: 16,
   },
   fallbackText: {
-    flex: 1,
     fontSize: 12,
     fontFamily: "Inter_400Regular",
-    lineHeight: 18,
+    flex: 1,
   },
 });
