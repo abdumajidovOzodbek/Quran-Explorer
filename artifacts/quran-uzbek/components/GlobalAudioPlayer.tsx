@@ -1,0 +1,311 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
+import * as Haptics from "expo-haptics";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Animated,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Colors from "@/constants/colors";
+import { useAudio, AudioState } from "@/context/AudioContext";
+
+const TAB_BAR_HEIGHT = Platform.OS === "web" ? 84 : 56;
+
+function WebPlayer({ audio }: { audio: AudioState }) {
+  const { stopAudio, playNext, playPrev } = useAudio();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [duration, setDuration] = useState(0);
+  const [position, setPosition] = useState(0);
+  const insets = useSafeAreaInsets();
+  const c = Colors.dark;
+
+  useEffect(() => {
+    const el = new Audio(audio.audioUrl);
+    audioRef.current = el;
+    setIsLoading(true);
+    setIsPlaying(false);
+    setPosition(0);
+    setDuration(0);
+
+    el.addEventListener("canplaythrough", () => {
+      setIsLoading(false);
+      setDuration(el.duration || 0);
+      el.play().catch(() => {});
+    });
+    el.addEventListener("loadedmetadata", () => setDuration(el.duration || 0));
+    el.addEventListener("play", () => setIsPlaying(true));
+    el.addEventListener("pause", () => setIsPlaying(false));
+    el.addEventListener("timeupdate", () => setPosition(el.currentTime));
+    el.addEventListener("ended", () => {
+      setIsPlaying(false);
+      playNext();
+    });
+    el.addEventListener("error", () => setIsLoading(false));
+    el.load();
+
+    return () => {
+      el.pause();
+      el.src = "";
+      audioRef.current = null;
+    };
+  }, [audio.audioUrl]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1.05, duration: 600, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+        ])
+      );
+      pulse.start();
+      return () => pulse.stop();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [isPlaying]);
+
+  const togglePlay = () => {
+    const el = audioRef.current;
+    if (!el) return;
+    if (isPlaying) el.pause();
+    else el.play().catch(() => {});
+  };
+
+  const progress = duration > 0 ? position / duration : 0;
+  const bottomOffset = insets.bottom + TAB_BAR_HEIGHT + 8;
+
+  return (
+    <View style={[styles.container, { bottom: bottomOffset, backgroundColor: c.card, borderColor: c.border }]}>
+      <View style={styles.row}>
+        <Animated.View
+          style={[
+            styles.icon,
+            {
+              backgroundColor: isPlaying ? c.audioActive + "22" : c.card,
+              borderColor: isPlaying ? c.audioActive : c.border,
+              transform: [{ scale: pulseAnim }],
+            },
+          ]}
+        >
+          <Ionicons name="musical-notes" size={18} color={isPlaying ? c.audioActive : c.textSecondary} />
+        </Animated.View>
+
+        <View style={styles.info}>
+          <Text style={[styles.surahName, { color: c.text }]} numberOfLines={1}>
+            {audio.surahName}
+          </Text>
+          <Text style={[styles.meta, { color: c.tint }]}>
+            {audio.ayahNo}/{audio.totalVerses} oyat • {audio.reciterName}
+          </Text>
+        </View>
+
+        <View style={styles.controls}>
+          <Pressable onPress={playPrev} style={styles.btn}>
+            <Ionicons name="play-skip-back" size={20} color={c.textSecondary} />
+          </Pressable>
+          <Pressable onPress={togglePlay} style={[styles.playBtn, { backgroundColor: c.audioActive }]}>
+            {isLoading ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Ionicons name={isPlaying ? "pause" : "play"} size={20} color="#fff" />
+            )}
+          </Pressable>
+          <Pressable onPress={playNext} style={styles.btn}>
+            <Ionicons name="play-skip-forward" size={20} color={c.textSecondary} />
+          </Pressable>
+          <Pressable onPress={stopAudio} style={styles.btn}>
+            <Ionicons name="close" size={20} color={c.textSecondary} />
+          </Pressable>
+        </View>
+      </View>
+
+      <View style={[styles.progressBar, { backgroundColor: c.border }]}>
+        <View style={[styles.progressFill, { backgroundColor: c.audioActive, width: `${progress * 100}%` as any }]} />
+      </View>
+    </View>
+  );
+}
+
+function NativePlayer({ audio }: { audio: AudioState }) {
+  const { stopAudio, playNext, playPrev } = useAudio();
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const insets = useSafeAreaInsets();
+  const c = Colors.dark;
+
+  const player = useAudioPlayer({ uri: audio.audioUrl });
+  const status = useAudioPlayerStatus(player);
+
+  const isPlaying = status.playing;
+  const isLoading = status.isBuffering;
+  const duration = status.duration || 0;
+  const position = status.currentTime || 0;
+  const progress = duration > 0 ? position / duration : 0;
+
+  useEffect(() => {
+    player.play();
+  }, [audio.audioUrl]);
+
+  useEffect(() => {
+    if (status.didJustFinish) {
+      playNext();
+    }
+  }, [status.didJustFinish]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1.05, duration: 600, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+        ])
+      );
+      pulse.start();
+      return () => pulse.stop();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [isPlaying]);
+
+  const togglePlay = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (isPlaying) player.pause();
+    else player.play();
+  };
+
+  const bottomOffset = insets.bottom + TAB_BAR_HEIGHT + 8;
+
+  return (
+    <View style={[styles.container, { bottom: bottomOffset, backgroundColor: c.card, borderColor: c.border }]}>
+      <View style={styles.row}>
+        <Animated.View
+          style={[
+            styles.icon,
+            {
+              backgroundColor: isPlaying ? c.audioActive + "22" : c.card,
+              borderColor: isPlaying ? c.audioActive : c.border,
+              transform: [{ scale: pulseAnim }],
+            },
+          ]}
+        >
+          <Ionicons name="musical-notes" size={18} color={isPlaying ? c.audioActive : c.textSecondary} />
+        </Animated.View>
+
+        <View style={styles.info}>
+          <Text style={[styles.surahName, { color: c.text }]} numberOfLines={1}>
+            {audio.surahName}
+          </Text>
+          <Text style={[styles.meta, { color: c.tint }]}>
+            {audio.ayahNo}/{audio.totalVerses} oyat • {audio.reciterName}
+          </Text>
+        </View>
+
+        <View style={styles.controls}>
+          <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); playPrev(); }} style={styles.btn}>
+            <Ionicons name="play-skip-back" size={20} color={c.textSecondary} />
+          </Pressable>
+          <Pressable onPress={togglePlay} style={[styles.playBtn, { backgroundColor: c.audioActive }]}>
+            {isLoading ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Ionicons name={isPlaying ? "pause" : "play"} size={20} color="#fff" />
+            )}
+          </Pressable>
+          <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); playNext(); }} style={styles.btn}>
+            <Ionicons name="play-skip-forward" size={20} color={c.textSecondary} />
+          </Pressable>
+          <Pressable onPress={stopAudio} style={styles.btn}>
+            <Ionicons name="close" size={20} color={c.textSecondary} />
+          </Pressable>
+        </View>
+      </View>
+
+      <View style={[styles.progressBar, { backgroundColor: c.border }]}>
+        <View style={[styles.progressFill, { backgroundColor: c.audioActive, width: `${progress * 100}%` as any }]} />
+      </View>
+    </View>
+  );
+}
+
+export function GlobalAudioPlayer() {
+  const { audio } = useAudio();
+  if (!audio) return null;
+  if (Platform.OS === "web") return <WebPlayer audio={audio} />;
+  return <NativePlayer audio={audio} />;
+}
+
+const styles = StyleSheet.create({
+  container: {
+    position: "absolute",
+    left: 12,
+    right: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 12,
+    gap: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  icon: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  info: {
+    flex: 1,
+    gap: 2,
+  },
+  surahName: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+  },
+  meta: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+  },
+  controls: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  btn: {
+    padding: 6,
+  },
+  playBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingLeft: 2,
+  },
+  progressBar: {
+    height: 3,
+    borderRadius: 2,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: 2,
+  },
+});

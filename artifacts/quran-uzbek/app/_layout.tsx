@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
+import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -16,6 +17,8 @@ import { StatusBar } from "expo-status-bar";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { QuranProvider } from "@/context/QuranContext";
+import { AudioProvider } from "@/context/AudioContext";
+import { GlobalAudioPlayer } from "@/components/GlobalAudioPlayer";
 import Colors from "@/constants/colors";
 
 SplashScreen.preventAutoHideAsync();
@@ -66,11 +69,16 @@ export default function RootLayout() {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <QuranProvider>
-            <GestureHandlerRootView>
-              <KeyboardProvider>
-                <RootLayoutNav />
-              </KeyboardProvider>
-            </GestureHandlerRootView>
+            <AudioProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <KeyboardProvider>
+                  <View style={{ flex: 1 }}>
+                    <RootLayoutNav />
+                    <GlobalAudioPlayer />
+                  </View>
+                </KeyboardProvider>
+              </GestureHandlerRootView>
+            </AudioProvider>
           </QuranProvider>
         </QueryClientProvider>
       </ErrorBoundary>

@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -17,8 +17,8 @@ import Colors from "@/constants/colors";
 import { fetchSurah, getVerseAudioUrl, RECITERS, SurahApiData } from "@/constants/api";
 import { UZBEK_NAMES } from "@/constants/uzbekNames";
 import { VerseCard } from "@/components/VerseCard";
-import { AudioPlayer } from "@/components/AudioPlayer";
 import { useQuran } from "@/context/QuranContext";
+import { useAudio } from "@/context/AudioContext";
 
 interface VerseItem {
   ayahNo: number;
@@ -34,9 +34,9 @@ export default function SurahScreen() {
   const insets = useSafeAreaInsets();
   const c = Colors.dark;
   const { isBookmarked, addBookmark, removeBookmark, saveLastRead, settings } = useQuran();
+  const { audio, playVerse, stopAudio } = useAudio();
 
-  const [playingAyah, setPlayingAyah] = useState<number | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const playingAyah = audio?.surahNo === surahNo ? audio.ayahNo : null;
   const listRef = useRef<FlatList>(null);
 
   const { data, isLoading, isError, refetch } = useQuery<SurahApiData>({
@@ -61,19 +61,21 @@ export default function SurahScreen() {
 
   const handlePlay = useCallback((ayahNo: number) => {
     if (playingAyah === ayahNo) {
-      setPlayingAyah(null);
-      setAudioUrl(null);
+      stopAudio();
       return;
     }
-    setPlayingAyah(ayahNo);
-    const url = getVerseAudioUrl(surahNo, ayahNo, settings.reciterId);
-    setAudioUrl(url);
-    saveLastRead({
+    const surahName = UZBEK_NAMES[surahNo] || data?.surahName || "";
+    playVerse({
       surahNo,
-      surahName: UZBEK_NAMES[surahNo] || data?.surahName || "",
       ayahNo,
+      surahName,
+      totalVerses: verses.length,
+      reciterId: settings.reciterId,
+      reciterName: reciter.name,
+      audioUrl: getVerseAudioUrl(surahNo, ayahNo, settings.reciterId),
     });
-  }, [playingAyah, surahNo, settings.reciterId, data?.surahName, saveLastRead]);
+    saveLastRead({ surahNo, surahName, ayahNo });
+  }, [playingAyah, surahNo, settings.reciterId, data?.surahName, verses.length, reciter.name, playVerse, stopAudio, saveLastRead]);
 
   useEffect(() => {
     if (playingAyah && verses.length > 0) {
@@ -100,18 +102,6 @@ export default function SurahScreen() {
       }, 300);
     }
   }, [data, ayah]);
-
-  const handleNext = useCallback(() => {
-    if (playingAyah && playingAyah < verses.length) {
-      handlePlay(playingAyah + 1);
-    }
-  }, [playingAyah, verses.length, handlePlay]);
-
-  const handlePrev = useCallback(() => {
-    if (playingAyah && playingAyah > 1) {
-      handlePlay(playingAyah - 1);
-    }
-  }, [playingAyah, handlePlay]);
 
   const handleBookmark = useCallback((verse: VerseItem) => {
     if (isBookmarked(surahNo, verse.ayahNo)) {
@@ -191,12 +181,12 @@ export default function SurahScreen() {
           contentContainerStyle={[
             styles.listContent,
             {
-              paddingBottom: audioUrl
+              paddingBottom: audio
                 ? bottomPadding + 160
                 : bottomPadding + 30,
             },
             Platform.OS === "web" && {
-              paddingBottom: audioUrl ? 34 + 220 : 34 + 60,
+              paddingBottom: audio ? 34 + 220 : 34 + 60,
             },
           ]}
           showsVerticalScrollIndicator={false}
@@ -242,28 +232,6 @@ export default function SurahScreen() {
         />
       )}
 
-      {audioUrl && (
-        <View
-          style={[
-            styles.audioPlayerContainer,
-            { bottom: bottomPadding + 8, backgroundColor: c.background },
-          ]}
-        >
-          <AudioPlayer
-            url={audioUrl}
-            surahName={surahName}
-            reciterName={reciter.name}
-            currentVerse={playingAyah ?? undefined}
-            totalVerses={verses.length}
-            onClose={() => {
-              setPlayingAyah(null);
-              setAudioUrl(null);
-            }}
-            onNext={handleNext}
-            onPrev={handlePrev}
-          />
-        </View>
-      )}
     </View>
   );
 }
@@ -355,10 +323,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Inter_400Regular",
     letterSpacing: 0.3,
-  },
-  audioPlayerContainer: {
-    position: "absolute",
-    left: 12,
-    right: 12,
   },
 });
