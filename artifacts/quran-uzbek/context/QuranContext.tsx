@@ -26,7 +26,7 @@ const DEFAULT_SETTINGS: Settings = {
   displayLanguage: "uzbek",
   arabicFontSize: 28,
   translationFontSize: 15,
-  reciterId: "ar.alafasy",
+  reciterId: "1",
 };
 
 function useQuranState() {

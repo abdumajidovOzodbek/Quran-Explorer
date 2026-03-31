@@ -1,7 +1,7 @@
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import React from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, Share, StyleSheet, Text, View } from "react-native";
 import Colors from "@/constants/colors";
 import { ReadingMode } from "@/types/quran";
 
@@ -11,6 +11,7 @@ interface VerseCardProps {
   arabic: string;
   english: string;
   uzbek?: string;
+  surahName?: string;
   sajda?: boolean;
   isBookmarked: boolean;
   isPlaying?: boolean;
@@ -29,6 +30,7 @@ export function VerseCard({
   arabic,
   english,
   uzbek,
+  surahName,
   sajda,
   isBookmarked,
   isPlaying,
@@ -51,6 +53,17 @@ export function VerseCard({
   const handlePlay = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onPlay();
+  };
+
+  const handleShare = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      const label = surahName ? `Qur'on, ${surahName} surasi, ${ayahNo}-oyat` : `Qur'on ${surahNo}:${ayahNo}`;
+      await Share.share({
+        message: `${arabic}\n\n${displayText}\n\n— ${label}`,
+      });
+    } catch {
+    }
   };
 
   return (
@@ -78,6 +91,9 @@ export function VerseCard({
         )}
 
         <View style={styles.actions}>
+          <Pressable onPress={handleShare} style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.6 }]}>
+            <Ionicons name="share-outline" size={20} color={c.textSecondary} />
+          </Pressable>
           <Pressable onPress={handlePlay} style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.6 }]}>
             <Ionicons
               name={isPlaying ? "pause-circle" : "play-circle-outline"}
@@ -167,7 +183,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginLeft: "auto",
-    gap: 8,
+    gap: 4,
   },
   actionBtn: {
     padding: 4,

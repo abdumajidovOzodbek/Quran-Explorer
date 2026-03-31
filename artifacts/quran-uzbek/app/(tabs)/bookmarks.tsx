@@ -14,14 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { useQuran } from "@/context/QuranContext";
 import { Bookmark } from "@/types/quran";
-
-const UZBEK_NAMES: Record<number, string> = {
-  1: "Fotiha", 2: "Baqara", 3: "Ol Imron", 4: "Niso", 5: "Moida",
-  6: "Anam", 7: "Arof", 8: "Anfol", 9: "Tavba", 10: "Yunus",
-  11: "Hud", 12: "Yusuf", 13: "Rad", 14: "Ibrohim", 15: "Hijr",
-  16: "Nahl", 17: "Isro", 18: "Kahf", 19: "Maryam", 20: "Toha",
-  36: "Yosin", 55: "Rahman", 67: "Mulk", 112: "Ixlos", 113: "Falaq", 114: "Nos",
-};
+import { UZBEK_NAMES } from "@/constants/uzbekNames";
 
 export default function BookmarksScreen() {
   const insets = useSafeAreaInsets();

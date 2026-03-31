@@ -17,35 +17,10 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { fetchSurahList, SurahListItem } from "@/constants/api";
+import { UZBEK_NAMES, JUZ_START } from "@/constants/uzbekNames";
 import { SurahCard } from "@/components/SurahCard";
 import { SurahListSkeleton } from "@/components/ShimmerSkeleton";
 import { useQuran } from "@/context/QuranContext";
-
-const UZBEK_NAMES: Record<number, string> = {
-  1: "Fotiha", 2: "Baqara", 3: "Ol Imron", 4: "Niso", 5: "Moida", 6: "Anam",
-  7: "Arof", 8: "Anfol", 9: "Tavba", 10: "Yunus", 11: "Hud", 12: "Yusuf",
-  13: "Rad", 14: "Ibrohim", 15: "Hijr", 16: "Nahl", 17: "Isro", 18: "Kahf",
-  19: "Maryam", 20: "Toha", 21: "Anbiyo", 22: "Haj", 23: "Muminun",
-  24: "Nur", 25: "Furqon", 26: "Shuaro", 27: "Naml", 28: "Qasas",
-  29: "Ankabut", 30: "Rum", 31: "Luqmon", 32: "Sajda", 33: "Ahzob",
-  34: "Sabo", 35: "Fotir", 36: "Yosin", 37: "Soffot", 38: "Sod",
-  39: "Zumar", 40: "Gofir", 41: "Fussilat", 42: "Shuro", 43: "Zuxruf",
-  44: "Duxon", 45: "Josiya", 46: "Ahqof", 47: "Muhammad", 48: "Fath",
-  49: "Hujurot", 50: "Qof", 51: "Zoriyot", 52: "Tur", 53: "Najm",
-  54: "Qamar", 55: "Rahman", 56: "Voqea", 57: "Hadid", 58: "Mujodala",
-  59: "Hashr", 60: "Mumtahana", 61: "Saf", 62: "Juma", 63: "Munofiqun",
-  64: "Tagobun", 65: "Taloq", 66: "Tahrim", 67: "Mulk", 68: "Qalam",
-  69: "Hoqqa", 70: "Maarij", 71: "Nuh", 72: "Jin", 73: "Muzzammil",
-  74: "Muddassir", 75: "Qiyoma", 76: "Inson", 77: "Mursalot", 78: "Naba",
-  79: "Noziot", 80: "Abasa", 81: "Takwir", 82: "Infitor", 83: "Mutaffifin",
-  84: "Inshiqoq", 85: "Buruj", 86: "Toriq", 87: "Alo", 88: "Goshiya",
-  89: "Fajr", 90: "Balad", 91: "Shams", 92: "Layl", 93: "Zuho",
-  94: "Sharh", 95: "Tin", 96: "Alaq", 97: "Qadr", 98: "Bayyina",
-  99: "Zilzol", 100: "Odiyot", 101: "Qoria", 102: "Takosur", 103: "Asr",
-  104: "Humaza", 105: "Fil", 106: "Quraysh", 107: "Mooun", 108: "Kavsar",
-  109: "Kofirun", 110: "Nasr", 111: "Masad", 112: "Ixlos", 113: "Falaq",
-  114: "Nos",
-};
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -95,20 +70,28 @@ export default function HomeScreen() {
         {lastRead && (
           <Pressable
             onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               router.push(`/surah/${lastRead.surahNo}`);
             }}
             style={({ pressed }) => [
-              styles.lastReadBanner,
-              { backgroundColor: c.tint + "18", borderColor: c.tint + "40" },
+              styles.continueCard,
+              { backgroundColor: c.tint + "15", borderColor: c.tint + "50" },
               pressed && { opacity: 0.8 },
             ]}
           >
-            <Ionicons name="bookmark" size={16} color={c.tint} />
-            <Text style={[styles.lastReadText, { color: c.tint }]}>
-              Davom etish: {UZBEK_NAMES[lastRead.surahNo] || lastRead.surahName} — {lastRead.ayahNo}-oyat
-            </Text>
-            <Ionicons name="chevron-forward" size={14} color={c.tint} />
+            <View style={[styles.continueIconBox, { backgroundColor: c.tint + "25" }]}>
+              <Ionicons name="book" size={20} color={c.tint} />
+            </View>
+            <View style={styles.continueInfo}>
+              <Text style={[styles.continueLabel, { color: c.tint + "99" }]}>Davom etish</Text>
+              <Text style={[styles.continueSurah, { color: c.tint }]}>
+                {UZBEK_NAMES[lastRead.surahNo] || lastRead.surahName}
+              </Text>
+              <Text style={[styles.continueVerse, { color: c.textSecondary }]}>
+                {lastRead.ayahNo}-oyat • {JUZ_START[lastRead.surahNo]}-juz
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={c.tint} />
           </Pressable>
         )}
 
@@ -206,9 +189,7 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   header: {
     paddingHorizontal: 16,
     paddingBottom: 8,
@@ -243,19 +224,39 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: "Inter_400Regular",
   },
-  lastReadBanner: {
+  continueCard: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 12,
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
+    paddingVertical: 12,
+    borderRadius: 16,
     borderWidth: 1,
   },
-  lastReadText: {
+  continueIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  continueInfo: {
     flex: 1,
-    fontSize: 13,
+    gap: 2,
+  },
+  continueLabel: {
+    fontSize: 11,
     fontFamily: "Inter_500Medium",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  continueSurah: {
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
+  },
+  continueVerse: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
   },
   searchBar: {
     flexDirection: "row",
