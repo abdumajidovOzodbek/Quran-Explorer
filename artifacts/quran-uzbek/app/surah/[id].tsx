@@ -29,7 +29,7 @@ interface VerseItem {
 }
 
 export default function SurahScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, ayah } = useLocalSearchParams<{ id: string; ayah?: string }>();
   const surahNo = parseInt(id || "1", 10);
   const insets = useSafeAreaInsets();
   const c = Colors.dark;
@@ -84,6 +84,22 @@ export default function SurahScreen() {
       }
     }
   }, [playingAyah]);
+
+  useEffect(() => {
+    const targetAyah = ayah ? parseInt(ayah, 10) : null;
+    if (targetAyah && verses.length > 0) {
+      setTimeout(() => {
+        try {
+          listRef.current?.scrollToIndex({
+            index: targetAyah - 1,
+            animated: true,
+            viewPosition: 0.15,
+          });
+        } catch {
+        }
+      }, 300);
+    }
+  }, [data, ayah]);
 
   const handleNext = useCallback(() => {
     if (playingAyah && playingAyah < verses.length) {

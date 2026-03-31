@@ -71,7 +71,7 @@ export default function HomeScreen() {
           <Pressable
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              router.push(`/surah/${lastRead.surahNo}`);
+              router.push(`/surah/${lastRead.surahNo}?ayah=${lastRead.ayahNo}`);
             }}
             style={({ pressed }) => [
               styles.continueCard,

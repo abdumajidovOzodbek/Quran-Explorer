@@ -62,7 +62,7 @@ export default function BookmarksScreen() {
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push(`/surah/${item.surahNo}`);
+                router.push(`/surah/${item.surahNo}?ayah=${item.ayahNo}`);
               }}
               style={({ pressed }) => [
                 styles.bookmarkCard,
