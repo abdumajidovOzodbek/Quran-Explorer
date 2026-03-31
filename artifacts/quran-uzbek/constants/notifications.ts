@@ -14,6 +14,16 @@ Notifications.setNotificationHandler({
   }),
 });
 
+if (Platform.OS === "android") {
+  Notifications.setNotificationChannelAsync("prayer-times", {
+    name: "Namoz vaqtlari",
+    importance: Notifications.AndroidImportance.HIGH,
+    sound: "default",
+    vibrationPattern: [0, 250, 250, 250],
+    lightColor: "#c5a55a",
+  }).catch(() => {});
+}
+
 export async function requestNotifPermissions(): Promise<boolean> {
   if (Platform.OS === "web") return false;
   try {
@@ -57,6 +67,7 @@ export async function schedulePrayerNotif(
         title: "Namoz vaqti 🕌",
         body: `${prayerName} namozi vaqti kirdi`,
         sound: true,
+        ...(Platform.OS === "android" ? { channelId: "prayer-times" } : {}),
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DAILY,
