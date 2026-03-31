@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
+import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -231,6 +231,14 @@ function NativePlayer({ audio }: { audio: AudioState }) {
   const duration = status.duration || 0;
   const position = status.currentTime || 0;
   const progress = duration > 0 ? position / duration : 0;
+
+  useEffect(() => {
+    setAudioModeAsync({
+      playsInSilentMode: true,
+      shouldPlayInBackground: true,
+      interruptionMode: "doNotMix",
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     player.play();
