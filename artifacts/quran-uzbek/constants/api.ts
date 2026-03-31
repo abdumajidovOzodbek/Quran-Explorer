@@ -52,9 +52,23 @@ export interface VerseOfDay {
 }
 
 const SURAH_LIST_CACHE = "@surah_list_v2";
-const surahCacheKey = (n: number) => `@surah_v4_${n}`;
-export const CACHE_COMPLETE_KEY = "@quran_cache_complete_v3";
+const surahCacheKey = (n: number) => `@surah_v5_${n}`;
+export const CACHE_COMPLETE_KEY = "@quran_cache_complete_v5";
 export const TOTAL_SURAHS = 114;
+
+function isCachedDataComplete(raw: string): boolean {
+  try {
+    const parsed = JSON.parse(raw);
+    return (
+      Array.isArray(parsed.arabic1) &&
+      Array.isArray(parsed.uzbek) &&
+      Array.isArray(parsed.russian) &&
+      Array.isArray(parsed.transliteration)
+    );
+  } catch {
+    return false;
+  }
+}
 
 export async function isCacheComplete(): Promise<boolean> {
   try {
@@ -65,23 +79,63 @@ export async function isCacheComplete(): Promise<boolean> {
   }
 }
 
+async function fetchWithRetry(n: number, signal?: AbortSignal): Promise<boolean> {
+  const DELAYS = [500, 1500, 3000];
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (signal?.aborted) return false;
+    try {
+      await fetchSurah(n);
+      return true;
+    } catch {
+      if (attempt < 2) {
+        await new Promise<void>((res) => setTimeout(res, DELAYS[attempt]));
+      }
+    }
+  }
+  return false;
+}
+
 export async function cacheAllSurahsInBackground(
-  onProgress: (cached: number, total: number) => void,
+  onProgress: (downloaded: number, total: number) => void,
   signal?: AbortSignal,
 ): Promise<void> {
+  const failed: number[] = [];
+  let downloaded = 0;
+
   for (let n = 1; n <= TOTAL_SURAHS; n++) {
     if (signal?.aborted) return;
+
     const existing = await AsyncStorage.getItem(surahCacheKey(n)).catch(() => null);
-    if (!existing) {
-      try {
-        await fetchSurah(n);
-      } catch {
-      }
-      await new Promise<void>((res) => setTimeout(res, 400));
+    const needsFetch = !existing || !isCachedDataComplete(existing);
+
+    if (needsFetch) {
+      const ok = await fetchWithRetry(n, signal);
+      if (!ok) failed.push(n);
+      await new Promise<void>((res) => setTimeout(res, 300));
     }
-    onProgress(n, TOTAL_SURAHS);
+
+    downloaded++;
+    onProgress(downloaded, TOTAL_SURAHS);
   }
-  await AsyncStorage.setItem(CACHE_COMPLETE_KEY, "1").catch(() => {});
+
+  if (failed.length > 0) {
+    await new Promise<void>((res) => setTimeout(res, 2000));
+    for (const n of failed) {
+      if (signal?.aborted) return;
+      await fetchWithRetry(n, signal);
+      await new Promise<void>((res) => setTimeout(res, 500));
+    }
+  }
+
+  let allOk = true;
+  for (let n = 1; n <= TOTAL_SURAHS; n++) {
+    const data = await AsyncStorage.getItem(surahCacheKey(n)).catch(() => null);
+    if (!data || !isCachedDataComplete(data)) { allOk = false; break; }
+  }
+
+  if (allOk && !signal?.aborted) {
+    await AsyncStorage.setItem(CACHE_COMPLETE_KEY, "1").catch(() => {});
+  }
 }
 
 export async function fetchSurahList(): Promise<SurahListItem[]> {
