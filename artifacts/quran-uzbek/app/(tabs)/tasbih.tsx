@@ -396,7 +396,7 @@ function QiblaView() {
 
       Magnetometer.setUpdateInterval(100);
       subscriptionRef.current = Magnetometer.addListener(({ x, y }) => {
-        const angle = Math.atan2(y, x) * (180 / Math.PI);
+        const angle = Math.atan2(-y, x) * (180 / Math.PI);
         setHeading(((angle + 360) % 360));
       });
     });
@@ -482,6 +482,15 @@ function QiblaView() {
           <Ionicons name="information-circle-outline" size={14} color={c.textMuted} />
           <Text style={[styles.fallbackText, { color: c.textMuted }]}>
             Kompas sensori mavjud emas — statik yo'nalish ko'rsatilmoqda
+          </Text>
+        </View>
+      )}
+
+      {hasSensor && (
+        <View style={[styles.fallbackNote, { backgroundColor: c.card, borderColor: c.border }]}>
+          <Ionicons name="refresh-circle-outline" size={14} color={c.textMuted} />
+          <Text style={[styles.fallbackText, { color: c.textMuted }]}>
+            Aniqlik uchun telefoningizni "8" shakli bo'ylab aylantiring
           </Text>
         </View>
       )}
