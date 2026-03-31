@@ -13,13 +13,13 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { useQuran } from "@/context/QuranContext";
-import { RECITERS } from "@/constants/api";
+import { RECITERS, TOTAL_SURAHS } from "@/constants/api";
 import { ReadingMode } from "@/types/quran";
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const c = Colors.dark;
-  const { settings, updateSettings, completedSurahs } = useQuran();
+  const { settings, updateSettings, completedSurahs, cacheProgress, isCacheDownloading, isCacheDone } = useQuran();
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
 
   const readingModes: { value: ReadingMode; label: string }[] = [
@@ -186,6 +186,60 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>OFFLINE KESH</Text>
+        <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}>
+          {isCacheDone ? (
+            <View style={styles.cacheRow}>
+              <View style={[styles.cacheIconBox, { backgroundColor: "#22c55e18" }]}>
+                <Ionicons name="checkmark-circle" size={22} color="#22c55e" />
+              </View>
+              <View style={styles.cacheInfo}>
+                <Text style={[styles.optionText, { color: c.text }]}>Offline tayyor</Text>
+                <Text style={[styles.optionSub, { color: c.textSecondary }]}>
+                  Barcha 114 sura qurilmada saqlangan
+                </Text>
+              </View>
+            </View>
+          ) : isCacheDownloading ? (
+            <View style={styles.cacheRow}>
+              <View style={[styles.cacheIconBox, { backgroundColor: c.tint + "18" }]}>
+                <Ionicons name="cloud-download-outline" size={22} color={c.tint} />
+              </View>
+              <View style={styles.cacheInfo}>
+                <View style={styles.cacheProgressHeader}>
+                  <Text style={[styles.optionText, { color: c.text }]}>Yuklanmoqda...</Text>
+                  <Text style={[styles.cachePercent, { color: c.tint }]}>{cacheProgress}%</Text>
+                </View>
+                <Text style={[styles.optionSub, { color: c.textSecondary }]}>
+                  {Math.round((cacheProgress / 100) * TOTAL_SURAHS)}/{TOTAL_SURAHS} sura saqlandi
+                </Text>
+                <View style={[styles.cacheTrack, { backgroundColor: c.background }]}>
+                  <View
+                    style={[
+                      styles.cacheFill,
+                      { width: `${Math.max(cacheProgress, 2)}%` as any, backgroundColor: c.tint },
+                    ]}
+                  />
+                </View>
+              </View>
+            </View>
+          ) : (
+            <View style={styles.cacheRow}>
+              <View style={[styles.cacheIconBox, { backgroundColor: c.textMuted + "20" }]}>
+                <Ionicons name="cloud-outline" size={22} color={c.textMuted} />
+              </View>
+              <View style={styles.cacheInfo}>
+                <Text style={[styles.optionText, { color: c.text }]}>Internet kutilmoqda</Text>
+                <Text style={[styles.optionSub, { color: c.textSecondary }]}>
+                  Tarmoqqa ulanganingizda yuklanadi
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
+      </View>
+
+      <View style={styles.section}>
         <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}>
           <View style={styles.infoRow}>
             <Ionicons name="information-circle-outline" size={18} color={c.textSecondary} />
@@ -298,5 +352,42 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Inter_400Regular",
     lineHeight: 20,
+  },
+  cacheRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  cacheIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cacheInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  cacheProgressHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  cachePercent: {
+    fontSize: 13,
+    fontFamily: "Inter_700Bold",
+  },
+  cacheTrack: {
+    height: 5,
+    borderRadius: 3,
+    overflow: "hidden",
+    marginTop: 4,
+  },
+  cacheFill: {
+    height: 5,
+    borderRadius: 3,
   },
 });

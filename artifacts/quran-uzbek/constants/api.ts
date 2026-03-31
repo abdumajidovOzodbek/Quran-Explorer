@@ -50,6 +50,36 @@ export interface VerseOfDay {
 
 const SURAH_LIST_CACHE = "@surah_list_v2";
 const surahCacheKey = (n: number) => `@surah_v2_${n}`;
+export const CACHE_COMPLETE_KEY = "@quran_cache_complete_v2";
+export const TOTAL_SURAHS = 114;
+
+export async function isCacheComplete(): Promise<boolean> {
+  try {
+    const val = await AsyncStorage.getItem(CACHE_COMPLETE_KEY);
+    return val === "1";
+  } catch {
+    return false;
+  }
+}
+
+export async function cacheAllSurahsInBackground(
+  onProgress: (cached: number, total: number) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  for (let n = 1; n <= TOTAL_SURAHS; n++) {
+    if (signal?.aborted) return;
+    const existing = await AsyncStorage.getItem(surahCacheKey(n)).catch(() => null);
+    if (!existing) {
+      try {
+        await fetchSurah(n);
+      } catch {
+      }
+      await new Promise<void>((res) => setTimeout(res, 400));
+    }
+    onProgress(n, TOTAL_SURAHS);
+  }
+  await AsyncStorage.setItem(CACHE_COMPLETE_KEY, "1").catch(() => {});
+}
 
 export async function fetchSurahList(): Promise<SurahListItem[]> {
   try {

@@ -1,7 +1,8 @@
 import createContextHook from "@nkzw/create-context-hook";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Bookmark, ReadingMode, DisplayLanguage } from "@/types/quran";
+import { cacheAllSurahsInBackground, isCacheComplete, TOTAL_SURAHS } from "@/constants/api";
 
 const BOOKMARKS_KEY = "@quran_bookmarks";
 const LAST_READ_KEY = "@quran_last_read";
@@ -40,10 +41,44 @@ function useQuranState() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [completedSurahs, setCompletedSurahs] = useState<number[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [cacheProgress, setCacheProgress] = useState(0);
+  const [isCacheDownloading, setIsCacheDownloading] = useState(false);
+  const [isCacheDone, setIsCacheDone] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     loadData();
+    return () => {
+      abortRef.current?.abort();
+    };
   }, []);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    startBackgroundCache();
+  }, [isLoaded]);
+
+  const startBackgroundCache = async () => {
+    const complete = await isCacheComplete();
+    if (complete) {
+      setIsCacheDone(true);
+      return;
+    }
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setIsCacheDownloading(true);
+    setCacheProgress(0);
+    try {
+      await cacheAllSurahsInBackground((cached, total) => {
+        setCacheProgress(Math.round((cached / total) * 100));
+      }, controller.signal);
+      if (!controller.signal.aborted) {
+        setIsCacheDone(true);
+      }
+    } finally {
+      setIsCacheDownloading(false);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -133,6 +168,9 @@ function useQuranState() {
     settings,
     completedSurahs,
     isLoaded,
+    cacheProgress,
+    isCacheDownloading,
+    isCacheDone,
     addBookmark,
     removeBookmark,
     isBookmarked,
