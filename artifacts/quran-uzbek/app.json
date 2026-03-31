@@ -65,12 +65,6 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    },
-    "extra": {
-      "eas": {
-        "projectId": "3e10840b-c54a-4b2a-8947-03d250aca793"
-      }
-    },
-    "owner": "uzhost3"
+    }
   }
 }
