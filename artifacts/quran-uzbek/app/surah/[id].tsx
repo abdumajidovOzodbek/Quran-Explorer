@@ -157,24 +157,40 @@ export default function SurahScreen() {
         </Pressable>
 
         <View style={styles.headerInfo}>
-          <View style={styles.headerTitleRow}>
-            <Text style={[styles.headerTitle, { color: c.text }]}>{surahName}</Text>
-            {isComplete && (
-              <View style={[styles.completeBadge, { backgroundColor: "#22c55e22" }]}>
-                <Ionicons name="checkmark-circle" size={14} color="#22c55e" />
-                <Text style={[styles.completeBadgeText, { color: "#22c55e" }]}>O'qildi</Text>
-              </View>
-            )}
-          </View>
+          <Text style={[styles.headerTitle, { color: c.text }]}>{surahName}</Text>
           <Text style={[styles.headerSub, { color: c.textSecondary }]}>
             {data?.revelationPlace === "Mecca" ? "Makka" : data?.revelationPlace === "Medina" ? "Madina" : data?.revelationPlace ?? ""}
             {" "}• {data?.totalAyah ?? verses.length} oyat
           </Text>
         </View>
 
-        <Text style={[styles.headerArabic, { color: c.tint }]}>
-          {data?.surahNameArabic || ""}
-        </Text>
+        <Pressable
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            if (isComplete) {
+              unmarkSurahComplete(surahNo);
+            } else {
+              markSurahComplete(surahNo);
+            }
+          }}
+          style={({ pressed }) => [
+            styles.headerCompleteBtn,
+            {
+              backgroundColor: isComplete ? "#22c55e22" : c.tint + "18",
+              borderColor: isComplete ? "#22c55e60" : c.tint + "50",
+            },
+            pressed && { opacity: 0.65 },
+          ]}
+        >
+          <Ionicons
+            name={isComplete ? "checkmark-circle" : "checkmark-circle-outline"}
+            size={16}
+            color={isComplete ? "#22c55e" : c.tint}
+          />
+          <Text style={[styles.headerCompleteBtnText, { color: isComplete ? "#22c55e" : c.tint }]}>
+            {isComplete ? "O'qildi" : "Tugatdim"}
+          </Text>
+        </Pressable>
       </View>
 
       {isLoading ? (
@@ -239,39 +255,7 @@ export default function SurahScreen() {
               </View>
             ) : null
           }
-          ListFooterComponent={
-            verses.length > 0 ? (
-              <View style={styles.footer}>
-                <Pressable
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    if (isComplete) {
-                      unmarkSurahComplete(surahNo);
-                    } else {
-                      markSurahComplete(surahNo);
-                    }
-                  }}
-                  style={({ pressed }) => [
-                    styles.completeBtn,
-                    {
-                      backgroundColor: isComplete ? "#22c55e22" : c.tint + "15",
-                      borderColor: isComplete ? "#22c55e50" : c.tint + "50",
-                    },
-                    pressed && { opacity: 0.7 },
-                  ]}
-                >
-                  <Ionicons
-                    name={isComplete ? "checkmark-circle" : "checkmark-circle-outline"}
-                    size={22}
-                    color={isComplete ? "#22c55e" : c.tint}
-                  />
-                  <Text style={[styles.completeBtnText, { color: isComplete ? "#22c55e" : c.tint }]}>
-                    {isComplete ? "O'qildi ✓" : "O'qib bo'ldim"}
-                  </Text>
-                </Pressable>
-              </View>
-            ) : null
-          }
+          ListFooterComponent={<View style={{ height: 16 }} />}
           renderItem={({ item }) => (
             <VerseCard
               surahNo={surahNo}
@@ -322,35 +306,26 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
-  headerTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    flexWrap: "wrap",
-  },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontFamily: "Inter_600SemiBold",
-  },
-  completeBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 20,
-  },
-  completeBadgeText: {
-    fontSize: 11,
-    fontFamily: "Inter_500Medium",
   },
   headerSub: {
     fontSize: 12,
     fontFamily: "Inter_400Regular",
   },
-  headerArabic: {
-    fontSize: 22,
-    fontFamily: Platform.OS === "ios" ? "Arial" : "serif",
+  headerCompleteBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  headerCompleteBtnText: {
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
   },
   loadingContainer: {
     flex: 1,
@@ -405,24 +380,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Inter_400Regular",
     letterSpacing: 0.3,
-  },
-  footer: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-    alignItems: "center",
-  },
-  completeBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 28,
-    paddingVertical: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  completeBtnText: {
-    fontSize: 16,
-    fontFamily: "Inter_600SemiBold",
   },
 });
