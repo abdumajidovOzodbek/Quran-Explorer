@@ -194,8 +194,14 @@ export default function HomeScreen() {
         styles.collapsibleCards,
         {
           backgroundColor: c.background,
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomColor: c.border,
           opacity: headerAnim,
           transform: [{ translateY: cardTranslateY }],
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.22,
+          shadowRadius: 10,
         },
       ]}
       onLayout={(e) => {
@@ -619,6 +625,7 @@ const styles = StyleSheet.create({
   listHeaderContainer: {
     paddingHorizontal: 16,
     paddingTop: 14,
+    paddingBottom: 16,
     gap: 10,
   },
   progressRow: {
