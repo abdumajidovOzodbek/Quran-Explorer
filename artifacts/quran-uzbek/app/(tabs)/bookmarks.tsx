@@ -15,6 +15,8 @@ import Colors from "@/constants/colors";
 import { useQuran } from "@/context/QuranContext";
 import { Bookmark } from "@/types/quran";
 import { UZBEK_NAMES } from "@/constants/uzbekNames";
+import { RUSSIAN_NAMES } from "@/constants/russianNames";
+import { cyrillicToLatin } from "@/constants/latinScript";
 import { getStrings } from "@/constants/i18n";
 
 export default function BookmarksScreen() {
@@ -23,6 +25,14 @@ export default function BookmarksScreen() {
   const { bookmarks, removeBookmark, settings } = useQuran();
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
   const t = getStrings(settings.language);
+  const language = settings.language;
+
+  const getBookmarkSurahName = (surahNo: number, surahName: string) => {
+    if (language === "uz_cyrillic") return UZBEK_NAMES[surahNo] || surahName;
+    if (language === "uz_latin") return cyrillicToLatin(UZBEK_NAMES[surahNo] || "") || surahName;
+    if (language === "ru") return RUSSIAN_NAMES[surahNo] || surahName;
+    return surahName;
+  };
 
   const handleDelete = (bk: Bookmark) => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -75,7 +85,7 @@ export default function BookmarksScreen() {
               <View style={styles.cardTop}>
                 <View style={[styles.surahBadge, { backgroundColor: c.tint + "22", borderColor: c.tint + "44" }]}>
                   <Text style={[styles.surahBadgeText, { color: c.tint }]}>
-                    {UZBEK_NAMES[item.surahNo] || item.surahName} • {item.ayahNo}
+                    {getBookmarkSurahName(item.surahNo, item.surahName)} • {item.ayahNo}
                   </Text>
                 </View>
                 <Pressable

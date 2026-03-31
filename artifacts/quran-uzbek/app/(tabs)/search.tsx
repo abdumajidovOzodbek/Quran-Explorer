@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { fetchSurahList, SurahListItem } from "@/constants/api";
 import { UZBEK_NAMES } from "@/constants/uzbekNames";
+import { RUSSIAN_NAMES } from "@/constants/russianNames";
 import { cyrillicToLatin } from "@/constants/latinScript";
 import { useQuran } from "@/context/QuranContext";
 import { getStrings } from "@/constants/i18n";
@@ -25,6 +26,7 @@ function getSurahDisplayName(s: SurahListItem, language: AppLanguage): string {
   const raw = UZBEK_NAMES[s.surahNo ?? 0] || "";
   if (language === "uz_cyrillic") return raw || s.surahName;
   if (language === "uz_latin") return cyrillicToLatin(raw) || s.surahName;
+  if (language === "ru") return RUSSIAN_NAMES[s.surahNo ?? 0] || s.surahName;
   return s.surahNameTranslation || s.surahName;
 }
 

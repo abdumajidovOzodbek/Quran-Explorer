@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { fetchSurah, fetchWordByWord, getVerseAudioUrl, RECITERS, SurahApiData } from "@/constants/api";
 import { UZBEK_NAMES } from "@/constants/uzbekNames";
+import { RUSSIAN_NAMES } from "@/constants/russianNames";
 import { cyrillicToLatin } from "@/constants/latinScript";
 import { VerseCard } from "@/components/VerseCard";
 import { useQuran } from "@/context/QuranContext";
@@ -88,7 +89,8 @@ export default function SurahScreen() {
     const lang = settings.language;
     if (lang === "uz_cyrillic") return UZBEK_NAMES[surahNo] || data?.surahName || `Sura ${surahNo}`;
     if (lang === "uz_latin") return cyrillicToLatin(UZBEK_NAMES[surahNo] || "") || data?.surahName || `Surah ${surahNo}`;
-    return data?.surahName || UZBEK_NAMES[surahNo] || `Surah ${surahNo}`;
+    if (lang === "ru") return RUSSIAN_NAMES[surahNo] || data?.surahName || `Sura ${surahNo}`;
+    return data?.surahName || `Surah ${surahNo}`;
   };
 
   const surahName = getSurahDisplayName();
@@ -265,11 +267,9 @@ export default function SurahScreen() {
                 <Text style={[styles.bismillahText, { color: c.tint }]}>
                   بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                 </Text>
-                {(settings.language === "uz_latin" || settings.language === "en") && (
-                  <Text style={[styles.bismillahTranslit, { color: c.textSecondary }]}>
-                    Bismillahir Rohmanir Rohiym
-                  </Text>
-                )}
+                <Text style={[styles.bismillahTranslit, { color: c.textSecondary }]}>
+                  Bismillahir Rohmanir Rohiym
+                </Text>
               </View>
             ) : null
           }

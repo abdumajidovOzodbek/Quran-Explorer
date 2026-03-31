@@ -182,7 +182,7 @@ export function VerseCard({
         )
       )}
 
-      {showTransliteration && transliteration && (language === "uz_latin" || language === "en") && (
+      {showTransliteration && transliteration && (
         <Text style={[styles.transliteration, { color: c.textSecondary, fontSize: translationFontSize - 1 }]}>
           {transliteration}
         </Text>

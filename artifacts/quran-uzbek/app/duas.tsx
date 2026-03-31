@@ -77,14 +77,12 @@ export default function DuasScreen() {
         {isExpanded && (
           <>
             <View style={[styles.divider, { backgroundColor: c.border }]} />
-            {(language === "uz_latin" || language === "en") && (
-              <View style={[styles.translitBox, { backgroundColor: c.background }]}>
-                <Text style={[styles.translitLabel, { color: c.textMuted }]}>Translit</Text>
-                <Text style={[styles.translitText, { color: c.textSecondary }]}>
-                  {item.transliteration}
-                </Text>
-              </View>
-            )}
+            <View style={[styles.translitBox, { backgroundColor: c.background }]}>
+              <Text style={[styles.translitLabel, { color: c.textMuted }]}>Translit</Text>
+              <Text style={[styles.translitText, { color: c.textSecondary }]}>
+                {item.transliteration}
+              </Text>
+            </View>
             <Text style={[styles.duaUzbek, { color: c.textSecondary }]}>
               {language === "uz_latin" ? cyrillicToLatin(item.uzbek) : item.uzbek}
             </Text>

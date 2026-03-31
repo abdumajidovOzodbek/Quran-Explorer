@@ -20,6 +20,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { fetchSurahList, fetchVerseOfDay, SurahListItem, VerseOfDay } from "@/constants/api";
 import { UZBEK_NAMES } from "@/constants/uzbekNames";
+import { RUSSIAN_NAMES } from "@/constants/russianNames";
 import { JUZ_DATA, getJuzNavAyah } from "@/constants/juz";
 import { DUAS } from "@/constants/duas";
 import { SurahCard } from "@/components/SurahCard";
@@ -75,6 +76,7 @@ function buildFlatJuzData(
 function getLocalSurahName(surahNo: number, surahName: string, language: AppLanguage): string {
   if (language === "uz_cyrillic") return UZBEK_NAMES[surahNo] || surahName;
   if (language === "uz_latin") return cyrillicToLatin(UZBEK_NAMES[surahNo] || "") || surahName;
+  if (language === "ru") return RUSSIAN_NAMES[surahNo] || surahName;
   return surahName;
 }
 
