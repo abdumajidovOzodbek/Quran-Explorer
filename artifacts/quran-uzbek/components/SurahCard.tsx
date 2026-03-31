@@ -27,11 +27,14 @@ export function SurahCard({ surah, onPress, isLastRead, isCompleted }: SurahCard
         pressed && { opacity: 0.75, transform: [{ scale: 0.99 }] },
       ]}
     >
-      <View style={[styles.numberBadge, { backgroundColor: c.background, borderColor: c.border }]}>
-        {isCompleted ? (
-          <Ionicons name="checkmark" size={20} color={c.tint} />
-        ) : (
-          <Text style={[styles.numberText, { color: c.tint }]}>{surah.surahNo}</Text>
+      <View style={styles.numberBadgeWrap}>
+        <View style={[styles.numberBadge, { backgroundColor: c.background, borderColor: isCompleted ? "#22c55e60" : c.border }]}>
+          <Text style={[styles.numberText, { color: isCompleted ? "#22c55e" : c.tint }]}>{surah.surahNo}</Text>
+        </View>
+        {isCompleted && (
+          <View style={[styles.checkDot, { backgroundColor: c.card }]}>
+            <Ionicons name="checkmark-circle" size={16} color="#22c55e" />
+          </View>
         )}
       </View>
 
@@ -73,6 +76,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     gap: 14,
   },
+  numberBadgeWrap: {
+    position: "relative",
+  },
   numberBadge: {
     width: 44,
     height: 44,
@@ -80,6 +86,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  checkDot: {
+    position: "absolute",
+    top: -5,
+    right: -5,
+    backgroundColor: "#0d1b2a",
+    borderRadius: 8,
   },
   numberText: {
     fontSize: 15,
