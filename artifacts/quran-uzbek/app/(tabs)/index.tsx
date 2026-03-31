@@ -47,20 +47,14 @@ interface JuzSurahRow {
 }
 type JuzRow = JuzHeaderRow | JuzSurahRow;
 
-function buildFlatJuzData(
-  surahs: SurahListItem[],
-  expandedJuz: Set<number>
-): JuzRow[] {
+function buildFlatJuzData(surahs: SurahListItem[], expandedJuz: Set<number>): JuzRow[] {
   const rows: JuzRow[] = [];
   for (const juzInfo of JUZ_DATA) {
     const { juzNo, name } = juzInfo;
     const juzSurahSet = new Set(juzInfo.surahs);
     const juzSurahs = surahs
       .filter((s) => juzSurahSet.has(s.surahNo ?? 0))
-      .map((s) => ({
-        surah: s,
-        navAyah: getJuzNavAyah(juzNo, s.surahNo ?? 0),
-      }));
+      .map((s) => ({ surah: s, navAyah: getJuzNavAyah(juzNo, s.surahNo ?? 0) }));
     if (juzSurahs.length === 0) continue;
     const isExpanded = expandedJuz.has(juzNo);
     rows.push({ type: "juz-header", juzNo, juzName: name, surahs: juzSurahs, isExpanded });
@@ -130,13 +124,11 @@ export default function HomeScreen() {
       s.surahNameArabic.includes(search) ||
       s.surahNameTranslation.toLowerCase().includes(search.toLowerCase()) ||
       String(s.surahNo).includes(search);
-
     const place = s.revelationPlace?.toLowerCase() ?? "";
     const matchesFilter =
       filter === "all" ||
       (filter === "makka" && (place === "mecca" || place === "makkah")) ||
       (filter === "madina" && (place === "madina" || place === "madinah" || place === "medina"));
-
     return matchesSearch && matchesFilter;
   });
 
@@ -157,30 +149,26 @@ export default function HomeScreen() {
 
   const ListHeader = (
     <View style={styles.listHeaderContainer}>
-      <View style={[styles.progressContainer, { backgroundColor: c.card, borderColor: c.border }]}>
+      <View style={[styles.progressContainer, { backgroundColor: "#101828", borderColor: c.border }]}>
         <View style={styles.progressRow}>
           <Ionicons name="trending-up-outline" size={14} color={c.tint} />
           <Text style={[styles.progressLabel, { color: c.textSecondary }]}>{t.readingProgress}</Text>
           <View style={styles.progressRight}>
-            <Text style={[styles.progressValue, { color: c.tint }]}>
-              {completedSurahs.length}/114
-            </Text>
+            <Text style={[styles.progressValue, { color: c.tint }]}>{completedSurahs.length}/114</Text>
             {khatmahCount > 0 && (
               <View style={[styles.khatmahBadge, { backgroundColor: c.tint + "20", borderColor: c.tint + "40" }]}>
                 <Ionicons name="checkmark-circle" size={11} color={c.tint} />
-                <Text style={[styles.khatmahBadgeText, { color: c.tint }]}>
-                  {khatmahCount} {t.khatmah}
-                </Text>
+                <Text style={[styles.khatmahBadgeText, { color: c.tint }]}>{khatmahCount} {t.khatmah}</Text>
               </View>
             )}
           </View>
         </View>
         <View style={[styles.progressTrack, { backgroundColor: c.background }]}>
-          <View
-            style={[
-              styles.progressFill,
-              { width: `${Math.max(progressPercent, 2)}%` as any, backgroundColor: c.tint },
-            ]}
+          <LinearGradient
+            colors={[c.tint, c.tint + "aa"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.progressFill, { width: `${Math.max(progressPercent, 2)}%` as any }]}
           />
         </View>
       </View>
@@ -239,9 +227,7 @@ export default function HomeScreen() {
               {getLocalSurahName(lastRead.surahNo, lastRead.surahName, language)}
             </Text>
           </View>
-          <Text style={[styles.continueVerse, { color: c.textSecondary }]}>
-            {lastRead.ayahNo} {t.verse}
-          </Text>
+          <Text style={[styles.continueVerse, { color: c.textSecondary }]}>{lastRead.ayahNo} {t.verse}</Text>
           <Ionicons name="chevron-forward" size={18} color={c.tint} />
         </Pressable>
       )}
@@ -269,9 +255,12 @@ export default function HomeScreen() {
       </Pressable>
 
       <View style={[styles.sectionLabel, { borderBottomColor: c.border }]}>
-        <Text style={[styles.sectionLabelText, { color: c.textSecondary }]}>
-          {viewMode === "surah" ? t.allSurahs : t.byJuz}
-        </Text>
+        <View style={styles.sectionLabelLeft}>
+          <View style={[styles.sectionDot, { backgroundColor: c.tint }]} />
+          <Text style={[styles.sectionLabelText, { color: c.textSecondary }]}>
+            {viewMode === "surah" ? t.allSurahs : t.byJuz}
+          </Text>
+        </View>
         <Text style={[styles.sectionCount, { color: c.textMuted }]}>
           {viewMode === "surah" ? `${filtered?.length ?? 0} / 114` : `30 ${t.juzs}`}
         </Text>
@@ -290,8 +279,8 @@ export default function HomeScreen() {
           style={[
             styles.juzHeader,
             {
-              backgroundColor: item.isExpanded ? c.tint + "15" : c.card,
-              borderColor: item.isExpanded ? c.tint + "40" : c.border,
+              backgroundColor: item.isExpanded ? "#101828" : c.card,
+              borderColor: item.isExpanded ? c.tint + "50" : c.border,
             },
           ]}
         >
@@ -320,16 +309,11 @@ export default function HomeScreen() {
                 </Text>
               </View>
             )}
-            <Ionicons
-              name={item.isExpanded ? "chevron-up" : "chevron-down"}
-              size={16}
-              color={c.textMuted}
-            />
+            <Ionicons name={item.isExpanded ? "chevron-up" : "chevron-down"} size={16} color={c.textMuted} />
           </View>
         </Pressable>
       );
     }
-
     return (
       <View style={styles.juzSurahCard}>
         <SurahCard
@@ -339,11 +323,7 @@ export default function HomeScreen() {
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             const surahNo = item.surah.surahNo ?? 1;
-            router.push(
-              item.navAyah > 1
-                ? `/surah/${surahNo}?ayah=${item.navAyah}`
-                : `/surah/${surahNo}`
-            );
+            router.push(item.navAyah > 1 ? `/surah/${surahNo}?ayah=${item.navAyah}` : `/surah/${surahNo}`);
           }}
         />
       </View>
@@ -352,20 +332,23 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
-      <View style={[styles.stickyHeader, { paddingTop: topPadding + 8, backgroundColor: c.background }]}>
+      <LinearGradient
+        colors={["#0d1829", "#0A0F1E"]}
+        style={[styles.stickyHeader, { paddingTop: topPadding + 12 }]}
+      >
         <View style={styles.titleRow}>
           <View>
             <Text style={[styles.greeting, { color: c.textSecondary }]}>{t.greeting}</Text>
             <Text style={[styles.title, { color: c.tint }]}>القرآن الكريم</Text>
           </View>
-          <View style={[styles.quranBadge, { backgroundColor: c.card, borderColor: c.border }]}>
-            <Text style={[styles.quranBadgeNum, { color: c.text }]}>{completedSurahs.length}</Text>
-            <Text style={[styles.quranBadgeOf, { color: c.textMuted }]}>/114</Text>
+          <View style={[styles.quranBadge, { backgroundColor: c.tint + "18", borderColor: c.tint + "35" }]}>
+            <Text style={[styles.quranBadgeNum, { color: c.tint }]}>{completedSurahs.length}</Text>
+            <Text style={[styles.quranBadgeOf, { color: c.tint + "99" }]}>/114</Text>
           </View>
         </View>
 
-        <View style={[styles.searchBar, { backgroundColor: c.card, borderColor: c.border }]}>
-          <Ionicons name="search" size={17} color={c.textMuted} />
+        <View style={[styles.searchBar, { backgroundColor: "#1A2236", borderColor: c.border }]}>
+          <Ionicons name="search" size={17} color={c.tint} />
           <TextInput
             value={search}
             onChangeText={setSearch}
@@ -375,26 +358,19 @@ export default function HomeScreen() {
             returnKeyType="search"
           />
           {!!search && (
-            <Pressable onPress={() => setSearch("")}>
+            <Pressable onPress={() => setSearch("")} hitSlop={8}>
               <Ionicons name="close-circle" size={17} color={c.textMuted} />
             </Pressable>
           )}
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterRow}
-        >
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
           <Pressable
-            onPress={() => {
-              Haptics.selectionAsync();
-              setViewMode((m) => (m === "surah" ? "juz" : "surah"));
-            }}
+            onPress={() => { Haptics.selectionAsync(); setViewMode((m) => (m === "surah" ? "juz" : "surah")); }}
             style={[
               styles.filterChip,
               {
-                backgroundColor: viewMode === "juz" ? "#2a3a5a" : c.card,
+                backgroundColor: viewMode === "juz" ? "#2a3a5a" : "#1A2236",
                 borderColor: viewMode === "juz" ? "#4a6fa5" : c.border,
                 flexDirection: "row",
                 gap: 4,
@@ -402,16 +378,11 @@ export default function HomeScreen() {
               },
             ]}
           >
-            <Ionicons
-              name="layers-outline"
-              size={13}
-              color={viewMode === "juz" ? "#7ab0e0" : c.textSecondary}
-            />
+            <Ionicons name="layers-outline" size={13} color={viewMode === "juz" ? "#7ab0e0" : c.textSecondary} />
             <Text style={[styles.filterText, { color: viewMode === "juz" ? "#7ab0e0" : c.textSecondary }]}>
               {viewMode === "juz" ? t.byJuz : t.allSurahs}
             </Text>
           </Pressable>
-
           {viewMode === "surah" && (["all", "makka", "madina"] as const).map((f) => (
             <Pressable
               key={f}
@@ -419,7 +390,7 @@ export default function HomeScreen() {
               style={[
                 styles.filterChip,
                 {
-                  backgroundColor: filter === f ? c.tint : c.card,
+                  backgroundColor: filter === f ? c.tint : "#1A2236",
                   borderColor: filter === f ? c.tint : c.border,
                 },
               ]}
@@ -430,13 +401,15 @@ export default function HomeScreen() {
             </Pressable>
           ))}
         </ScrollView>
-      </View>
+      </LinearGradient>
 
       {isLoading ? (
         <SurahListSkeleton />
       ) : isError ? (
         <View style={styles.errorContainer}>
-          <Ionicons name="wifi-outline" size={48} color={c.textMuted} />
+          <View style={[styles.errorIconBox, { backgroundColor: c.card, borderColor: c.border }]}>
+            <Ionicons name="wifi-outline" size={36} color={c.textMuted} />
+          </View>
           <Text style={[styles.errorText, { color: c.textSecondary }]}>{t.networkError}</Text>
           <Pressable onPress={() => refetch()} style={[styles.retryBtn, { backgroundColor: c.tint }]}>
             <Text style={styles.retryText}>{t.retry}</Text>
@@ -459,18 +432,9 @@ export default function HomeScreen() {
           )}
           ListHeaderComponent={ListHeader}
           contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={[
-            styles.listContent,
-            Platform.OS === "web" && { paddingBottom: 34 + 84 },
-          ]}
+          contentContainerStyle={[styles.listContent, Platform.OS === "web" && { paddingBottom: 34 + 84 }]}
           showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isLoading}
-              onRefresh={refetch}
-              tintColor={c.tint}
-            />
-          }
+          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={c.tint} />}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="book-outline" size={48} color={c.textMuted} />
@@ -482,26 +446,16 @@ export default function HomeScreen() {
         <FlatList
           data={flatJuzData}
           keyExtractor={(item) =>
-            item.type === "juz-header"
-              ? `juz-${item.juzNo}`
-              : `surah-${item.surah.surahNo}-juz-${item.juzNo}`
+            item.type === "juz-header" ? `juz-${item.juzNo}` : `surah-${item.surah.surahNo}-juz-${item.juzNo}`
           }
           renderItem={renderJuzRow}
           ListHeaderComponent={ListHeader}
-          contentContainerStyle={[
-            styles.listContent,
-            Platform.OS === "web" && { paddingBottom: 34 + 84 },
-          ]}
+          contentContainerStyle={[styles.listContent, Platform.OS === "web" && { paddingBottom: 34 + 84 }]}
           showsVerticalScrollIndicator={false}
         />
       )}
 
-      <Modal
-        visible={showKhatmahModal}
-        transparent
-        animationType="fade"
-        onRequestClose={dismissKhatmahModal}
-      >
+      <Modal visible={showKhatmahModal} transparent animationType="fade" onRequestClose={dismissKhatmahModal}>
         <Pressable style={styles.modalOverlay} onPress={dismissKhatmahModal}>
           <Pressable
             style={[styles.modalCard, { backgroundColor: c.card, borderColor: c.tint + "40" }]}
@@ -517,17 +471,11 @@ export default function HomeScreen() {
               خَتَمَ اللَّهُ لَنَا وَلَكُمْ بِالْخَيْرِ
             </Text>
             <View style={styles.modalButtons}>
-              <Pressable
-                onPress={dismissKhatmahModal}
-                style={[styles.modalBtn, { backgroundColor: c.border }]}
-              >
+              <Pressable onPress={dismissKhatmahModal} style={[styles.modalBtn, { backgroundColor: c.border }]}>
                 <Text style={[styles.modalBtnText, { color: c.textSecondary }]}>{t.close}</Text>
               </Pressable>
               <Pressable
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  resetKhatmah();
-                }}
+                onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); resetKhatmah(); }}
                 style={[styles.modalBtn, { backgroundColor: c.tint }]}
               >
                 <Text style={[styles.modalBtnText, { color: "#000" }]}>{t.newKhatmah}</Text>
@@ -544,7 +492,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   stickyHeader: {
     paddingHorizontal: 16,
-    paddingBottom: 10,
+    paddingBottom: 14,
     gap: 10,
     zIndex: 10,
   },
@@ -556,23 +504,23 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: 12,
     fontFamily: "Inter_400Regular",
-    marginBottom: 1,
+    marginBottom: 2,
   },
   title: {
-    fontSize: 28,
+    fontSize: 30,
     fontFamily: Platform.OS === "ios" ? "Arial" : "serif",
   },
   quranBadge: {
     flexDirection: "row",
     alignItems: "baseline",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
     borderWidth: 1,
     gap: 2,
   },
   quranBadgeNum: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: "Inter_700Bold",
   },
   quranBadgeOf: {
@@ -582,11 +530,11 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    gap: 10,
   },
   searchInput: {
     flex: 1,
@@ -601,7 +549,7 @@ const styles = StyleSheet.create({
   },
   filterChip: {
     paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingVertical: 7,
     borderRadius: 20,
     borderWidth: 1,
   },
@@ -611,15 +559,15 @@ const styles = StyleSheet.create({
   },
   listHeaderContainer: {
     paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingTop: 14,
     gap: 10,
   },
   progressContainer: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    borderRadius: 16,
     borderWidth: 1,
-    gap: 6,
+    gap: 8,
   },
   progressRow: {
     flexDirection: "row",
@@ -628,113 +576,105 @@ const styles = StyleSheet.create({
   },
   progressLabel: {
     flex: 1,
-    fontSize: 12,
-    fontFamily: "Inter_400Regular",
+    fontSize: 13,
+    fontFamily: "Inter_500Medium",
   },
   progressRight: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 8,
   },
   progressValue: {
-    fontSize: 12,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: 13,
+    fontFamily: "Inter_700Bold",
   },
   khatmahBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 3,
-    paddingHorizontal: 6,
+    gap: 4,
+    paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
     borderWidth: 1,
   },
   khatmahBadgeText: {
-    fontSize: 10,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: 11,
+    fontFamily: "Inter_500Medium",
   },
   progressTrack: {
-    height: 4,
-    borderRadius: 2,
+    height: 6,
+    borderRadius: 3,
     overflow: "hidden",
   },
   progressFill: {
-    height: 4,
-    borderRadius: 2,
+    height: 6,
+    borderRadius: 3,
   },
   verseOfDayCard: {
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
-    padding: 14,
+    padding: 16,
     gap: 10,
   },
   vodHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 8,
   },
   vodBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 20,
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
     borderWidth: 1,
   },
   vodBadgeText: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: "Inter_600SemiBold",
   },
   vodRef: {
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: "Inter_400Regular",
   },
   vodArabic: {
-    fontSize: 20,
+    fontSize: 22,
     fontFamily: Platform.OS === "ios" ? "Arial" : "serif",
     textAlign: "right",
-    lineHeight: 34,
-    letterSpacing: 0.5,
+    lineHeight: 38,
   },
   vodTranslation: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
-    lineHeight: 18,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.1)",
-    paddingTop: 8,
+    lineHeight: 20,
   },
   continueCard: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 14,
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 16,
     borderWidth: 1,
   },
   continueIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
-  continueInfo: {
-    flex: 1,
-    gap: 1,
-  },
+  continueInfo: { flex: 1 },
   continueLabel: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: "Inter_500Medium",
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   continueSurah: {
     fontSize: 15,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "Inter_600SemiBold",
   },
   continueVerse: {
     fontSize: 12,
@@ -743,94 +683,100 @@ const styles = StyleSheet.create({
   duaCard: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 14,
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 16,
     borderWidth: 1,
   },
   duaIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
   duaCount: {
-    fontSize: 12,
-    fontFamily: "Inter_400Regular",
+    fontSize: 18,
+    fontFamily: "Inter_700Bold",
   },
   sectionLabel: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingBottom: 8,
+    paddingBottom: 10,
     borderBottomWidth: 1,
-    marginTop: 2,
+    marginTop: 4,
+  },
+  sectionLabelLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  sectionDot: {
+    width: 4,
+    height: 16,
+    borderRadius: 2,
   },
   sectionLabelText: {
-    fontSize: 11,
-    fontFamily: "Inter_600SemiBold",
-    letterSpacing: 0.8,
+    fontSize: 12,
+    fontFamily: "Inter_700Bold",
+    textTransform: "uppercase",
+    letterSpacing: 1,
   },
   sectionCount: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: "Inter_400Regular",
+  },
+  listContent: {
+    paddingBottom: 120,
   },
   juzHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
     paddingHorizontal: 16,
-    paddingVertical: 11,
-    borderBottomWidth: 1,
+    paddingVertical: 14,
+    marginHorizontal: 16,
+    marginBottom: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 12,
   },
   juzNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 38,
+    height: 38,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
   },
   juzNumberText: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: "Inter_700Bold",
   },
-  juzInfo: {
-    flex: 1,
-    gap: 2,
-  },
+  juzInfo: { flex: 1, gap: 3 },
   juzName: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: "Inter_600SemiBold",
   },
   juzRange: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: "Inter_400Regular",
   },
   juzRight: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 8,
   },
   juzProgress: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 8,
   },
   juzProgressText: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: "Inter_600SemiBold",
   },
-  juzSurahCard: {
-    marginLeft: 8,
-    borderLeftWidth: 2,
-    borderLeftColor: "rgba(255,255,255,0.06)",
-  },
-  listContent: {
-    paddingTop: 4,
-    paddingBottom: 120,
-  },
+  juzSurahCard: { marginLeft: 12 },
   errorContainer: {
     flex: 1,
     alignItems: "center",
@@ -838,22 +784,31 @@ const styles = StyleSheet.create({
     gap: 16,
     padding: 32,
   },
+  errorIconBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   errorText: {
     fontSize: 15,
     fontFamily: "Inter_400Regular",
     textAlign: "center",
   },
   retryBtn: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 14,
   },
   retryText: {
     color: "#000",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Inter_700Bold",
     fontSize: 15,
   },
   emptyContainer: {
+    flex: 1,
     alignItems: "center",
     paddingTop: 60,
     gap: 12,
@@ -864,57 +819,55 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    justifyContent: "center",
+    backgroundColor: "#000000aa",
     alignItems: "center",
+    justifyContent: "center",
     padding: 24,
   },
   modalCard: {
     width: "100%",
-    maxWidth: 360,
     borderRadius: 24,
-    borderWidth: 1,
-    padding: 24,
+    padding: 28,
     alignItems: "center",
+    borderWidth: 1,
     gap: 12,
   },
-  khatmahEmoji: {
-    fontSize: 48,
-  },
+  khatmahEmoji: { fontSize: 48 },
   khatmahTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontFamily: "Inter_700Bold",
     textAlign: "center",
   },
   khatmahDesc: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: "Inter_400Regular",
     textAlign: "center",
     lineHeight: 22,
   },
   khatmahCount: {
+    fontSize: 14,
     fontFamily: "Inter_700Bold",
   },
   khatmahArabic: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: Platform.OS === "ios" ? "Arial" : "serif",
     textAlign: "center",
-    lineHeight: 30,
+    marginVertical: 8,
   },
   modalButtons: {
     flexDirection: "row",
-    gap: 10,
-    marginTop: 8,
+    gap: 12,
     width: "100%",
+    marginTop: 4,
   },
   modalBtn: {
     flex: 1,
-    paddingVertical: 13,
+    paddingVertical: 14,
     borderRadius: 14,
     alignItems: "center",
   },
   modalBtnText: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: "Inter_600SemiBold",
   },
 });

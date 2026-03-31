@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useRef } from "react";
 import {
@@ -107,9 +108,10 @@ export default function SurahScreen() {
       surahName: sName,
       totalVerses: verses.length,
       reciterId: settings.reciterId,
-      reciterName: settings.language === "ru" ? reciter.nameRu :
-                   settings.language === "uz_cyrillic" ? reciter.nameUz :
-                   reciter.name,
+      reciterName:
+        settings.language === "ru" ? reciter.nameRu :
+        settings.language === "uz_cyrillic" ? reciter.nameUz :
+        reciter.name,
       audioUrl: getVerseAudioUrl(surahNo, ayahNo, settings.reciterId),
     });
     saveLastRead({ surahNo, surahName: sName, ayahNo });
@@ -120,8 +122,7 @@ export default function SurahScreen() {
       const index = playingAyah - 1;
       try {
         listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.2 });
-      } catch {
-      }
+      } catch {}
     }
   }, [playingAyah]);
 
@@ -130,13 +131,8 @@ export default function SurahScreen() {
     if (targetAyah && verses.length > 0) {
       setTimeout(() => {
         try {
-          listRef.current?.scrollToIndex({
-            index: targetAyah - 1,
-            animated: true,
-            viewPosition: 0.15,
-          });
-        } catch {
-        }
+          listRef.current?.scrollToIndex({ index: targetAyah - 1, animated: true, viewPosition: 0.15 });
+        } catch {}
       }, 300);
     }
   }, [data, ayah]);
@@ -164,56 +160,67 @@ export default function SurahScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
-      <View style={[styles.header, { paddingTop: topPadding + 8, borderBottomColor: c.border }]}>
-        <Pressable
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            router.back();
-          }}
-          style={({ pressed }) => [
-            styles.backBtn,
-            { backgroundColor: c.card, borderColor: c.border },
-            pressed && { opacity: 0.6 },
-          ]}
-        >
-          <Ionicons name="chevron-back" size={22} color={c.text} />
-        </Pressable>
+      <LinearGradient
+        colors={["#0d1829", "#0A0F1E"]}
+        style={[styles.header, { paddingTop: topPadding + 10 }]}
+      >
+        <View style={styles.headerTop}>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.back();
+            }}
+            style={({ pressed }) => [
+              styles.backBtn,
+              { backgroundColor: "#1A2236", borderColor: c.border },
+              pressed && { opacity: 0.6 },
+            ]}
+          >
+            <Ionicons name="chevron-back" size={22} color={c.text} />
+          </Pressable>
 
-        <View style={styles.headerInfo}>
-          <Text style={[styles.headerTitle, { color: c.text }]}>{surahName}</Text>
-          <Text style={[styles.headerSub, { color: c.textSecondary }]}>
-            {revelationLabel()} • {data?.totalAyah ?? verses.length} {t.verse}
-          </Text>
+          <View style={styles.headerInfo}>
+            <Text style={[styles.headerTitle, { color: c.text }]}>{surahName}</Text>
+            <Text style={[styles.headerSub, { color: c.textSecondary }]}>
+              {revelationLabel()} • {data?.totalAyah ?? verses.length} {t.verse}
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              if (isComplete) unmarkSurahComplete(surahNo);
+              else markSurahComplete(surahNo);
+            }}
+            style={({ pressed }) => [
+              styles.headerCompleteBtn,
+              {
+                backgroundColor: isComplete ? "#22c55e20" : c.tint + "18",
+                borderColor: isComplete ? "#22c55e60" : c.tint + "50",
+              },
+              pressed && { opacity: 0.65 },
+            ]}
+          >
+            <Ionicons
+              name={isComplete ? "checkmark-circle" : "checkmark-circle-outline"}
+              size={16}
+              color={isComplete ? "#22c55e" : c.tint}
+            />
+            <Text style={[styles.headerCompleteBtnText, { color: isComplete ? "#22c55e" : c.tint }]}>
+              {isComplete ? t.markCompleted : t.markComplete}
+            </Text>
+          </Pressable>
         </View>
 
-        <Pressable
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            if (isComplete) {
-              unmarkSurahComplete(surahNo);
-            } else {
-              markSurahComplete(surahNo);
-            }
-          }}
-          style={({ pressed }) => [
-            styles.headerCompleteBtn,
-            {
-              backgroundColor: isComplete ? "#22c55e22" : c.tint + "18",
-              borderColor: isComplete ? "#22c55e60" : c.tint + "50",
-            },
-            pressed && { opacity: 0.65 },
-          ]}
-        >
-          <Ionicons
-            name={isComplete ? "checkmark-circle" : "checkmark-circle-outline"}
-            size={16}
-            color={isComplete ? "#22c55e" : c.tint}
-          />
-          <Text style={[styles.headerCompleteBtnText, { color: isComplete ? "#22c55e" : c.tint }]}>
-            {isComplete ? t.markCompleted : t.markComplete}
-          </Text>
-        </Pressable>
-      </View>
+        {data?.surahNameArabic && (
+          <View style={styles.arabicHeaderRow}>
+            <Text style={[styles.arabicSurahName, { color: c.tint }]}>{data.surahNameArabic}</Text>
+            <View style={[styles.surahNumBadge, { backgroundColor: c.tint + "18", borderColor: c.tint + "30" }]}>
+              <Text style={[styles.surahNumText, { color: c.tint }]}>{surahNo}</Text>
+            </View>
+          </View>
+        )}
+      </LinearGradient>
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
@@ -222,12 +229,11 @@ export default function SurahScreen() {
         </View>
       ) : isError ? (
         <View style={styles.errorContainer}>
-          <Ionicons name="wifi-outline" size={48} color={c.textMuted} />
+          <View style={[styles.errorIconBox, { backgroundColor: c.card, borderColor: c.border }]}>
+            <Ionicons name="wifi-outline" size={36} color={c.textMuted} />
+          </View>
           <Text style={[styles.errorText, { color: c.textSecondary }]}>{t.networkError}</Text>
-          <Pressable
-            onPress={() => refetch()}
-            style={[styles.retryBtn, { backgroundColor: c.tint }]}
-          >
+          <Pressable onPress={() => refetch()} style={[styles.retryBtn, { backgroundColor: c.tint }]}>
             <Text style={styles.retryText}>{t.retry}</Text>
           </Pressable>
         </View>
@@ -244,37 +250,27 @@ export default function SurahScreen() {
           contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={[
             styles.listContent,
-            {
-              paddingBottom: audio
-                ? bottomPadding + 160
-                : bottomPadding + 30,
-            },
-            Platform.OS === "web" && {
-              paddingBottom: audio ? 34 + 220 : 34 + 60,
-            },
+            { paddingBottom: audio ? bottomPadding + 160 : bottomPadding + 30 },
+            Platform.OS === "web" && { paddingBottom: audio ? 34 + 220 : 34 + 60 },
           ]}
           showsVerticalScrollIndicator={false}
           scrollEnabled={verses.length > 0}
           ListHeaderComponent={
             surahNo !== 9 ? (
-              <View
-                style={[
-                  styles.bismillah,
-                  {
-                    borderColor: c.tint + "30",
-                    backgroundColor: c.card,
-                  },
-                ]}
+              <LinearGradient
+                colors={["#1a2a4a", "#0d1f3c"]}
+                style={[styles.bismillah, { borderColor: c.tint + "30" }]}
               >
-                <Text style={[styles.bismillahText, { color: c.tint }]}>
+                <Text style={[styles.bismillahText, { color: "#e8d5a3" }]}>
                   بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                 </Text>
+                <View style={[styles.bismillahDivider, { backgroundColor: c.tint + "30" }]} />
                 <Text style={[styles.bismillahTranslit, { color: c.textSecondary }]}>
                   {(settings.language === "ru" || settings.language === "uz_cyrillic")
                     ? latinToRussianTranslit("Bismillahir Rohmanir Rohiym")
                     : "Bismillahir Rohmanir Rohiym"}
                 </Text>
-              </View>
+              </LinearGradient>
             ) : null
           }
           ListFooterComponent={<View style={{ height: 16 }} />}
@@ -310,11 +306,13 @@ export default function SurahScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    gap: 12,
+  },
+  headerTop: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
     gap: 12,
   },
   backBtn: {
@@ -330,8 +328,8 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   headerTitle: {
-    fontSize: 17,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: 18,
+    fontFamily: "Inter_700Bold",
   },
   headerSub: {
     fontSize: 12,
@@ -342,7 +340,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 5,
     paddingHorizontal: 10,
-    paddingVertical: 7,
+    paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
   },
@@ -350,16 +348,35 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Inter_600SemiBold",
   },
+  arabicHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  arabicSurahName: {
+    fontSize: 28,
+    fontFamily: Platform.OS === "ios" ? "Arial" : "serif",
+    letterSpacing: 1,
+  },
+  surahNumBadge: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  surahNumText: {
+    fontSize: 15,
+    fontFamily: "Inter_700Bold",
+  },
   loadingContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     gap: 16,
   },
-  loadingText: {
-    fontSize: 15,
-    fontFamily: "Inter_400Regular",
-  },
+  loadingText: { fontSize: 15, fontFamily: "Inter_400Regular" },
   errorContainer: {
     flex: 1,
     alignItems: "center",
@@ -367,19 +384,27 @@ const styles = StyleSheet.create({
     gap: 16,
     padding: 32,
   },
+  errorIconBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   errorText: {
     fontSize: 15,
     fontFamily: "Inter_400Regular",
     textAlign: "center",
   },
   retryBtn: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 14,
   },
   retryText: {
     color: "#000",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Inter_700Bold",
     fontSize: 15,
   },
   listContent: {
@@ -387,21 +412,27 @@ const styles = StyleSheet.create({
   },
   bismillah: {
     alignItems: "center",
-    paddingVertical: 20,
+    paddingVertical: 22,
     marginHorizontal: 16,
-    marginVertical: 12,
-    borderRadius: 16,
+    marginVertical: 14,
+    borderRadius: 20,
     borderWidth: 1,
-    gap: 6,
+    gap: 8,
   },
   bismillahText: {
-    fontSize: 26,
+    fontSize: 28,
     fontFamily: Platform.OS === "ios" ? "Arial" : "serif",
-    letterSpacing: 1,
+    letterSpacing: 2,
+  },
+  bismillahDivider: {
+    width: 60,
+    height: 1,
+    borderRadius: 1,
   },
   bismillahTranslit: {
     fontSize: 13,
     fontFamily: "Inter_400Regular",
     letterSpacing: 0.3,
+    fontStyle: "italic",
   },
 });

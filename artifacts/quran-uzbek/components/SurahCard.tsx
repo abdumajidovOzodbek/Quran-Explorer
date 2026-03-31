@@ -34,16 +34,28 @@ export function SurahCard({ surah, onPress, isLastRead, isCompleted }: SurahCard
       onPress={onPress}
       style={({ pressed }) => [
         styles.container,
-        { backgroundColor: c.card, borderColor: isCompleted ? c.tint + "40" : c.border },
+        {
+          backgroundColor: "#101828",
+          borderColor: isCompleted ? "#22c55e30" : c.border,
+        },
         pressed && { opacity: 0.75, transform: [{ scale: 0.99 }] },
       ]}
     >
+      {isCompleted && <View style={[styles.completedAccent, { backgroundColor: "#22c55e" }]} />}
+      {isLastRead && !isCompleted && <View style={[styles.completedAccent, { backgroundColor: c.tint }]} />}
+
       <View style={styles.numberBadgeWrap}>
-        <View style={[styles.numberBadge, { backgroundColor: c.background, borderColor: isCompleted ? "#22c55e60" : c.border }]}>
+        <View style={[
+          styles.numberBadge,
+          {
+            backgroundColor: isCompleted ? "#22c55e18" : c.tint + "15",
+            borderColor: isCompleted ? "#22c55e40" : c.tint + "30",
+          }
+        ]}>
           <Text style={[styles.numberText, { color: isCompleted ? "#22c55e" : c.tint }]}>{surah.surahNo}</Text>
         </View>
         {isCompleted && (
-          <View style={[styles.checkDot, { backgroundColor: c.card }]}>
+          <View style={[styles.checkDot, { backgroundColor: "#101828" }]}>
             <Ionicons name="checkmark-circle" size={16} color="#22c55e" />
           </View>
         )}
@@ -53,12 +65,12 @@ export function SurahCard({ surah, onPress, isLastRead, isCompleted }: SurahCard
         <View style={styles.row}>
           <Text style={[styles.surahName, { color: c.text }]}>{uzbekName}</Text>
           {isLastRead && (
-            <View style={[styles.badge, { backgroundColor: c.tint + "33" }]}>
+            <View style={[styles.badge, { backgroundColor: c.tint + "25", borderColor: c.tint + "40" }]}>
               <Text style={[styles.badgeText, { color: c.tint }]}>{t.lastReadBadge}</Text>
             </View>
           )}
           {isCompleted && (
-            <View style={[styles.badge, { backgroundColor: "#22c55e22" }]}>
+            <View style={[styles.badge, { backgroundColor: "#22c55e18", borderColor: "#22c55e30" }]}>
               <Text style={[styles.badgeText, { color: "#22c55e" }]}>{t.markCompleted}</Text>
             </View>
           )}
@@ -79,13 +91,22 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     marginHorizontal: 16,
     marginBottom: 8,
     gap: 14,
+    overflow: "hidden",
+  },
+  completedAccent: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
+    borderRadius: 3,
   },
   numberBadgeWrap: {
     position: "relative",
@@ -102,7 +123,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -5,
     right: -5,
-    backgroundColor: "#0d1b2a",
     borderRadius: 8,
   },
   numberText: {
@@ -111,12 +131,13 @@ const styles = StyleSheet.create({
   },
   info: {
     flex: 1,
-    gap: 3,
+    gap: 4,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+    flexWrap: "wrap",
   },
   surahName: {
     fontSize: 16,
@@ -137,6 +158,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 20,
+    borderWidth: 1,
   },
   badgeText: {
     fontSize: 11,
