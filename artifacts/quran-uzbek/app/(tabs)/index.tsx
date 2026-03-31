@@ -201,6 +201,7 @@ export default function HomeScreen() {
       style={[
         styles.collapsibleCards,
         {
+          backgroundColor: c.background,
           opacity: headerAnim,
           transform: [{ translateY: cardTranslateY }],
         },
@@ -552,7 +553,8 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    zIndex: 1,
+    zIndex: 9,
+    elevation: 9,
   },
   listSectionHeader: {
     paddingHorizontal: 16,
