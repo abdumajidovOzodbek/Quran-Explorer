@@ -3,9 +3,9 @@ import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Tabs } from "expo-router";
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { SymbolView } from "expo-symbols";
-import { Feather } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Platform, StyleSheet, View, useColorScheme } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import Colors from "@/constants/colors";
 
 function NativeTabLayout() {
@@ -23,6 +23,10 @@ function NativeTabLayout() {
         <Icon sf={{ default: "bookmark", selected: "bookmark.fill" }} />
         <Label>Xatcho'p</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="prayer">
+        <Icon sf={{ default: "moon.stars", selected: "moon.stars.fill" }} />
+        <Label>Namoz</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="settings">
         <Icon sf={{ default: "gear", selected: "gear" }} />
         <Label>Sozlamalar</Label>
@@ -32,7 +36,6 @@ function NativeTabLayout() {
 }
 
 function ClassicTabLayout() {
-  const isDark = true;
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
   const c = Colors.dark;
@@ -96,6 +99,18 @@ function ClassicTabLayout() {
               <SymbolView name="bookmark" tintColor={color} size={22} />
             ) : (
               <Feather name="bookmark" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="prayer"
+        options={{
+          title: "Namoz",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="moon.stars" tintColor={color} size={22} />
+            ) : (
+              <Ionicons name="moon-outline" size={22} color={color} />
             ),
         }}
       />

@@ -6,6 +6,7 @@ import { Bookmark, ReadingMode, DisplayLanguage } from "@/types/quran";
 const BOOKMARKS_KEY = "@quran_bookmarks";
 const LAST_READ_KEY = "@quran_last_read";
 const SETTINGS_KEY = "@quran_settings";
+const COMPLETED_KEY = "@quran_completed_surahs";
 
 interface LastRead {
   surahNo: number;
@@ -19,6 +20,8 @@ interface Settings {
   arabicFontSize: number;
   translationFontSize: number;
   reciterId: string;
+  showTransliteration: boolean;
+  showWordByWord: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -27,12 +30,15 @@ const DEFAULT_SETTINGS: Settings = {
   arabicFontSize: 28,
   translationFontSize: 15,
   reciterId: "1",
+  showTransliteration: false,
+  showWordByWord: false,
 };
 
 function useQuranState() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [lastRead, setLastRead] = useState<LastRead | null>(null);
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [completedSurahs, setCompletedSurahs] = useState<number[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -41,14 +47,16 @@ function useQuranState() {
 
   const loadData = async () => {
     try {
-      const [bkData, lrData, settingsData] = await Promise.all([
+      const [bkData, lrData, settingsData, completedData] = await Promise.all([
         AsyncStorage.getItem(BOOKMARKS_KEY),
         AsyncStorage.getItem(LAST_READ_KEY),
         AsyncStorage.getItem(SETTINGS_KEY),
+        AsyncStorage.getItem(COMPLETED_KEY),
       ]);
       if (bkData) setBookmarks(JSON.parse(bkData));
       if (lrData) setLastRead(JSON.parse(lrData));
       if (settingsData) setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(settingsData) });
+      if (completedData) setCompletedSurahs(JSON.parse(completedData));
     } catch (e) {
       console.error("Failed to load data", e);
     } finally {
@@ -98,16 +106,41 @@ function useQuranState() {
     });
   }, []);
 
+  const markSurahComplete = useCallback((surahNo: number) => {
+    setCompletedSurahs((prev) => {
+      if (prev.includes(surahNo)) return prev;
+      const updated = [...prev, surahNo];
+      AsyncStorage.setItem(COMPLETED_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const unmarkSurahComplete = useCallback((surahNo: number) => {
+    setCompletedSurahs((prev) => {
+      const updated = prev.filter((n) => n !== surahNo);
+      AsyncStorage.setItem(COMPLETED_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const isSurahComplete = useCallback((surahNo: number) => {
+    return completedSurahs.includes(surahNo);
+  }, [completedSurahs]);
+
   return {
     bookmarks,
     lastRead,
     settings,
+    completedSurahs,
     isLoaded,
     addBookmark,
     removeBookmark,
     isBookmarked,
     saveLastRead,
     updateSettings,
+    markSurahComplete,
+    unmarkSurahComplete,
+    isSurahComplete,
   };
 }
 

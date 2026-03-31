@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
-import { fetchSurah, getVerseAudioUrl, RECITERS, SurahApiData } from "@/constants/api";
+import { fetchSurah, fetchWordByWord, getVerseAudioUrl, RECITERS, SurahApiData } from "@/constants/api";
 import { UZBEK_NAMES } from "@/constants/uzbekNames";
 import { VerseCard } from "@/components/VerseCard";
 import { useQuran } from "@/context/QuranContext";
@@ -26,6 +26,7 @@ interface VerseItem {
   arabic2?: string;
   english: string;
   uzbek?: string;
+  transliteration?: string;
 }
 
 export default function SurahScreen() {
@@ -33,15 +34,33 @@ export default function SurahScreen() {
   const surahNo = parseInt(id || "1", 10);
   const insets = useSafeAreaInsets();
   const c = Colors.dark;
-  const { isBookmarked, addBookmark, removeBookmark, saveLastRead, settings } = useQuran();
+  const {
+    isBookmarked,
+    addBookmark,
+    removeBookmark,
+    saveLastRead,
+    settings,
+    isSurahComplete,
+    markSurahComplete,
+    unmarkSurahComplete,
+  } = useQuran();
   const { audio, playVerse, stopAudio } = useAudio();
 
   const playingAyah = audio?.surahNo === surahNo ? audio.ayahNo : null;
   const listRef = useRef<FlatList>(null);
+  const isComplete = isSurahComplete(surahNo);
 
   const { data, isLoading, isError, refetch } = useQuery<SurahApiData>({
     queryKey: ["surah", surahNo],
     queryFn: () => fetchSurah(surahNo),
+  });
+
+  const { data: wordByWordData } = useQuery<string[]>({
+    queryKey: ["wordByWord", surahNo],
+    queryFn: () => fetchWordByWord(surahNo),
+    enabled: settings.showWordByWord,
+    staleTime: Infinity,
+    gcTime: Infinity,
   });
 
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
@@ -54,6 +73,7 @@ export default function SurahScreen() {
         arabic2: data.arabic2?.[idx] || "",
         english,
         uzbek: data.uzbek?.[idx],
+        transliteration: data.transliteration?.[idx],
       }))
     : [];
 
@@ -137,7 +157,15 @@ export default function SurahScreen() {
         </Pressable>
 
         <View style={styles.headerInfo}>
-          <Text style={[styles.headerTitle, { color: c.text }]}>{surahName}</Text>
+          <View style={styles.headerTitleRow}>
+            <Text style={[styles.headerTitle, { color: c.text }]}>{surahName}</Text>
+            {isComplete && (
+              <View style={[styles.completeBadge, { backgroundColor: "#22c55e22" }]}>
+                <Ionicons name="checkmark-circle" size={14} color="#22c55e" />
+                <Text style={[styles.completeBadgeText, { color: "#22c55e" }]}>O'qildi</Text>
+              </View>
+            )}
+          </View>
           <Text style={[styles.headerSub, { color: c.textSecondary }]}>
             {data?.revelationPlace === "Mecca" ? "Makka" : data?.revelationPlace === "Medina" ? "Madina" : data?.revelationPlace ?? ""}
             {" "}• {data?.totalAyah ?? verses.length} oyat
@@ -211,6 +239,39 @@ export default function SurahScreen() {
               </View>
             ) : null
           }
+          ListFooterComponent={
+            verses.length > 0 ? (
+              <View style={styles.footer}>
+                <Pressable
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    if (isComplete) {
+                      unmarkSurahComplete(surahNo);
+                    } else {
+                      markSurahComplete(surahNo);
+                    }
+                  }}
+                  style={({ pressed }) => [
+                    styles.completeBtn,
+                    {
+                      backgroundColor: isComplete ? "#22c55e22" : c.tint + "15",
+                      borderColor: isComplete ? "#22c55e50" : c.tint + "50",
+                    },
+                    pressed && { opacity: 0.7 },
+                  ]}
+                >
+                  <Ionicons
+                    name={isComplete ? "checkmark-circle" : "checkmark-circle-outline"}
+                    size={22}
+                    color={isComplete ? "#22c55e" : c.tint}
+                  />
+                  <Text style={[styles.completeBtnText, { color: isComplete ? "#22c55e" : c.tint }]}>
+                    {isComplete ? "O'qildi ✓" : "O'qib bo'ldim"}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null
+          }
           renderItem={({ item }) => (
             <VerseCard
               surahNo={surahNo}
@@ -218,6 +279,8 @@ export default function SurahScreen() {
               arabic={item.arabic}
               english={item.english}
               uzbek={item.uzbek}
+              transliteration={item.transliteration}
+              wordByWord={wordByWordData?.[item.ayahNo - 1]}
               surahName={surahName}
               isBookmarked={isBookmarked(surahNo, item.ayahNo)}
               isPlaying={playingAyah === item.ayahNo}
@@ -225,13 +288,14 @@ export default function SurahScreen() {
               readingMode={settings.readingMode}
               arabicFontSize={settings.arabicFontSize}
               translationFontSize={settings.translationFontSize}
+              showTransliteration={settings.showTransliteration}
+              showWordByWord={settings.showWordByWord}
               onBookmark={() => handleBookmark(item)}
               onPlay={() => handlePlay(item.ayahNo)}
             />
           )}
         />
       )}
-
     </View>
   );
 }
@@ -258,9 +322,27 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  headerTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+  },
   headerTitle: {
     fontSize: 18,
     fontFamily: "Inter_600SemiBold",
+  },
+  completeBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 20,
+  },
+  completeBadgeText: {
+    fontSize: 11,
+    fontFamily: "Inter_500Medium",
   },
   headerSub: {
     fontSize: 12,
@@ -323,5 +405,24 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Inter_400Regular",
     letterSpacing: 0.3,
+  },
+  footer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    alignItems: "center",
+  },
+  completeBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  completeBtnText: {
+    fontSize: 16,
+    fontFamily: "Inter_600SemiBold",
   },
 });

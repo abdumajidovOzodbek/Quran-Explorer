@@ -1,9 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React from "react";
+import React, { useState } from "react";
 import { Platform, Pressable, Share, StyleSheet, Text, View } from "react-native";
 import Colors from "@/constants/colors";
 import { ReadingMode } from "@/types/quran";
+import { parseWordByWord } from "@/constants/api";
 
 interface VerseCardProps {
   surahNo: number;
@@ -11,6 +12,8 @@ interface VerseCardProps {
   arabic: string;
   english: string;
   uzbek?: string;
+  transliteration?: string;
+  wordByWord?: string;
   surahName?: string;
   sajda?: boolean;
   isBookmarked: boolean;
@@ -19,6 +22,8 @@ interface VerseCardProps {
   readingMode: ReadingMode;
   arabicFontSize: number;
   translationFontSize: number;
+  showTransliteration?: boolean;
+  showWordByWord?: boolean;
   onBookmark: () => void;
   onPlay: () => void;
   onPress?: () => void;
@@ -30,6 +35,8 @@ export function VerseCard({
   arabic,
   english,
   uzbek,
+  transliteration,
+  wordByWord,
   surahName,
   sajda,
   isBookmarked,
@@ -38,12 +45,17 @@ export function VerseCard({
   readingMode,
   arabicFontSize,
   translationFontSize,
+  showTransliteration,
+  showWordByWord,
   onBookmark,
   onPlay,
   onPress,
 }: VerseCardProps) {
   const c = Colors.dark;
   const displayText = uzbek || english;
+  const [selectedWordIdx, setSelectedWordIdx] = useState<number | null>(null);
+
+  const words = showWordByWord && wordByWord ? parseWordByWord(wordByWord) : [];
 
   const handleBookmark = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -112,17 +124,51 @@ export function VerseCard({
       </View>
 
       {(readingMode === "arabic-only" || readingMode === "both") && (
-        <Text
-          style={[
-            styles.arabic,
-            {
-              color: c.arabicText,
-              fontSize: arabicFontSize,
-              lineHeight: arabicFontSize * 2,
-            },
-          ]}
-        >
-          {arabic}
+        showWordByWord && words.length > 0 ? (
+          <View style={styles.wordByWordContainer}>
+            {words.map((word, i) => (
+              <Pressable
+                key={i}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setSelectedWordIdx(selectedWordIdx === i ? null : i);
+                }}
+                style={[
+                  styles.wordChip,
+                  {
+                    backgroundColor: selectedWordIdx === i ? c.tint + "22" : c.card,
+                    borderColor: selectedWordIdx === i ? c.tint + "80" : c.border,
+                  },
+                ]}
+              >
+                <Text style={[styles.wordArabic, { fontSize: arabicFontSize * 0.7, color: c.arabicText }]}>
+                  {word.arabic}
+                </Text>
+                {selectedWordIdx === i && (
+                  <Text style={[styles.wordMeaning, { color: c.tint }]}>{word.english}</Text>
+                )}
+              </Pressable>
+            ))}
+          </View>
+        ) : (
+          <Text
+            style={[
+              styles.arabic,
+              {
+                color: c.arabicText,
+                fontSize: arabicFontSize,
+                lineHeight: arabicFontSize * 2,
+              },
+            ]}
+          >
+            {arabic}
+          </Text>
+        )
+      )}
+
+      {showTransliteration && transliteration && (
+        <Text style={[styles.transliteration, { color: c.textSecondary, fontSize: translationFontSize - 1 }]}>
+          {transliteration}
         </Text>
       )}
 
@@ -193,6 +239,36 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === "ios" ? "Arial" : "serif",
     marginBottom: 14,
     letterSpacing: 0.5,
+  },
+  wordByWordContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "flex-end",
+    gap: 6,
+    marginBottom: 14,
+  },
+  wordChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: "center",
+    gap: 2,
+  },
+  wordArabic: {
+    fontFamily: Platform.OS === "ios" ? "Arial" : "serif",
+    textAlign: "center",
+  },
+  wordMeaning: {
+    fontSize: 10,
+    fontFamily: "Inter_400Regular",
+    textAlign: "center",
+  },
+  transliteration: {
+    fontFamily: "Inter_400Regular",
+    fontStyle: "italic",
+    marginBottom: 10,
+    letterSpacing: 0.3,
   },
   translation: {
     fontFamily: "Inter_400Regular",

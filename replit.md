@@ -21,12 +21,21 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 ### Quran Uzbek Mobile App (`artifacts/quran-uzbek`)
 - Expo React Native app with Expo Router file-based routing
 - Full Quran reading app for Uzbek audience
-- Features: Surah list, verse reader (Arabic + English translation), audio playback, bookmarks, search, settings
-- Data source: quranapi.pages.dev API
-- Audio: cdn.islamicnetwork.com for verse-by-verse recitation
-- Tabs: Qur'on (home), Qidirish (search), Xatcho'p (bookmarks), Sozlamalar (settings)
-- State: AsyncStorage via @nkzw/create-context-hook for bookmarks, last read, settings
-- Audio: expo-audio for verse playback with 5 reciters
+- Data source: quranapi.pages.dev API (Arabic + English) + alquran.cloud (uz.sodik Uzbek translation, transliteration, word-by-word)
+- Tabs: Qur'on (home), Qidirish (search), Xatcho'p (bookmarks), Namoz (prayer times), Sozlamalar (settings)
+- State: AsyncStorage via @nkzw/create-context-hook for bookmarks, last read, settings, completed surahs
+- Audio: GlobalAudioPlayer at root layout (persistent across tabs), expo-audio for verse playback with 5 reciters
+- Features implemented:
+  1. Surah list with search/filter (Makka/Madina)
+  2. Verse reader with Arabic text, Uzbek translation (uz.sodik), audio playback
+  3. Bookmarks with navigation to saved ayah
+  4. Scroll-to-ayah navigation from Continue Reading and bookmarks
+  5. Verse of the Day — day-seeded curated verse on home screen
+  6. Transliteration — en.transliteration from alquran.cloud, toggle in settings
+  7. Reading Progress Tracker — completedSurahs array, progress bar on home, checkmarks on SurahCards, "O'qib bo'ldim" button in surah screen
+  8. Offline Caching — AsyncStorage fallback in fetchSurah() and fetchSurahList()
+  9. Prayer Times — new Namoz tab, aladhan.com API (Hanafi method 4), Hijri date, countdown to next prayer, gradient cards
+  10. Word-by-Word Translation — quran-wordbyword edition, tappable Arabic words show English meaning inline
 
 ## Structure
 

@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -16,7 +17,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
-import { fetchSurahList, SurahListItem } from "@/constants/api";
+import { fetchSurahList, fetchVerseOfDay, SurahListItem, VerseOfDay } from "@/constants/api";
 import { UZBEK_NAMES, JUZ_START } from "@/constants/uzbekNames";
 import { SurahCard } from "@/components/SurahCard";
 import { SurahListSkeleton } from "@/components/ShimmerSkeleton";
@@ -27,11 +28,17 @@ export default function HomeScreen() {
   const c = Colors.dark;
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "makka" | "madina">("all");
-  const { lastRead } = useQuran();
+  const { lastRead, completedSurahs, isSurahComplete } = useQuran();
 
   const { data: surahs, isLoading, isError, refetch } = useQuery<SurahListItem[]>({
     queryKey: ["surahList"],
     queryFn: fetchSurahList,
+  });
+
+  const { data: verseOfDay } = useQuery<VerseOfDay>({
+    queryKey: ["verseOfDay", new Date().toDateString()],
+    queryFn: fetchVerseOfDay,
+    staleTime: 1000 * 60 * 60 * 24,
   });
 
   const filtered = surahs?.filter((s) => {
@@ -53,6 +60,7 @@ export default function HomeScreen() {
   });
 
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
+  const progressPercent = (completedSurahs.length / 114) * 100;
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
@@ -63,10 +71,63 @@ export default function HomeScreen() {
             <Text style={[styles.title, { color: c.tint }]}>القرآن الكريم</Text>
           </View>
           <View style={[styles.quranBadge, { backgroundColor: c.card, borderColor: c.border }]}>
-            <Text style={[styles.quranBadgeText, { color: c.text }]}>114</Text>
-            <Text style={[styles.quranBadgeLabel, { color: c.textSecondary }]}>Sura</Text>
+            <Text style={[styles.quranBadgeText, { color: c.text }]}>{completedSurahs.length}</Text>
+            <Text style={[styles.quranBadgeLabel, { color: c.textSecondary }]}>/ 114</Text>
           </View>
         </View>
+
+        <View style={[styles.progressContainer, { backgroundColor: c.card, borderColor: c.border }]}>
+          <View style={styles.progressRow}>
+            <Ionicons name="trending-up-outline" size={15} color={c.tint} />
+            <Text style={[styles.progressLabel, { color: c.textSecondary }]}>
+              O'qish taraqqiyoti
+            </Text>
+            <Text style={[styles.progressValue, { color: c.tint }]}>
+              {completedSurahs.length}/114 sura
+            </Text>
+          </View>
+          <View style={[styles.progressTrack, { backgroundColor: c.background }]}>
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${progressPercent}%` as any, backgroundColor: c.tint },
+              ]}
+            />
+          </View>
+        </View>
+
+        {verseOfDay && (
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.push(`/surah/${verseOfDay.surahNo}?ayah=${verseOfDay.ayahNo}`);
+            }}
+            style={({ pressed }) => [pressed && { opacity: 0.85 }]}
+          >
+            <LinearGradient
+              colors={["#1a2a4a", "#0d1f3c"]}
+              style={[styles.verseOfDayCard, { borderColor: c.tint + "30" }]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.vodHeader}>
+                <View style={[styles.vodBadge, { backgroundColor: c.tint + "20", borderColor: c.tint + "40" }]}>
+                  <Ionicons name="sunny-outline" size={12} color={c.tint} />
+                  <Text style={[styles.vodBadgeText, { color: c.tint }]}>Kunning oyati</Text>
+                </View>
+                <Text style={[styles.vodRef, { color: c.textMuted }]}>
+                  {UZBEK_NAMES[verseOfDay.surahNo] || verseOfDay.surahName} • {verseOfDay.ayahNo}-oyat
+                </Text>
+              </View>
+              <Text style={[styles.vodArabic, { color: "#e8d5a3" }]} numberOfLines={3}>
+                {verseOfDay.arabic}
+              </Text>
+              <Text style={[styles.vodTranslation, { color: c.textSecondary }]} numberOfLines={3}>
+                {verseOfDay.uzbek}
+              </Text>
+            </LinearGradient>
+          </Pressable>
+        )}
 
         {lastRead && (
           <Pressable
@@ -157,6 +218,7 @@ export default function HomeScreen() {
             <SurahCard
               surah={item}
               isLastRead={lastRead?.surahNo === item.surahNo}
+              isCompleted={isSurahComplete(item.surahNo ?? 0)}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push(`/surah/${item.surahNo ?? 1}`);
@@ -216,14 +278,92 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 16,
     borderWidth: 1,
+    flexDirection: "row",
+    gap: 2,
   },
   quranBadgeText: {
     fontSize: 20,
     fontFamily: "Inter_700Bold",
   },
   quranBadgeLabel: {
+    fontSize: 15,
+    fontFamily: "Inter_400Regular",
+    marginTop: 4,
+  },
+  progressContainer: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 8,
+  },
+  progressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  progressLabel: {
+    flex: 1,
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+  },
+  progressValue: {
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+  },
+  progressTrack: {
+    height: 6,
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: 6,
+    borderRadius: 3,
+    minWidth: 6,
+  },
+  verseOfDayCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 16,
+    gap: 12,
+  },
+  vodHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  vodBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  vodBadgeText: {
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+  },
+  vodRef: {
     fontSize: 11,
     fontFamily: "Inter_400Regular",
+  },
+  vodArabic: {
+    fontSize: 22,
+    fontFamily: Platform.OS === "ios" ? "Arial" : "serif",
+    textAlign: "right",
+    lineHeight: 38,
+    letterSpacing: 0.5,
+  },
+  vodTranslation: {
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 20,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.1)",
+    paddingTop: 10,
   },
   continueCard: {
     flexDirection: "row",

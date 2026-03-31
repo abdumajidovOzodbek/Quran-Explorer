@@ -19,7 +19,7 @@ import { ReadingMode } from "@/types/quran";
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const c = Colors.dark;
-  const { settings, updateSettings } = useQuran();
+  const { settings, updateSettings, completedSurahs } = useQuran();
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
 
   const readingModes: { value: ReadingMode; label: string }[] = [
@@ -39,6 +39,9 @@ export default function SettingsScreen() {
     >
       <View style={{ paddingTop: topPadding + 12, paddingHorizontal: 16, marginBottom: 24 }}>
         <Text style={[styles.title, { color: c.text }]}>Sozlamalar</Text>
+        <Text style={[styles.subtitle, { color: c.textSecondary }]}>
+          {completedSurahs.length}/114 sura o'qildi
+        </Text>
       </View>
 
       <View style={styles.section}>
@@ -62,6 +65,36 @@ export default function SettingsScreen() {
               )}
             </Pressable>
           ))}
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>QIROAT SOZLAMALARI</Text>
+        <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}>
+          <View style={[styles.toggleRow, { borderBottomWidth: 1, borderBottomColor: c.border }]}>
+            <View style={styles.toggleInfo}>
+              <Text style={[styles.optionText, { color: c.text }]}>Transliteratsiya</Text>
+              <Text style={[styles.optionSub, { color: c.textSecondary }]}>Arabcha so'zlarning lotin talaffuzi</Text>
+            </View>
+            <Switch
+              value={settings.showTransliteration}
+              onValueChange={(v) => { Haptics.selectionAsync(); updateSettings({ showTransliteration: v }); }}
+              trackColor={{ true: c.tint, false: c.border }}
+              thumbColor="#fff"
+            />
+          </View>
+          <View style={styles.toggleRow}>
+            <View style={styles.toggleInfo}>
+              <Text style={[styles.optionText, { color: c.text }]}>So'z bo'yicha tarjima</Text>
+              <Text style={[styles.optionSub, { color: c.textSecondary }]}>Har bir so'zga bosing (Inglizcha)</Text>
+            </View>
+            <Switch
+              value={settings.showWordByWord}
+              onValueChange={(v) => { Haptics.selectionAsync(); updateSettings({ showWordByWord: v }); }}
+              trackColor={{ true: c.tint, false: c.border }}
+              thumbColor="#fff"
+            />
+          </View>
         </View>
       </View>
 
@@ -173,6 +206,11 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: "Inter_700Bold",
   },
+  subtitle: {
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    marginTop: 4,
+  },
   section: {
     paddingHorizontal: 16,
     marginBottom: 20,
@@ -194,6 +232,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 14,
+  },
+  toggleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 12,
+  },
+  toggleInfo: {
+    flex: 1,
+    gap: 2,
   },
   optionText: {
     fontSize: 15,

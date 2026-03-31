@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import Colors from "@/constants/colors";
@@ -8,9 +9,10 @@ interface SurahCardProps {
   surah: SurahListItem;
   onPress: () => void;
   isLastRead?: boolean;
+  isCompleted?: boolean;
 }
 
-export function SurahCard({ surah, onPress, isLastRead }: SurahCardProps) {
+export function SurahCard({ surah, onPress, isLastRead, isCompleted }: SurahCardProps) {
   const c = Colors.dark;
   const uzbekName = UZBEK_NAMES[surah.surahNo] || surah.surahNameTranslation;
   const juz = JUZ_START[surah.surahNo];
@@ -21,12 +23,16 @@ export function SurahCard({ surah, onPress, isLastRead }: SurahCardProps) {
       onPress={onPress}
       style={({ pressed }) => [
         styles.container,
-        { backgroundColor: c.card, borderColor: c.border },
+        { backgroundColor: c.card, borderColor: isCompleted ? c.tint + "40" : c.border },
         pressed && { opacity: 0.75, transform: [{ scale: 0.99 }] },
       ]}
     >
       <View style={[styles.numberBadge, { backgroundColor: c.background, borderColor: c.border }]}>
-        <Text style={[styles.numberText, { color: c.tint }]}>{surah.surahNo}</Text>
+        {isCompleted ? (
+          <Ionicons name="checkmark" size={20} color={c.tint} />
+        ) : (
+          <Text style={[styles.numberText, { color: c.tint }]}>{surah.surahNo}</Text>
+        )}
       </View>
 
       <View style={styles.info}>
@@ -35,6 +41,11 @@ export function SurahCard({ surah, onPress, isLastRead }: SurahCardProps) {
           {isLastRead && (
             <View style={[styles.badge, { backgroundColor: c.tint + "33" }]}>
               <Text style={[styles.badgeText, { color: c.tint }]}>Oxirgi</Text>
+            </View>
+          )}
+          {isCompleted && (
+            <View style={[styles.badge, { backgroundColor: "#22c55e22" }]}>
+              <Text style={[styles.badgeText, { color: "#22c55e" }]}>O'qildi</Text>
             </View>
           )}
         </View>
