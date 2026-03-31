@@ -465,7 +465,7 @@ function QiblaView() {
 
       <Text style={[styles.qiblaLabel, { color: c.text }]}>Makka tomoni</Text>
       <Text style={[styles.qiblaDegrees, { color: c.tint }]}>
-        {displayBearing}° shimoldan
+        Shimoldan {displayBearing}° (qibla yo'nalishi)
       </Text>
 
       {usingFallback && (
