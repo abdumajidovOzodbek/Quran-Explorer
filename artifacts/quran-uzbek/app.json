@@ -69,7 +69,7 @@
         {
           "icon": "./assets/images/icon.png",
           "color": "#c5a55a",
-          "sounds": []
+          "sounds": ["./assets/sounds/adhan.mp3"]
         }
       ]
     ],

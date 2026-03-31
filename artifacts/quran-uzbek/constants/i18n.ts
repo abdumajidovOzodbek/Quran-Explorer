@@ -118,6 +118,10 @@ export interface I18nStrings {
   duaOvqat: string;
   duaUyqu: string;
   duaSafar: string;
+  prayerTimeNotifTitle: string;
+  prayerTimeNotifBody: string;
+  prayerBeforeNotifTitle: string;
+  prayerBeforeNotifBody: string;
 }
 
 const uz_cyrillic: I18nStrings = {
@@ -238,6 +242,10 @@ const uz_cyrillic: I18nStrings = {
   duaOvqat: "Овқат",
   duaUyqu: "Уйқу",
   duaSafar: "Сафар",
+  prayerTimeNotifTitle: "Намоз вақти 🕌",
+  prayerTimeNotifBody: "{prayer} намози вақти кирди",
+  prayerBeforeNotifTitle: "Намозга 10 дақиқа қолди ⏰",
+  prayerBeforeNotifBody: "{prayer} намозига 10 дақиқа қолди",
 };
 
 const uz_latin: I18nStrings = {
@@ -358,6 +366,10 @@ const uz_latin: I18nStrings = {
   duaOvqat: "Ovqat",
   duaUyqu: "Uyqu",
   duaSafar: "Safar",
+  prayerTimeNotifTitle: "Namoz vaqti 🕌",
+  prayerTimeNotifBody: "{prayer} namozi vaqti kirdi",
+  prayerBeforeNotifTitle: "Namozga 10 daqiqa qoldi ⏰",
+  prayerBeforeNotifBody: "{prayer} namoziga 10 daqiqa qoldi",
 };
 
 const ru: I18nStrings = {
@@ -478,6 +490,10 @@ const ru: I18nStrings = {
   duaOvqat: "Питание",
   duaUyqu: "Сон",
   duaSafar: "В пути",
+  prayerTimeNotifTitle: "Время намаза 🕌",
+  prayerTimeNotifBody: "Наступило время намаза {prayer}",
+  prayerBeforeNotifTitle: "До намаза 10 минут ⏰",
+  prayerBeforeNotifBody: "До намаза {prayer} осталось 10 минут",
 };
 
 const en: I18nStrings = {
@@ -598,6 +614,10 @@ const en: I18nStrings = {
   duaOvqat: "Food",
   duaUyqu: "Sleep",
   duaSafar: "Travel",
+  prayerTimeNotifTitle: "Prayer Time 🕌",
+  prayerTimeNotifBody: "It's time for {prayer} prayer",
+  prayerBeforeNotifTitle: "Prayer in 10 minutes ⏰",
+  prayerBeforeNotifBody: "{prayer} prayer starts in 10 minutes",
 };
 
 const translations: Record<AppLanguage, I18nStrings> = {
