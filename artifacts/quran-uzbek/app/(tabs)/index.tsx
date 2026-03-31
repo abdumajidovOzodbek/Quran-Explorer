@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
@@ -149,28 +148,15 @@ export default function HomeScreen() {
 
   const ListHeader = (
     <View style={styles.listHeaderContainer}>
-      <View style={[styles.progressContainer, { backgroundColor: "#101828", borderColor: c.border }]}>
-        <View style={styles.progressRow}>
-          <Ionicons name="trending-up-outline" size={14} color={c.tint} />
-          <Text style={[styles.progressLabel, { color: c.textSecondary }]}>{t.readingProgress}</Text>
-          <View style={styles.progressRight}>
-            <Text style={[styles.progressValue, { color: c.tint }]}>{completedSurahs.length}/114</Text>
-            {khatmahCount > 0 && (
-              <View style={[styles.khatmahBadge, { backgroundColor: c.tint + "20", borderColor: c.tint + "40" }]}>
-                <Ionicons name="checkmark-circle" size={11} color={c.tint} />
-                <Text style={[styles.khatmahBadgeText, { color: c.tint }]}>{khatmahCount} {t.khatmah}</Text>
-              </View>
-            )}
-          </View>
-        </View>
-        <View style={[styles.progressTrack, { backgroundColor: c.background }]}>
-          <LinearGradient
-            colors={[c.tint, c.tint + "aa"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={[styles.progressFill, { width: `${Math.max(progressPercent, 2)}%` as any }]}
-          />
-        </View>
+      <View style={styles.progressRow}>
+        <Text style={[styles.progressLabel, { color: c.textSecondary }]}>{t.readingProgress}</Text>
+        <Text style={[styles.progressValue, { color: c.textSecondary }]}>
+          {completedSurahs.length}/114
+          {khatmahCount > 0 ? `  ·  ${khatmahCount} ${t.khatmah}` : ""}
+        </Text>
+      </View>
+      <View style={[styles.progressTrack, { backgroundColor: c.card }]}>
+        <View style={[styles.progressFill, { width: `${Math.max(progressPercent, 1)}%` as any, backgroundColor: c.tint }]} />
       </View>
 
       {verseOfDay && (
@@ -179,30 +165,24 @@ export default function HomeScreen() {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             router.push(`/surah/${verseOfDay.surahNo}?ayah=${verseOfDay.ayahNo}`);
           }}
-          style={({ pressed }) => [pressed && { opacity: 0.85 }]}
+          style={({ pressed }) => [
+            styles.verseOfDayCard,
+            { backgroundColor: c.card, borderColor: c.border },
+            pressed && { opacity: 0.8 },
+          ]}
         >
-          <LinearGradient
-            colors={["#1a2a4a", "#0d1f3c"]}
-            style={[styles.verseOfDayCard, { borderColor: c.tint + "30" }]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <View style={styles.vodHeader}>
-              <View style={[styles.vodBadge, { backgroundColor: c.tint + "20", borderColor: c.tint + "40" }]}>
-                <Ionicons name="sunny-outline" size={11} color={c.tint} />
-                <Text style={[styles.vodBadgeText, { color: c.tint }]}>{t.verseOfDay}</Text>
-              </View>
-              <Text style={[styles.vodRef, { color: c.textMuted }]}>
-                {getLocalSurahName(verseOfDay.surahNo, verseOfDay.surahName, language)} • {verseOfDay.ayahNo} {t.verse}
-              </Text>
-            </View>
-            <Text style={[styles.vodArabic, { color: "#e8d5a3" }]} numberOfLines={2}>
-              {verseOfDay.arabic}
+          <View style={styles.vodHeader}>
+            <Text style={[styles.vodBadgeText, { color: c.tint }]}>{t.verseOfDay}</Text>
+            <Text style={[styles.vodRef, { color: c.textMuted }]}>
+              {getLocalSurahName(verseOfDay.surahNo, verseOfDay.surahName, language)} · {verseOfDay.ayahNo}
             </Text>
-            <Text style={[styles.vodTranslation, { color: c.textSecondary }]} numberOfLines={2}>
-              {getVodTranslation(verseOfDay, language)}
-            </Text>
-          </LinearGradient>
+          </View>
+          <Text style={[styles.vodArabic, { color: "#e8d5a3" }]} numberOfLines={2}>
+            {verseOfDay.arabic}
+          </Text>
+          <Text style={[styles.vodTranslation, { color: c.textSecondary }]} numberOfLines={2}>
+            {getVodTranslation(verseOfDay, language)}
+          </Text>
         </Pressable>
       )}
 
@@ -213,22 +193,20 @@ export default function HomeScreen() {
             router.push(`/surah/${lastRead.surahNo}?ayah=${lastRead.ayahNo}`);
           }}
           style={({ pressed }) => [
-            styles.continueCard,
-            { backgroundColor: c.tint + "15", borderColor: c.tint + "50" },
-            pressed && { opacity: 0.8 },
+            styles.rowCard,
+            { backgroundColor: c.card, borderColor: c.border },
+            pressed && { opacity: 0.75 },
           ]}
         >
-          <View style={[styles.continueIconBox, { backgroundColor: c.tint + "25" }]}>
-            <Ionicons name="book" size={18} color={c.tint} />
-          </View>
-          <View style={styles.continueInfo}>
-            <Text style={[styles.continueLabel, { color: c.tint + "99" }]}>{t.continueReading}</Text>
-            <Text style={[styles.continueSurah, { color: c.tint }]}>
+          <Ionicons name="book-outline" size={18} color={c.tint} />
+          <View style={styles.rowCardInfo}>
+            <Text style={[styles.rowCardLabel, { color: c.textMuted }]}>{t.continueReading}</Text>
+            <Text style={[styles.rowCardTitle, { color: c.text }]}>
               {getLocalSurahName(lastRead.surahNo, lastRead.surahName, language)}
             </Text>
           </View>
-          <Text style={[styles.continueVerse, { color: c.textSecondary }]}>{lastRead.ayahNo} {t.verse}</Text>
-          <Ionicons name="chevron-forward" size={18} color={c.tint} />
+          <Text style={[styles.rowCardRight, { color: c.textMuted }]}>{lastRead.ayahNo} {t.verse}</Text>
+          <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
         </Pressable>
       )}
 
@@ -238,29 +216,23 @@ export default function HomeScreen() {
           router.push("/duas");
         }}
         style={({ pressed }) => [
-          styles.duaCard,
-          { backgroundColor: "#1a2a1a", borderColor: "#2d4a2d" },
-          pressed && { opacity: 0.8 },
+          styles.rowCard,
+          { backgroundColor: c.card, borderColor: c.border },
+          pressed && { opacity: 0.75 },
         ]}
       >
-        <View style={[styles.duaIconBox, { backgroundColor: "#2d4a2d" }]}>
-          <Ionicons name="hand-left-outline" size={18} color="#4caf76" />
+        <Ionicons name="hand-left-outline" size={18} color={c.textSecondary} />
+        <View style={styles.rowCardInfo}>
+          <Text style={[styles.rowCardTitle, { color: c.text }]}>{t.duas}</Text>
         </View>
-        <View style={styles.continueInfo}>
-          <Text style={[styles.continueLabel, { color: "#4caf7699" }]}>{t.library.toUpperCase()}</Text>
-          <Text style={[styles.continueSurah, { color: "#4caf76" }]}>{t.duas}</Text>
-        </View>
-        <Text style={[styles.duaCount, { color: "#4caf7680" }]}>{DUAS.length}</Text>
-        <Ionicons name="chevron-forward" size={18} color="#4caf76" />
+        <Text style={[styles.rowCardRight, { color: c.textMuted }]}>{DUAS.length}</Text>
+        <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
       </Pressable>
 
       <View style={[styles.sectionLabel, { borderBottomColor: c.border }]}>
-        <View style={styles.sectionLabelLeft}>
-          <View style={[styles.sectionDot, { backgroundColor: c.tint }]} />
-          <Text style={[styles.sectionLabelText, { color: c.textSecondary }]}>
-            {viewMode === "surah" ? t.allSurahs : t.byJuz}
-          </Text>
-        </View>
+        <Text style={[styles.sectionLabelText, { color: c.textMuted }]}>
+          {viewMode === "surah" ? t.allSurahs.toUpperCase() : t.byJuz.toUpperCase()}
+        </Text>
         <Text style={[styles.sectionCount, { color: c.textMuted }]}>
           {viewMode === "surah" ? `${filtered?.length ?? 0} / 114` : `30 ${t.juzs}`}
         </Text>
@@ -332,23 +304,20 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
-      <LinearGradient
-        colors={["#0d1829", "#0A0F1E"]}
-        style={[styles.stickyHeader, { paddingTop: topPadding + 12 }]}
-      >
+      <View style={[styles.stickyHeader, { paddingTop: topPadding + 14, backgroundColor: c.background }]}>
         <View style={styles.titleRow}>
           <View>
-            <Text style={[styles.greeting, { color: c.textSecondary }]}>{t.greeting}</Text>
+            <Text style={[styles.greeting, { color: c.textMuted }]}>{t.greeting}</Text>
             <Text style={[styles.title, { color: c.tint }]}>القرآن الكريم</Text>
           </View>
-          <View style={[styles.quranBadge, { backgroundColor: c.tint + "18", borderColor: c.tint + "35" }]}>
-            <Text style={[styles.quranBadgeNum, { color: c.tint }]}>{completedSurahs.length}</Text>
-            <Text style={[styles.quranBadgeOf, { color: c.tint + "99" }]}>/114</Text>
+          <View style={[styles.quranBadge, { backgroundColor: c.card, borderColor: c.border }]}>
+            <Text style={[styles.quranBadgeNum, { color: c.text }]}>{completedSurahs.length}</Text>
+            <Text style={[styles.quranBadgeOf, { color: c.textMuted }]}>/114</Text>
           </View>
         </View>
 
-        <View style={[styles.searchBar, { backgroundColor: "#1A2236", borderColor: c.border }]}>
-          <Ionicons name="search" size={17} color={c.tint} />
+        <View style={[styles.searchBar, { backgroundColor: c.card, borderColor: c.border }]}>
+          <Ionicons name="search" size={16} color={c.textMuted} />
           <TextInput
             value={search}
             onChangeText={setSearch}
@@ -359,7 +328,7 @@ export default function HomeScreen() {
           />
           {!!search && (
             <Pressable onPress={() => setSearch("")} hitSlop={8}>
-              <Ionicons name="close-circle" size={17} color={c.textMuted} />
+              <Ionicons name="close-circle" size={16} color={c.textMuted} />
             </Pressable>
           )}
         </View>
@@ -370,16 +339,16 @@ export default function HomeScreen() {
             style={[
               styles.filterChip,
               {
-                backgroundColor: viewMode === "juz" ? "#2a3a5a" : "#1A2236",
-                borderColor: viewMode === "juz" ? "#4a6fa5" : c.border,
+                backgroundColor: viewMode === "juz" ? c.tint + "18" : "transparent",
+                borderColor: viewMode === "juz" ? c.tint + "50" : c.border,
                 flexDirection: "row",
                 gap: 4,
                 alignItems: "center",
               },
             ]}
           >
-            <Ionicons name="layers-outline" size={13} color={viewMode === "juz" ? "#7ab0e0" : c.textSecondary} />
-            <Text style={[styles.filterText, { color: viewMode === "juz" ? "#7ab0e0" : c.textSecondary }]}>
+            <Ionicons name="layers-outline" size={13} color={viewMode === "juz" ? c.tint : c.textSecondary} />
+            <Text style={[styles.filterText, { color: viewMode === "juz" ? c.tint : c.textSecondary }]}>
               {viewMode === "juz" ? t.byJuz : t.allSurahs}
             </Text>
           </Pressable>
@@ -390,7 +359,7 @@ export default function HomeScreen() {
               style={[
                 styles.filterChip,
                 {
-                  backgroundColor: filter === f ? c.tint : "#1A2236",
+                  backgroundColor: filter === f ? c.tint : "transparent",
                   borderColor: filter === f ? c.tint : c.border,
                 },
               ]}
@@ -401,7 +370,7 @@ export default function HomeScreen() {
             </Pressable>
           ))}
         </ScrollView>
-      </LinearGradient>
+      </View>
 
       {isLoading ? (
         <SurahListSkeleton />
@@ -507,21 +476,17 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   title: {
-    fontSize: 30,
+    fontSize: 26,
     fontFamily: Platform.OS === "ios" ? "Arial" : "serif",
   },
   quranBadge: {
     flexDirection: "row",
     alignItems: "baseline",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
-    borderWidth: 1,
-    gap: 2,
+    gap: 1,
   },
   quranBadgeNum: {
-    fontSize: 20,
-    fontFamily: "Inter_700Bold",
+    fontSize: 15,
+    fontFamily: "Inter_500Medium",
   },
   quranBadgeOf: {
     fontSize: 13,
@@ -530,11 +495,11 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    gap: 10,
+    paddingHorizontal: 13,
+    paddingVertical: 11,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 9,
   },
   searchInput: {
     flex: 1,
@@ -544,91 +509,56 @@ const styles = StyleSheet.create({
   },
   filterRow: {
     flexDirection: "row",
-    gap: 8,
+    gap: 6,
     alignItems: "center",
   },
   filterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
   },
   filterText: {
     fontSize: 13,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Inter_400Regular",
   },
   listHeaderContainer: {
     paddingHorizontal: 16,
     paddingTop: 14,
     gap: 10,
   },
-  progressContainer: {
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    gap: 8,
-  },
   progressRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    justifyContent: "space-between",
   },
   progressLabel: {
-    flex: 1,
-    fontSize: 13,
-    fontFamily: "Inter_500Medium",
-  },
-  progressRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
   },
   progressValue: {
-    fontSize: 13,
-    fontFamily: "Inter_700Bold",
-  },
-  khatmahBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  khatmahBadgeText: {
-    fontSize: 11,
-    fontFamily: "Inter_500Medium",
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
   },
   progressTrack: {
-    height: 6,
-    borderRadius: 3,
+    height: 3,
+    borderRadius: 2,
     overflow: "hidden",
   },
   progressFill: {
-    height: 6,
-    borderRadius: 3,
+    height: 3,
+    borderRadius: 2,
   },
   verseOfDayCard: {
-    borderRadius: 18,
+    borderRadius: 14,
     borderWidth: 1,
-    padding: 16,
+    padding: 14,
     gap: 10,
   },
   vodHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-  },
-  vodBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-    borderWidth: 1,
   },
   vodBadgeText: {
     fontSize: 11,
@@ -649,56 +579,28 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     lineHeight: 20,
   },
-  continueCard: {
+  rowCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    borderRadius: 14,
     borderWidth: 1,
   },
-  continueIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  continueInfo: { flex: 1 },
-  continueLabel: {
+  rowCardInfo: { flex: 1 },
+  rowCardLabel: {
     fontSize: 11,
-    fontFamily: "Inter_500Medium",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  continueSurah: {
-    fontSize: 15,
-    fontFamily: "Inter_600SemiBold",
-  },
-  continueVerse: {
-    fontSize: 12,
     fontFamily: "Inter_400Regular",
+    marginBottom: 1,
   },
-  duaCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 16,
-    borderWidth: 1,
+  rowCardTitle: {
+    fontSize: 15,
+    fontFamily: "Inter_500Medium",
   },
-  duaIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  duaCount: {
-    fontSize: 18,
-    fontFamily: "Inter_700Bold",
+  rowCardRight: {
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
   },
   sectionLabel: {
     flexDirection: "row",
@@ -706,26 +608,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingBottom: 10,
     borderBottomWidth: 1,
-    marginTop: 4,
-  },
-  sectionLabelLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  sectionDot: {
-    width: 4,
-    height: 16,
-    borderRadius: 2,
+    marginTop: 6,
   },
   sectionLabelText: {
-    fontSize: 12,
-    fontFamily: "Inter_700Bold",
-    textTransform: "uppercase",
-    letterSpacing: 1,
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    letterSpacing: 0.8,
   },
   sectionCount: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: "Inter_400Regular",
   },
   listContent: {
