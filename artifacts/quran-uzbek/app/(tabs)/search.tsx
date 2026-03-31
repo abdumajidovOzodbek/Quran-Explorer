@@ -1,12 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState, useMemo } from "react";
 import {
   FlatList,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -65,38 +67,47 @@ export default function SearchScreen() {
   const popularSurahs = surahs?.filter((s) => POPULAR_SURAHS.includes(s.surahNo ?? 0)) || [];
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
 
-  const renderSurah = (s: SurahListItem) => (
-    <Pressable
-      key={s.surahNo}
-      onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        router.push(`/surah/${s.surahNo}`);
-      }}
-      style={({ pressed }) => [
-        styles.resultItem,
-        { backgroundColor: c.card, borderColor: c.border },
-        pressed && { opacity: 0.75 },
-      ]}
-    >
-      <View style={[styles.numBadge, { backgroundColor: c.background, borderColor: c.border }]}>
-        <Text style={[styles.numText, { color: c.tint }]}>{s.surahNo}</Text>
-      </View>
-      <View style={styles.resultInfo}>
-        <Text style={[styles.resultName, { color: c.text }]}>{getSurahDisplayName(s, language)}</Text>
-        <Text style={[styles.resultSub, { color: c.textSecondary }]}>
-          {(s.revelationPlace === "Makkah" || s.revelationPlace === "Mecca") ? t.makkah : t.madinah} • {s.totalAyah} {t.verse}
-        </Text>
-      </View>
-      <Text style={[styles.resultArabic, { color: c.tint }]}>{s.surahNameArabic}</Text>
-    </Pressable>
-  );
+  const renderSurah = (s: SurahListItem) => {
+    const place = s.revelationPlace === "Makkah" || s.revelationPlace === "Mecca";
+    return (
+      <Pressable
+        key={s.surahNo}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          router.push(`/surah/${s.surahNo}`);
+        }}
+        style={({ pressed }) => [pressed && { opacity: 0.8 }]}
+      >
+        <View style={[styles.resultItem, { backgroundColor: "#101828", borderColor: c.border }]}>
+          <View style={[styles.accentBar, { backgroundColor: c.tint }]} />
+          <View style={[styles.numBadge, { backgroundColor: c.tint + "15" }]}>
+            <Text style={[styles.numText, { color: c.tint }]}>{s.surahNo}</Text>
+          </View>
+          <View style={styles.resultInfo}>
+            <Text style={[styles.resultName, { color: c.text }]}>
+              {getSurahDisplayName(s, language)}
+            </Text>
+            <Text style={[styles.resultSub, { color: c.textSecondary }]}>
+              {place ? t.makkah : t.madinah} • {s.totalAyah} {t.verse}
+            </Text>
+          </View>
+          <View style={styles.arabicCol}>
+            <Text style={[styles.resultArabic, { color: c.tint }]}>{s.surahNameArabic}</Text>
+          </View>
+        </View>
+      </Pressable>
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
-      <View style={[styles.header, { paddingTop: topPadding + 12 }]}>
+      <LinearGradient
+        colors={["#0d1829", "#0A0F1E"]}
+        style={[styles.header, { paddingTop: topPadding + 16 }]}
+      >
         <Text style={[styles.title, { color: c.text }]}>{t.searchTitle}</Text>
-        <View style={[styles.searchBar, { backgroundColor: c.card, borderColor: c.border }]}>
-          <Ionicons name="search" size={18} color={c.textMuted} />
+        <View style={[styles.searchBar, { backgroundColor: "#1A2236", borderColor: c.border }]}>
+          <Ionicons name="search" size={18} color={c.tint} />
           <TextInput
             value={search}
             onChangeText={setSearch}
@@ -107,21 +118,30 @@ export default function SearchScreen() {
             returnKeyType="search"
           />
           {!!search && (
-            <Pressable onPress={() => setSearch("")}>
+            <Pressable onPress={() => setSearch("")} hitSlop={8}>
               <Ionicons name="close-circle" size={18} color={c.textMuted} />
             </Pressable>
           )}
         </View>
-      </View>
+      </LinearGradient>
 
       {!search ? (
-        <View style={styles.popularContainer}>
-          <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>{t.popularSurahs}</Text>
+        <ScrollView
+          contentContainerStyle={styles.popularContainer}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionDot, { backgroundColor: c.tint }]} />
+            <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>{t.popularSurahs}</Text>
+          </View>
           {popularSurahs.map(renderSurah)}
-        </View>
+        </ScrollView>
       ) : results.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="search-outline" size={48} color={c.textMuted} />
+          <View style={[styles.emptyIconBox, { backgroundColor: c.card, borderColor: c.border }]}>
+            <Ionicons name="search-outline" size={36} color={c.textMuted} />
+          </View>
           <Text style={[styles.emptyTitle, { color: c.text }]}>{t.notFound}</Text>
           <Text style={[styles.emptyText, { color: c.textSecondary }]}>
             {t.notFoundDesc(search)}
@@ -149,8 +169,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
     paddingHorizontal: 16,
-    paddingBottom: 8,
-    gap: 12,
+    paddingBottom: 20,
+    gap: 14,
   },
   title: {
     fontSize: 28,
@@ -159,10 +179,10 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 14,
-    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 16,
+    borderWidth: 1.5,
     gap: 10,
   },
   searchInput: {
@@ -171,74 +191,100 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     padding: 0,
   },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
+  },
+  sectionDot: {
+    width: 4,
+    height: 16,
+    borderRadius: 2,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
   popularContainer: {
     padding: 16,
     gap: 8,
+    paddingBottom: 120,
   },
-  sectionTitle: {
-    fontSize: 13,
-    fontFamily: "Inter_600SemiBold",
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-    marginBottom: 4,
+  listContent: {
+    padding: 16,
+    gap: 8,
+    paddingBottom: 120,
   },
   resultItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
-    marginBottom: 8,
+    overflow: "hidden",
     gap: 12,
   },
+  accentBar: {
+    width: 4,
+    alignSelf: "stretch",
+  },
   numBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    borderWidth: 1,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
   numText: {
-    fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: 15,
+    fontFamily: "Inter_700Bold",
   },
   resultInfo: {
     flex: 1,
-    gap: 2,
+    gap: 3,
+    paddingVertical: 16,
   },
   resultName: {
     fontSize: 15,
     fontFamily: "Inter_600SemiBold",
   },
   resultSub: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: "Inter_400Regular",
   },
-  resultArabic: {
-    fontSize: 20,
-    fontFamily: Platform.OS === "ios" ? "Arial" : "serif",
+  arabicCol: {
+    paddingRight: 16,
   },
-  listContent: {
-    padding: 16,
-    paddingBottom: 120,
+  resultArabic: {
+    fontSize: 22,
+    fontFamily: Platform.OS === "ios" ? "Arial" : "serif",
   },
   emptyContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 12,
-    paddingHorizontal: 32,
+    gap: 16,
+    paddingHorizontal: 40,
     paddingBottom: 80,
+  },
+  emptyIconBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
   emptyTitle: {
     fontSize: 18,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Inter_700Bold",
   },
   emptyText: {
     fontSize: 14,
     fontFamily: "Inter_400Regular",
     textAlign: "center",
+    lineHeight: 22,
   },
 });

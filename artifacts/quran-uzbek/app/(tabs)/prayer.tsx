@@ -30,12 +30,12 @@ const TASHKENT_LON = 69.2401;
 const NOTIF_ENABLED_KEY = "@quran_prayer_notif_enabled";
 
 const PRAYER_STATIC = [
-  { key: "Fajr", icon: "moon-outline" as const, gradient: ["#1a1a3e", "#2d2d6e"] as [string, string], hasNotif: true },
-  { key: "Sunrise", icon: "sunny-outline" as const, gradient: ["#3d2b00", "#7c5900"] as [string, string], hasNotif: false },
-  { key: "Dhuhr", icon: "partly-sunny-outline" as const, gradient: ["#0d2e3e", "#0d4a5e"] as [string, string], hasNotif: true },
-  { key: "Asr", icon: "cloud-outline" as const, gradient: ["#2e1a00", "#5c3500"] as [string, string], hasNotif: true },
-  { key: "Maghrib", icon: "cloudy-night-outline" as const, gradient: ["#3e0d0d", "#6e1515"] as [string, string], hasNotif: true },
-  { key: "Isha", icon: "star-outline" as const, gradient: ["#1a0d3e", "#2e1a6e"] as [string, string], hasNotif: true },
+  { key: "Fajr", icon: "moon-outline" as const, colors: ["#1a1a4e", "#252580"] as [string, string], hasNotif: true },
+  { key: "Sunrise", icon: "sunny-outline" as const, colors: ["#3d2800", "#7a5200"] as [string, string], hasNotif: false },
+  { key: "Dhuhr", icon: "partly-sunny-outline" as const, colors: ["#0a2d42", "#0d4a6a"] as [string, string], hasNotif: true },
+  { key: "Asr", icon: "cloud-outline" as const, colors: ["#2e1800", "#5a3200"] as [string, string], hasNotif: true },
+  { key: "Maghrib", icon: "cloudy-night-outline" as const, colors: ["#42100d", "#721a16"] as [string, string], hasNotif: true },
+  { key: "Isha", icon: "star-outline" as const, colors: ["#180d42", "#2c1870"] as [string, string], hasNotif: true },
 ];
 
 function parseTimeToMinutes(time: string): number {
@@ -112,15 +112,13 @@ export default function PrayerScreen() {
     try {
       const stored = await AsyncStorage.getItem(NOTIF_ENABLED_KEY);
       if (stored) setEnabledNotifs(JSON.parse(stored));
-    } catch {
-    }
+    } catch {}
   };
 
   const saveNotifState = async (state: Record<string, boolean>) => {
     try {
       await AsyncStorage.setItem(NOTIF_ENABLED_KEY, JSON.stringify(state));
-    } catch {
-    }
+    } catch {}
   };
 
   const loadTimes = async () => {
@@ -141,24 +139,21 @@ export default function PrayerScreen() {
             const geocode = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lon });
             if (geocode[0]?.city) cityName = geocode[0].city;
           }
-        } catch {
-        }
+        } catch {}
       }
 
       setCity(cityName);
       const data = await fetchPrayerTimes(lat, lon, cityName);
       setTimes(data);
       timesRef.current = data;
-    } catch (e) {
+    } catch {
       setError(t.prayerError);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadTimes();
-  }, []);
+  useEffect(() => { loadTimes(); }, []);
 
   useEffect(() => {
     if (times && Platform.OS !== "web") {
@@ -175,7 +170,6 @@ export default function PrayerScreen() {
 
   const toggleNotif = async (prayerKey: string) => {
     if (Platform.OS === "web") return;
-
     let permission = notifPermission;
     if (permission !== "granted") {
       const granted = await requestNotifPermissions();
@@ -193,9 +187,7 @@ export default function PrayerScreen() {
     const prayerName = getPrayerName(prayerKey);
     if (newEnabled && timesRef.current) {
       const timeStr = timesRef.current[prayerKey as keyof PrayerTimes] as string;
-      if (timeStr) {
-        await schedulePrayerNotif(prayerKey, prayerName, timeStr);
-      }
+      if (timeStr) await schedulePrayerNotif(prayerKey, prayerName, timeStr);
     } else {
       await cancelPrayerNotif(prayerKey);
     }
@@ -213,29 +205,35 @@ export default function PrayerScreen() {
     return formatCountdown(diff);
   };
 
-  const today = now.toLocaleDateString("ru", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const clockStr = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+  const today = now.toLocaleDateString("ru", { weekday: "long", day: "numeric", month: "long" });
 
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: c.background }]}
-      contentContainerStyle={[
-        styles.content,
-        Platform.OS === "web" && { paddingBottom: 34 + 84 },
-      ]}
+      contentContainerStyle={[styles.content, Platform.OS === "web" && { paddingBottom: 34 + 84 }]}
       showsVerticalScrollIndicator={false}
     >
-      <View style={{ paddingTop: topPadding + 12, paddingHorizontal: 16, marginBottom: 20 }}>
-        <Text style={[styles.title, { color: c.text }]}>{t.prayerTitle}</Text>
-        <Text style={[styles.subtitle, { color: c.textSecondary }]}>{city} • {today}</Text>
-        {times?.hijriDate ? (
-          <Text style={[styles.hijriDate, { color: c.tint }]}>{times.hijriDate} ({t.hijri})</Text>
-        ) : null}
-      </View>
+      <LinearGradient
+        colors={["#0d1829", "#0A0F1E"]}
+        style={[styles.pageHeader, { paddingTop: topPadding + 16 }]}
+      >
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={[styles.title, { color: c.text }]}>{t.prayerTitle}</Text>
+            <Text style={[styles.cityText, { color: c.textSecondary }]}>
+              📍 {city}
+            </Text>
+            {times?.hijriDate && (
+              <Text style={[styles.hijriText, { color: c.tint }]}>{times.hijriDate}</Text>
+            )}
+          </View>
+          <View style={[styles.clockBox, { backgroundColor: c.tint + "15", borderColor: c.tint + "30" }]}>
+            <Text style={[styles.clockTime, { color: c.tint }]}>{clockStr}</Text>
+            <Text style={[styles.clockDate, { color: c.textMuted }]} numberOfLines={1}>{today}</Text>
+          </View>
+        </View>
+      </LinearGradient>
 
       {loading ? (
         <View style={styles.center}>
@@ -244,7 +242,9 @@ export default function PrayerScreen() {
         </View>
       ) : error ? (
         <View style={styles.center}>
-          <Ionicons name="wifi-outline" size={48} color={c.textMuted} />
+          <View style={[styles.errorIconBox, { backgroundColor: c.card, borderColor: c.border }]}>
+            <Ionicons name="wifi-outline" size={36} color={c.textMuted} />
+          </View>
           <Text style={[styles.errorText, { color: c.textSecondary }]}>{error}</Text>
           <Pressable onPress={loadTimes} style={[styles.retryBtn, { backgroundColor: c.tint }]}>
             <Text style={styles.retryText}>{t.retry}</Text>
@@ -253,25 +253,25 @@ export default function PrayerScreen() {
       ) : times ? (
         <View style={styles.prayerList}>
           {nextPrayer && (
-            <View style={[styles.nextCard, { backgroundColor: c.card, borderColor: c.tint + "40" }]}>
-              <Ionicons name="time-outline" size={18} color={c.tint} />
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.nextLabel, { color: c.textSecondary }]}>{t.nextPrayer}</Text>
-                <Text style={[styles.nextName, { color: c.tint }]}>
-                  {getPrayerName(nextPrayer)}
+            <LinearGradient
+              colors={["#1a2d50", "#0d1f3c"]}
+              style={[styles.nextCard, { borderColor: c.tint + "40" }]}
+            >
+              <View style={styles.nextCardLeft}>
+                <Text style={[styles.nextLabel, { color: c.tint + "99" }]}>{t.nextPrayer}</Text>
+                <Text style={[styles.nextName, { color: "#fff" }]}>{getPrayerName(nextPrayer)}</Text>
+                <Text style={[styles.nextTime, { color: c.tint }]}>
+                  {times[nextPrayer as keyof PrayerTimes] as string}
                 </Text>
               </View>
-              <Text style={[styles.nextCountdown, { color: c.text }]}>{getCountdown(nextPrayer)}</Text>
-            </View>
-          )}
-
-          {Platform.OS !== "web" && (
-            <View style={[styles.notifHint, { backgroundColor: c.card, borderColor: c.border }]}>
-              <Ionicons name="notifications-outline" size={14} color={c.textMuted} />
-              <Text style={[styles.notifHintText, { color: c.textMuted }]}>
-                {t.enableNotif}
-              </Text>
-            </View>
+              <View style={styles.nextCardRight}>
+                <Ionicons name="time-outline" size={20} color={c.tint + "80"} />
+                <Text style={[styles.nextCountdown, { color: "#fff" }]}>
+                  {getCountdown(nextPrayer)}
+                </Text>
+                <Text style={[styles.nextRemaining, { color: c.tint + "80" }]}>{t.remaining}</Text>
+              </View>
+            </LinearGradient>
           )}
 
           {PRAYER_STATIC.map((prayer) => {
@@ -285,25 +285,26 @@ export default function PrayerScreen() {
             return (
               <LinearGradient
                 key={prayer.key}
-                colors={prayer.gradient}
+                colors={prayer.colors}
                 start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 style={[
                   styles.prayerCard,
-                  isNext && { borderColor: c.tint + "60", borderWidth: 1.5 },
+                  isNext && { borderColor: c.tint + "70", borderWidth: 1.5 },
+                  isPast && { opacity: 0.6 },
                 ]}
               >
-                <View style={[styles.iconBox, { backgroundColor: "rgba(255,255,255,0.08)" }]}>
-                  <Ionicons name={prayer.icon} size={22} color={isPast ? "#ffffff50" : "#fff"} />
+                {isNext && (
+                  <View style={[styles.nextIndicator, { backgroundColor: c.tint }]} />
+                )}
+                <View style={[styles.iconBox, { backgroundColor: "rgba(255,255,255,0.1)" }]}>
+                  <Ionicons name={prayer.icon} size={22} color="#fff" />
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.prayerName, { opacity: isPast ? 0.5 : 1 }]}>{getPrayerName(prayer.key)}</Text>
+                <View style={styles.prayerInfo}>
+                  <Text style={styles.prayerName}>{getPrayerName(prayer.key)}</Text>
                   {isSunrise && (
                     <Text style={styles.prayerSubNote}>{t.notPrayerTime}</Text>
                   )}
-                </View>
-                <View style={{ alignItems: "flex-end", gap: 4 }}>
-                  <Text style={[styles.prayerTime, { opacity: isPast ? 0.5 : 1 }]}>{timeStr}</Text>
                   {isNext && (
                     <Text style={styles.prayerCountdown}>{getCountdown(prayer.key)} {t.remaining}</Text>
                   )}
@@ -311,19 +312,20 @@ export default function PrayerScreen() {
                     <Text style={styles.prayerPast}>{t.prayerPast}</Text>
                   )}
                 </View>
+                <Text style={styles.prayerTime}>{timeStr}</Text>
                 {prayer.hasNotif && Platform.OS !== "web" && (
                   <Pressable
                     onPress={() => toggleNotif(prayer.key)}
                     style={[
                       styles.bellBtn,
-                      isNotifEnabled && { backgroundColor: "rgba(255,255,255,0.15)" },
+                      isNotifEnabled && { backgroundColor: "rgba(255,255,255,0.2)" },
                     ]}
                     hitSlop={8}
                   >
                     <Ionicons
                       name={isNotifEnabled ? "notifications" : "notifications-outline"}
                       size={20}
-                      color={isNotifEnabled ? "#fff" : "rgba(255,255,255,0.45)"}
+                      color={isNotifEnabled ? "#fff" : "rgba(255,255,255,0.4)"}
                     />
                   </Pressable>
                 )}
@@ -331,23 +333,23 @@ export default function PrayerScreen() {
             );
           })}
 
-          <Pressable
-            onPress={loadTimes}
-            style={({ pressed }) => [
-              styles.refreshBtn,
-              { backgroundColor: c.card, borderColor: c.border },
-              pressed && { opacity: 0.7 },
-            ]}
-          >
-            <Ionicons name="refresh-outline" size={18} color={c.textSecondary} />
-            <Text style={[styles.refreshText, { color: c.textSecondary }]}>{t.refresh}</Text>
-          </Pressable>
+          <View style={styles.bottomRow}>
+            <Pressable
+              onPress={loadTimes}
+              style={({ pressed }) => [
+                styles.refreshBtn,
+                { backgroundColor: "#101828", borderColor: c.border },
+                pressed && { opacity: 0.7 },
+              ]}
+            >
+              <Ionicons name="refresh-outline" size={16} color={c.textSecondary} />
+              <Text style={[styles.refreshText, { color: c.textSecondary }]}>{t.refresh}</Text>
+            </Pressable>
+          </View>
 
-          <View style={[styles.methodNote, { backgroundColor: c.card, borderColor: c.border }]}>
-            <Ionicons name="information-circle-outline" size={16} color={c.textMuted} />
-            <Text style={[styles.methodNoteText, { color: c.textMuted }]}>
-              {t.methodNote}
-            </Text>
+          <View style={[styles.methodNote, { backgroundColor: "#101828", borderColor: c.border }]}>
+            <Ionicons name="information-circle-outline" size={15} color={c.textMuted} />
+            <Text style={[styles.methodNoteText, { color: c.textMuted }]}>{t.methodNote}</Text>
           </View>
         </View>
       ) : null}
@@ -358,19 +360,48 @@ export default function PrayerScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { paddingBottom: 120 },
+  pageHeader: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 12,
+  },
   title: {
     fontSize: 28,
     fontFamily: "Inter_700Bold",
   },
-  subtitle: {
+  cityText: {
     fontSize: 13,
     fontFamily: "Inter_400Regular",
     marginTop: 4,
   },
-  hijriDate: {
+  hijriText: {
     fontSize: 13,
     fontFamily: "Inter_500Medium",
-    marginTop: 4,
+    marginTop: 3,
+  },
+  clockBox: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    alignItems: "center",
+    minWidth: 90,
+  },
+  clockTime: {
+    fontSize: 24,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 1,
+  },
+  clockDate: {
+    fontSize: 10,
+    fontFamily: "Inter_400Regular",
+    marginTop: 2,
+    textAlign: "center",
   },
   center: {
     flex: 1,
@@ -379,10 +410,15 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
     gap: 16,
   },
-  loadingText: {
-    fontSize: 15,
-    fontFamily: "Inter_400Regular",
+  errorIconBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
+  loadingText: { fontSize: 15, fontFamily: "Inter_400Regular" },
   errorText: {
     fontSize: 15,
     fontFamily: "Inter_400Regular",
@@ -390,75 +426,77 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   retryBtn: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 14,
   },
-  retryText: {
-    color: "#000",
-    fontFamily: "Inter_600SemiBold",
-    fontSize: 15,
-  },
+  retryText: { color: "#000", fontFamily: "Inter_700Bold", fontSize: 15 },
   prayerList: {
     paddingHorizontal: 16,
+    paddingTop: 16,
     gap: 10,
   },
   nextCard: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 16,
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    borderRadius: 20,
     borderWidth: 1,
-    marginBottom: 4,
+    marginBottom: 6,
   },
+  nextCardLeft: { gap: 4 },
+  nextCardRight: { alignItems: "flex-end", gap: 4 },
   nextLabel: {
     fontSize: 11,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Inter_600SemiBold",
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   nextName: {
-    fontSize: 16,
+    fontSize: 22,
     fontFamily: "Inter_700Bold",
   },
-  nextCountdown: {
+  nextTime: {
     fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Inter_500Medium",
   },
-  notifHint: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-    borderWidth: 1,
-    marginBottom: 2,
+  nextCountdown: {
+    fontSize: 20,
+    fontFamily: "Inter_700Bold",
   },
-  notifHintText: {
-    flex: 1,
-    fontSize: 12,
+  nextRemaining: {
+    fontSize: 11,
     fontFamily: "Inter_400Regular",
   },
   prayerCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 16,
-    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: "transparent",
+    overflow: "hidden",
+  },
+  nextIndicator: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    borderRadius: 4,
   },
   iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 46,
+    height: 46,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
   },
+  prayerInfo: { flex: 1, gap: 3 },
   prayerName: {
     fontSize: 17,
     fontFamily: "Inter_600SemiBold",
@@ -468,12 +506,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: "Inter_400Regular",
     color: "rgba(255,255,255,0.5)",
-    marginTop: 2,
-  },
-  prayerTime: {
-    fontSize: 22,
-    fontFamily: "Inter_700Bold",
-    color: "#fff",
   },
   prayerCountdown: {
     fontSize: 11,
@@ -485,12 +517,21 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     color: "rgba(255,255,255,0.4)",
   },
+  prayerTime: {
+    fontSize: 24,
+    fontFamily: "Inter_700Bold",
+    color: "#fff",
+    letterSpacing: 0.5,
+  },
   bellBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
+  },
+  bottomRow: {
+    marginTop: 4,
   },
   refreshBtn: {
     flexDirection: "row",
@@ -500,20 +541,17 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 14,
     borderWidth: 1,
-    marginTop: 4,
   },
-  refreshText: {
-    fontSize: 14,
-    fontFamily: "Inter_500Medium",
-  },
+  refreshText: { fontSize: 14, fontFamily: "Inter_500Medium" },
   methodNote: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 8,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 14,
+    borderRadius: 14,
     borderWidth: 1,
+    marginTop: 2,
   },
   methodNoteText: {
     flex: 1,

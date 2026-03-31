@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -48,71 +49,106 @@ export default function DuasScreen() {
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
+  const getDuaTitle = (item: Dua) =>
+    language === "uz_cyrillic" ? item.titleUz :
+    language === "ru" ? item.titleRu :
+    language === "en" ? item.titleEn :
+    item.title;
+
   const renderDua = ({ item }: { item: Dua }) => {
     const isExpanded = expandedId === item.id;
+    const duaTitle = getDuaTitle(item);
+    const catLabel = t[DUA_CAT_KEY[item.category]] as string;
+
     return (
-      <Pressable
-        onPress={() => toggleExpanded(item.id)}
-        style={[styles.duaCard, { backgroundColor: c.card, borderColor: isExpanded ? c.tint + "60" : c.border }]}
-      >
-        <View style={styles.duaHeader}>
-          <View style={[styles.duaCategoryDot, { backgroundColor: c.tint + "30", borderColor: c.tint + "50" }]}>
-            <Text style={[styles.duaCategoryLabel, { color: c.tint }]}>
-              {t[DUA_CAT_KEY[item.category]] as string}
-            </Text>
-          </View>
-          <Text style={[styles.duaTitle, { color: c.text }]} numberOfLines={1}>
-            {language === "uz_cyrillic" ? item.titleUz :
-             language === "ru" ? item.titleRu :
-             language === "en" ? item.titleEn :
-             item.title}
-          </Text>
-          <Ionicons
-            name={isExpanded ? "chevron-up" : "chevron-down"}
-            size={16}
-            color={c.textMuted}
-          />
-        </View>
+      <Pressable onPress={() => toggleExpanded(item.id)}>
+        <View style={[
+          styles.duaCard,
+          { backgroundColor: "#101828", borderColor: isExpanded ? c.tint + "50" : c.border },
+          isExpanded && { borderWidth: 1.5 },
+        ]}>
+          {isExpanded && <View style={[styles.accentBar, { backgroundColor: c.tint }]} />}
 
-        <Text style={[styles.duaArabic, { color: c.text }]} numberOfLines={isExpanded ? undefined : 2}>
-          {item.arabic}
-        </Text>
-
-        {isExpanded && (
-          <>
-            <View style={[styles.divider, { backgroundColor: c.border }]} />
-            <View style={[styles.translitBox, { backgroundColor: c.background }]}>
-              <Text style={[styles.translitLabel, { color: c.textMuted }]}>Translit</Text>
-              <Text style={[styles.translitText, { color: c.textSecondary }]}>
-                {(language === "ru" || language === "uz_cyrillic") ? latinToRussianTranslit(item.transliteration) : item.transliteration}
+          <View style={styles.cardInner}>
+            <View style={styles.duaHeader}>
+              <View style={[styles.catBadge, { backgroundColor: c.tint + "18", borderColor: c.tint + "30" }]}>
+                <Text style={[styles.catLabel, { color: c.tint }]}>{catLabel}</Text>
+              </View>
+              <Text style={[styles.duaTitle, { color: isExpanded ? c.text : c.textSecondary }]} numberOfLines={1}>
+                {duaTitle}
               </Text>
+              <View style={[styles.chevronBox, { backgroundColor: isExpanded ? c.tint + "20" : "transparent" }]}>
+                <Ionicons
+                  name={isExpanded ? "chevron-up" : "chevron-down"}
+                  size={14}
+                  color={isExpanded ? c.tint : c.textMuted}
+                />
+              </View>
             </View>
-            <Text style={[styles.duaMeaning, { color: c.textSecondary }]}>
-              {language === "ru" ? item.russian :
-               language === "en" ? item.english :
-               language === "uz_latin" ? cyrillicToLatin(item.uzbek) :
-               item.uzbek}
+
+            <Text
+              style={[styles.duaArabic, { color: c.arabicText }]}
+              numberOfLines={isExpanded ? undefined : 2}
+            >
+              {item.arabic}
             </Text>
-            <View style={styles.sourceRow}>
-              <Ionicons name="book-outline" size={11} color={c.textMuted} />
-              <Text style={[styles.sourceText, { color: c.textMuted }]}>{item.source}</Text>
-            </View>
-          </>
-        )}
+
+            {isExpanded && (
+              <>
+                <View style={[styles.divider, { backgroundColor: c.border }]} />
+
+                <View style={[styles.translitBox, { backgroundColor: "#0a1020", borderColor: c.border }]}>
+                  <View style={styles.translitHeader}>
+                    <View style={[styles.translitDot, { backgroundColor: c.textMuted }]} />
+                    <Text style={[styles.translitLabel, { color: c.textMuted }]}>Transliteration</Text>
+                  </View>
+                  <Text style={[styles.translitText, { color: c.textSecondary }]}>
+                    {(language === "ru" || language === "uz_cyrillic")
+                      ? latinToRussianTranslit(item.transliteration)
+                      : item.transliteration}
+                  </Text>
+                </View>
+
+                <View style={[styles.meaningBox, { backgroundColor: c.tint + "08", borderColor: c.tint + "20" }]}>
+                  <Text style={[styles.duaMeaning, { color: c.textSecondary }]}>
+                    {language === "ru" ? item.russian :
+                     language === "en" ? item.english :
+                     language === "uz_latin" ? cyrillicToLatin(item.uzbek) :
+                     item.uzbek}
+                  </Text>
+                </View>
+
+                <View style={styles.sourceRow}>
+                  <Ionicons name="book-outline" size={12} color={c.textMuted} />
+                  <Text style={[styles.sourceText, { color: c.textMuted }]}>{item.source}</Text>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
       </Pressable>
     );
   };
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
-      <View style={[styles.header, { paddingTop: topPadding + 8, backgroundColor: c.background }]}>
+      <LinearGradient
+        colors={["#0d1829", "#0A0F1E"]}
+        style={[styles.header, { paddingTop: topPadding + 8 }]}
+      >
         <View style={styles.headerRow}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={22} color={c.text} />
+          <Pressable
+            onPress={() => router.back()}
+            style={[styles.backBtn, { backgroundColor: "#1A2236", borderColor: c.border }]}
+            hitSlop={8}
+          >
+            <Ionicons name="arrow-back" size={18} color={c.text} />
           </Pressable>
           <View style={styles.headerTitle}>
             <Text style={[styles.title, { color: c.text }]}>{t.duas}</Text>
-            <Text style={[styles.subtitle, { color: c.textMuted }]}>{filtered.length}</Text>
+          </View>
+          <View style={[styles.countBadge, { backgroundColor: c.tint + "18", borderColor: c.tint + "30" }]}>
+            <Text style={[styles.countBadgeText, { color: c.tint }]}>{filtered.length}</Text>
           </View>
         </View>
 
@@ -125,10 +161,9 @@ export default function DuasScreen() {
             onPress={() => { Haptics.selectionAsync(); setActiveCategory("all"); }}
             style={[
               styles.chip,
-              {
-                backgroundColor: activeCategory === "all" ? c.tint : c.card,
-                borderColor: activeCategory === "all" ? c.tint : c.border,
-              },
+              activeCategory === "all"
+                ? { backgroundColor: c.tint, borderColor: c.tint }
+                : { backgroundColor: "#1A2236", borderColor: c.border },
             ]}
           >
             <Text style={[styles.chipText, { color: activeCategory === "all" ? "#000" : c.textSecondary }]}>
@@ -141,10 +176,9 @@ export default function DuasScreen() {
               onPress={() => { Haptics.selectionAsync(); setActiveCategory(cat.key); }}
               style={[
                 styles.chip,
-                {
-                  backgroundColor: activeCategory === cat.key ? c.tint : c.card,
-                  borderColor: activeCategory === cat.key ? c.tint : c.border,
-                },
+                activeCategory === cat.key
+                  ? { backgroundColor: c.tint, borderColor: c.tint }
+                  : { backgroundColor: "#1A2236", borderColor: c.border },
               ]}
             >
               <Text style={[styles.chipText, { color: activeCategory === cat.key ? "#000" : c.textSecondary }]}>
@@ -153,7 +187,7 @@ export default function DuasScreen() {
             </Pressable>
           ))}
         </ScrollView>
-      </View>
+      </LinearGradient>
 
       <FlatList
         data={filtered}
@@ -176,7 +210,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
     paddingHorizontal: 16,
-    paddingBottom: 10,
+    paddingBottom: 14,
     gap: 12,
   },
   headerRow: {
@@ -185,18 +219,27 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   backBtn: {
-    padding: 4,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  headerTitle: {
-    flex: 1,
-  },
+  headerTitle: { flex: 1 },
   title: {
     fontSize: 22,
     fontFamily: "Inter_700Bold",
   },
-  subtitle: {
-    fontSize: 12,
-    fontFamily: "Inter_400Regular",
+  countBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  countBadgeText: {
+    fontSize: 14,
+    fontFamily: "Inter_700Bold",
   },
   categoryRow: {
     flexDirection: "row",
@@ -205,7 +248,7 @@ const styles = StyleSheet.create({
   },
   chip: {
     paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
   },
@@ -215,42 +258,57 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 12,
     paddingBottom: 120,
     gap: 10,
   },
   duaCard: {
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
-    padding: 14,
-    gap: 10,
-    marginBottom: 10,
+    flexDirection: "row",
+    overflow: "hidden",
+  },
+  accentBar: {
+    width: 4,
+  },
+  cardInner: {
+    flex: 1,
+    padding: 16,
+    gap: 12,
   },
   duaHeader: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
-  duaCategoryDot: {
+  catBadge: {
     paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
+    paddingVertical: 3,
+    borderRadius: 8,
     borderWidth: 1,
   },
-  duaCategoryLabel: {
+  catLabel: {
     fontSize: 10,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 0.3,
   },
   duaTitle: {
     flex: 1,
     fontSize: 14,
     fontFamily: "Inter_600SemiBold",
   },
+  chevronBox: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   duaArabic: {
-    fontSize: 20,
+    fontSize: 24,
     fontFamily: Platform.OS === "ios" ? "Arial" : "serif",
     textAlign: "right",
-    lineHeight: 36,
+    lineHeight: 44,
     letterSpacing: 0.5,
   },
   divider: {
@@ -258,15 +316,26 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   translitBox: {
-    borderRadius: 8,
-    padding: 10,
-    gap: 3,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 12,
+    gap: 6,
+  },
+  translitHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  translitDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
   },
   translitLabel: {
     fontSize: 10,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Inter_600SemiBold",
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
   translitText: {
     fontSize: 13,
@@ -274,16 +343,20 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontStyle: "italic",
   },
+  meaningBox: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14,
+  },
   duaMeaning: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: "Inter_400Regular",
-    lineHeight: 20,
+    lineHeight: 22,
   },
   sourceRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-    marginTop: 2,
+    gap: 6,
   },
   sourceText: {
     fontSize: 11,
