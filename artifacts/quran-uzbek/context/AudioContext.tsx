@@ -24,15 +24,18 @@ function useAudioState() {
   const [isFading, setIsFading] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fadeStopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stopAudioRef = useRef<() => void>(() => {});
 
   const stopAudio = useCallback(() => {
+    if (fadeStopRef.current) clearTimeout(fadeStopRef.current);
     setAudio(null);
     setSleepMinutes(null);
     setSleepEndTime(null);
     setSleepSecondsLeft(null);
     setIsFading(false);
-    if (fadeStopRef.current) clearTimeout(fadeStopRef.current);
   }, []);
+
+  stopAudioRef.current = stopAudio;
 
   useEffect(() => {
     if (timerRef.current) {
@@ -56,8 +59,7 @@ function useAudioState() {
         setSleepEndTime(null);
         setSleepSecondsLeft(null);
         fadeStopRef.current = setTimeout(() => {
-          setIsFading(false);
-          setAudio(null);
+          stopAudioRef.current();
         }, FADE_DURATION_MS + 200);
       }
     };

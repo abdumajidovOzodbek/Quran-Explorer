@@ -20,7 +20,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { fetchSurahList, fetchVerseOfDay, SurahListItem, VerseOfDay } from "@/constants/api";
 import { UZBEK_NAMES } from "@/constants/uzbekNames";
-import { JUZ_DATA, getJuzNavAyah, getJuzSurahRange } from "@/constants/juz";
+import { JUZ_DATA, getJuzNavAyah } from "@/constants/juz";
 import { DUAS } from "@/constants/duas";
 import { SurahCard } from "@/components/SurahCard";
 import { SurahListSkeleton } from "@/components/ShimmerSkeleton";
