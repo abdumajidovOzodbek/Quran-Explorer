@@ -4,6 +4,8 @@ import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import Colors from "@/constants/colors";
 import { SurahListItem } from "@/constants/api";
 import { UZBEK_NAMES, JUZ_START } from "@/constants/uzbekNames";
+import { applyScript } from "@/constants/latinScript";
+import { useQuran } from "@/context/QuranContext";
 
 interface SurahCardProps {
   surah: SurahListItem;
@@ -14,7 +16,10 @@ interface SurahCardProps {
 
 export function SurahCard({ surah, onPress, isLastRead, isCompleted }: SurahCardProps) {
   const c = Colors.dark;
-  const uzbekName = UZBEK_NAMES[surah.surahNo] || surah.surahNameTranslation;
+  const { settings } = useQuran();
+  const scriptMode = settings.scriptMode ?? "cyrillic";
+  const rawName = UZBEK_NAMES[surah.surahNo] || surah.surahNameTranslation;
+  const uzbekName = applyScript(rawName, scriptMode);
   const juz = JUZ_START[surah.surahNo];
   const isMecca = surah.revelationPlace === "Makkah" || surah.revelationPlace === "Mecca";
 

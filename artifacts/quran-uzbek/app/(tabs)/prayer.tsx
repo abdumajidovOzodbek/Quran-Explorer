@@ -155,7 +155,7 @@ export default function PrayerScreen() {
       }
       rescheduleEnabledNotifs(timesMap, enabledNotifs, PRAYER_NAMES);
     }
-  }, [times]);
+  }, [times, enabledNotifs]);
 
   const toggleNotif = async (prayerKey: string, prayerName: string) => {
     if (Platform.OS === "web") return;
