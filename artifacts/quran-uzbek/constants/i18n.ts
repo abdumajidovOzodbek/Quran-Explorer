@@ -110,6 +110,12 @@ export interface I18nStrings {
   compassS: string;
   compassW: string;
   lastReadBadge: string;
+  duaUmumiy: string;
+  duaErtalab: string;
+  duaKechqurun: string;
+  duaOvqat: string;
+  duaUyqu: string;
+  duaSafar: string;
 }
 
 const uz_cyrillic: I18nStrings = {
@@ -222,6 +228,12 @@ const uz_cyrillic: I18nStrings = {
   compassS: "Ж",
   compassW: "Ғ",
   lastReadBadge: "Сўнгги",
+  duaUmumiy: "Умумий",
+  duaErtalab: "Эрталаб",
+  duaKechqurun: "Кечқурун",
+  duaOvqat: "Овқат",
+  duaUyqu: "Уйқу",
+  duaSafar: "Сафар",
 };
 
 const uz_latin: I18nStrings = {
@@ -334,6 +346,12 @@ const uz_latin: I18nStrings = {
   compassS: "J",
   compassW: "G",
   lastReadBadge: "So'nggi",
+  duaUmumiy: "Umumiy",
+  duaErtalab: "Ertalab",
+  duaKechqurun: "Kechqurun",
+  duaOvqat: "Ovqat",
+  duaUyqu: "Uyqu",
+  duaSafar: "Safar",
 };
 
 const ru: I18nStrings = {
@@ -446,6 +464,12 @@ const ru: I18nStrings = {
   compassS: "Ю",
   compassW: "З",
   lastReadBadge: "Последняя",
+  duaUmumiy: "Общее",
+  duaErtalab: "Утром",
+  duaKechqurun: "Вечером",
+  duaOvqat: "Питание",
+  duaUyqu: "Сон",
+  duaSafar: "В пути",
 };
 
 const en: I18nStrings = {
@@ -558,6 +582,12 @@ const en: I18nStrings = {
   compassS: "S",
   compassW: "W",
   lastReadBadge: "Last read",
+  duaUmumiy: "General",
+  duaErtalab: "Morning",
+  duaKechqurun: "Evening",
+  duaOvqat: "Food",
+  duaUyqu: "Sleep",
+  duaSafar: "Travel",
 };
 
 const translations: Record<AppLanguage, I18nStrings> = {

@@ -16,7 +16,16 @@ import Colors from "@/constants/colors";
 import { DUAS, DUA_CATEGORIES, DuaCategory, Dua } from "@/constants/duas";
 import { cyrillicToLatin } from "@/constants/latinScript";
 import { useQuran } from "@/context/QuranContext";
-import { getStrings } from "@/constants/i18n";
+import { getStrings, I18nStrings } from "@/constants/i18n";
+
+const DUA_CAT_KEY: Record<DuaCategory, keyof I18nStrings> = {
+  umumiy: "duaUmumiy",
+  ertalab: "duaErtalab",
+  kechqurun: "duaKechqurun",
+  ovqat: "duaOvqat",
+  uyqu: "duaUyqu",
+  safar: "duaSafar",
+};
 
 export default function DuasScreen() {
   const insets = useSafeAreaInsets();
@@ -48,7 +57,7 @@ export default function DuasScreen() {
         <View style={styles.duaHeader}>
           <View style={[styles.duaCategoryDot, { backgroundColor: c.tint + "30", borderColor: c.tint + "50" }]}>
             <Text style={[styles.duaCategoryLabel, { color: c.tint }]}>
-              {DUA_CATEGORIES.find((cat) => cat.key === item.category)?.label ?? item.category}
+              {t[DUA_CAT_KEY[item.category]] as string}
             </Text>
           </View>
           <Text style={[styles.duaTitle, { color: c.text }]} numberOfLines={1}>
@@ -128,7 +137,7 @@ export default function DuasScreen() {
               ]}
             >
               <Text style={[styles.chipText, { color: activeCategory === cat.key ? "#000" : c.textSecondary }]}>
-                {cat.label}
+                {t[DUA_CAT_KEY[cat.key]] as string}
               </Text>
             </Pressable>
           ))}

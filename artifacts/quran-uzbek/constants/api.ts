@@ -52,8 +52,8 @@ export interface VerseOfDay {
 }
 
 const SURAH_LIST_CACHE = "@surah_list_v2";
-const surahCacheKey = (n: number) => `@surah_v3_${n}`;
-export const CACHE_COMPLETE_KEY = "@quran_cache_complete_v2";
+const surahCacheKey = (n: number) => `@surah_v4_${n}`;
+export const CACHE_COMPLETE_KEY = "@quran_cache_complete_v3";
 export const TOTAL_SURAHS = 114;
 
 export async function isCacheComplete(): Promise<boolean> {

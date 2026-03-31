@@ -16,8 +16,17 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { fetchSurahList, SurahListItem } from "@/constants/api";
 import { UZBEK_NAMES } from "@/constants/uzbekNames";
+import { cyrillicToLatin } from "@/constants/latinScript";
 import { useQuran } from "@/context/QuranContext";
 import { getStrings } from "@/constants/i18n";
+import { AppLanguage } from "@/types/quran";
+
+function getSurahDisplayName(s: SurahListItem, language: AppLanguage): string {
+  const raw = UZBEK_NAMES[s.surahNo ?? 0] || "";
+  if (language === "uz_cyrillic") return raw || s.surahName;
+  if (language === "uz_latin") return cyrillicToLatin(raw) || s.surahName;
+  return s.surahNameTranslation || s.surahName;
+}
 
 const POPULAR_SURAHS = [1, 2, 18, 36, 55, 67, 112, 113, 114];
 
@@ -27,6 +36,7 @@ export default function SearchScreen() {
   const [search, setSearch] = useState("");
   const { settings } = useQuran();
   const t = getStrings(settings.language);
+  const language = settings.language;
 
   const { data: surahs } = useQuery<SurahListItem[]>({
     queryKey: ["surahList"],
@@ -67,7 +77,7 @@ export default function SearchScreen() {
         <Text style={[styles.numText, { color: c.tint }]}>{s.surahNo}</Text>
       </View>
       <View style={styles.resultInfo}>
-        <Text style={[styles.resultName, { color: c.text }]}>{UZBEK_NAMES[s.surahNo] || s.surahName}</Text>
+        <Text style={[styles.resultName, { color: c.text }]}>{getSurahDisplayName(s, language)}</Text>
         <Text style={[styles.resultSub, { color: c.textSecondary }]}>
           {(s.revelationPlace === "Makkah" || s.revelationPlace === "Mecca") ? t.makkah : t.madinah} • {s.totalAyah} {t.verse}
         </Text>
