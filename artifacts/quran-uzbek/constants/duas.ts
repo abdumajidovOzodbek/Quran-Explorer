@@ -9,11 +9,14 @@ export interface Dua {
   titleEn: string;
   arabic: string;
   uzbek: string;
+  russian: string;
+  english: string;
   transliteration: string;
+  source: string;
 }
 
 export const DUA_CATEGORIES: Array<{ key: DuaCategory; label: string }> = [
-  { key: "umumiy",   label: "Умумий"   },
+  { key: "umumiy",    label: "Умумий"   },
   { key: "ertalab",  label: "Эрталаб"  },
   { key: "kechqurun",label: "Кечқурун" },
   { key: "ovqat",    label: "Овқат"    },
@@ -32,7 +35,10 @@ export const DUAS: Dua[] = [
     titleEn: "Bismillah",
     arabic: "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ",
     uzbek: "Аллоҳ номи билан бошлайман, У Меҳрибон ва Раҳимлидир.",
+    russian: "Начинаю во имя Аллаха, Милостивого, Милосердного.",
+    english: "I begin in the name of Allah, the Most Gracious, the Most Merciful.",
     transliteration: "Bismillaahir rahmaanir rahiim",
+    source: "Quran (1:1)",
   },
   {
     id: "u2",
@@ -43,7 +49,10 @@ export const DUAS: Dua[] = [
     titleEn: "Istighfar",
     arabic: "أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ الَّذِي لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ وَأَتُوبُ إِلَيْهِ",
     uzbek: "Буюк, Ҳайй ва Қаййум Аллоҳдан мағфират сўрайман ва Унга тавба қиламан.",
+    russian: "Прошу прощения у Великого Аллаха, кроме Которого нет иного бога, Живого, Вечного, и каюсь перед Ним.",
+    english: "I seek forgiveness from Allah the Almighty, beside Whom there is no god, the Ever-Living, the Sustainer, and I repent to Him.",
     transliteration: "Astaghfirullaah al-'aziim allazii laa ilaaha illaa huwal hayyul qayyoomu wa atuubu ilayh",
+    source: "Abu Dawud, Tirmidhi",
   },
   {
     id: "u3",
@@ -54,7 +63,10 @@ export const DUAS: Dua[] = [
     titleEn: "For strength",
     arabic: "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ",
     uzbek: "Куч ва қувват фақат Аллоҳ биландир.",
+    russian: "Нет силы и мощи ни у кого, кроме Аллаха.",
+    english: "There is no power and no strength except with Allah.",
     transliteration: "Laa hawla wa laa quwwata illaa billaah",
+    source: "Bukhari, Muslim",
   },
   {
     id: "u4",
@@ -65,7 +77,10 @@ export const DUAS: Dua[] = [
     titleEn: "Dua for parents",
     arabic: "رَّبِّ اغْفِرْ لِي وَلِوَالِدَيَّ وَارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا",
     uzbek: "Раббим! Мени ва ота-онамни кечир ва мени кичкина пайтда тарбиялаганлари учун уларга раҳм қил.",
+    russian: "Господь мой! Прости меня и моих родителей и смилуйся над ними, как они воспитывали меня в детстве.",
+    english: "My Lord! Forgive me and my parents, and have mercy on them as they raised me when I was young.",
     transliteration: "Rabbigh-fir lii wa liwaalidayya warhamhumaa kamaa rabbayaanii saghiiraa",
+    source: "Quran (17:24)",
   },
   {
     id: "u5",
@@ -76,7 +91,10 @@ export const DUAS: Dua[] = [
     titleEn: "For guidance",
     arabic: "اللَّهُمَّ اهْدِنَا فِيمَنْ هَدَيْتَ",
     uzbek: "Аллоҳим! Ҳидоят берганларингни ҳидоят этгандек, мени ҳам ҳидоят эт.",
+    russian: "О Аллах! Направь нас на верный путь, как Ты направил тех, кого наставил.",
+    english: "O Allah! Guide us as You have guided those whom You have guided.",
     transliteration: "Allaahummah-dinaa fiiman hadayt",
+    source: "Abu Dawud",
   },
   {
     id: "u6",
@@ -87,7 +105,10 @@ export const DUAS: Dua[] = [
     titleEn: "For patience",
     arabic: "رَبَّنَا أَفْرِغْ عَلَيْنَا صَبْرًا وَتَوَفَّنَا مُسْلِمِينَ",
     uzbek: "Раббимиз! Бизга сабр бергин ва мусулмон ҳолда вафот эттиргин.",
+    russian: "Господь наш! Ниспошли нам терпение и умори нас мусульманами.",
+    english: "Our Lord! Bestow upon us patience and let us die as Muslims.",
     transliteration: "Rabbanaa afrigh 'alaynaa sabran wa tawaffanaa muslimiin",
+    source: "Quran (7:126)",
   },
   {
     id: "u7",
@@ -98,7 +119,10 @@ export const DUAS: Dua[] = [
     titleEn: "For this world and hereafter",
     arabic: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
     uzbek: "Раббимиз! Бизга дунёда ва охиратда яхшилик бер ва дўзах азобидан бизни асра.",
+    russian: "Господь наш! Даруй нам благо в этом мире и благо в Вечности, и защити нас от мук Огня.",
+    english: "Our Lord! Grant us good in this world and good in the Hereafter, and save us from the punishment of the Fire.",
     transliteration: "Rabbanaa aatinaa fid-dunyaa hasanatan wa fil-aakhirati hasanatan wa qinaa 'azaaban-naar",
+    source: "Quran (2:201)",
   },
   {
     id: "u8",
@@ -109,7 +133,10 @@ export const DUAS: Dua[] = [
     titleEn: "Protection from fear and grief",
     arabic: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ وَالْعَجْزِ وَالْكَسَلِ وَالْبُخْلِ وَالدَّيْنِ وَغَلَبَةِ الرِّجَالِ",
     uzbek: "Аллоҳим! Хавотир, қайғу, ожизлик, ялқовлик, хасислик, қарз ва одамлар зулмидан Сенинг паноҳингни оламан.",
+    russian: "О Аллах! Прибегаю к Твоей защите от беспокойства и печали, от слабости и лени, от скупости и долга, и от господства людей.",
+    english: "O Allah! I seek refuge in You from worry and grief, weakness and laziness, miserliness and debt, and from the overpowering of men.",
     transliteration: "Allaahummaa innii a'uuzu bika minal-hammi wal-hazani wal-'ajzi wal-kasali wal-bukhli wad-dayni wa ghalabatir-rijaal",
+    source: "Bukhari",
   },
   {
     id: "u9",
@@ -120,7 +147,10 @@ export const DUAS: Dua[] = [
     titleEn: "For good character",
     arabic: "اللَّهُمَّ حَسِّنْ خُلُقِي",
     uzbek: "Аллоҳим! Хулқимни чиройли қилгин.",
+    russian: "О Аллах! Сделай мой нрав прекрасным.",
+    english: "O Allah! Make my character beautiful.",
     transliteration: "Allaahummaa hassin khuluqii",
+    source: "Muslim",
   },
   {
     id: "u10",
@@ -131,7 +161,10 @@ export const DUAS: Dua[] = [
     titleEn: "Purifying the heart",
     arabic: "اللَّهُمَّ طَهِّرْ قَلْبِي مِنَ النِّفَاقِ وَعَمَلِي مِنَ الرِّيَاءِ",
     uzbek: "Аллоҳим! Дилимни нифоқдан ва амалимни риёдан поклагин.",
+    russian: "О Аллах! Очисти моё сердце от лицемерия, а мои дела — от показухи.",
+    english: "O Allah! Purify my heart from hypocrisy and my deeds from showing off.",
     transliteration: "Allaahummaa tahhir qalbii minan-nifaaqi wa 'amalii minar-riyaa'",
+    source: "Muslim",
   },
   {
     id: "u11",
@@ -142,7 +175,10 @@ export const DUAS: Dua[] = [
     titleEn: "For knowledge",
     arabic: "رَّبِّ زِدْنِي عِلْمًا",
     uzbek: "Раббим! Илмимни зиёда қилгин.",
+    russian: "Господь мой! Прибавь мне знаний.",
+    english: "My Lord! Increase me in knowledge.",
     transliteration: "Rabbi zidnii 'ilmaa",
+    source: "Quran (20:114)",
   },
   {
     id: "u12",
@@ -153,7 +189,10 @@ export const DUAS: Dua[] = [
     titleEn: "For provision",
     arabic: "اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ",
     uzbek: "Аллоҳим! Ҳалолинг билан ҳаромдан мени беҳожат қилгин.",
+    russian: "О Аллах! Сделай меня самодостаточным через Твоё дозволенное от запретного.",
+    english: "O Allah! Make me sufficient with Your lawful provision over the forbidden.",
     transliteration: "Allaahummak-finii bihalaalika 'an haraamik",
+    source: "Tirmidhi",
   },
   {
     id: "u13",
@@ -164,7 +203,10 @@ export const DUAS: Dua[] = [
     titleEn: "Repentance and forgiveness",
     arabic: "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي",
     uzbek: "Аллоҳим! Сен кечирувчисан ва кечиришни яхши кўрасан, мени кечиргин.",
+    russian: "О Аллах! Воистину, Ты — Прощающий, любишь прощать, так прости же меня.",
+    english: "O Allah! Truly You are Forgiving, You love to forgive, so forgive me.",
     transliteration: "Allaahummaa innaka 'afuwwun tuhibbul-'afwa fa'fu 'annii",
+    source: "Tirmidhi, Ibn Majah",
   },
   {
     id: "u14",
@@ -175,7 +217,10 @@ export const DUAS: Dua[] = [
     titleEn: "For health",
     arabic: "اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي",
     uzbek: "Аллоҳим! Танамга соғлиқ бер. Аллоҳим! Эшитишимga соғлиқ бер. Аллоҳим! Кўришимga соғлиқ бер.",
+    russian: "О Аллах! Даруй здоровье моему телу. О Аллах! Даруй здоровье моему слуху. О Аллах! Даруй здоровье моему зрению.",
+    english: "O Allah! Grant health to my body. O Allah! Grant health to my hearing. O Allah! Grant health to my vision.",
     transliteration: "Allaahummaa 'aafini fii badanii, Allaahummaa 'aafini fii sam'ii, Allaahummaa 'aafini fii basarii",
+    source: "Abu Dawud",
   },
   {
     id: "u15",
@@ -186,7 +231,10 @@ export const DUAS: Dua[] = [
     titleEn: "Ease of affairs",
     arabic: "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي",
     uzbek: "Раббим! Кўкрагимни кенг қилгин ва ишимни осонлаштиргин.",
+    russian: "Господь мой! Расширь мне грудь и облегчи мне дело.",
+    english: "My Lord! Expand my chest and ease my task for me.",
     transliteration: "Rabbish-rah lii sadrii wa yassir lii amrii",
+    source: "Quran (20:25-26)",
   },
   {
     id: "u16",
@@ -197,7 +245,10 @@ export const DUAS: Dua[] = [
     titleEn: "Guidance, piety and chastity",
     arabic: "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَى وَالتُّقَى وَالْعَفَافَ وَالْغِنَى",
     uzbek: "Аллоҳим! Сендан ҳидоят, тақво, иффат ва бойлик сўрайман.",
+    russian: "О Аллах! Прошу Тебя о наставлении, богобоязненности, целомудрии и достатке.",
+    english: "O Allah! I ask You for guidance, piety, chastity and sufficiency.",
     transliteration: "Allaahummaa innii as'alukal hudaa wat-tuqaa wal-'afaafa wal-ghinaa",
+    source: "Muslim",
   },
   {
     id: "u17",
@@ -208,7 +259,10 @@ export const DUAS: Dua[] = [
     titleEn: "Freedom from debt",
     arabic: "اللَّهُمَّ اكْفِنِي بِحَلاَلِكَ عَنْ حَرَامِكَ وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ",
     uzbek: "Аллоҳим! Ҳалолинг билан ҳаромдан мени асра ва Сенинг фазлинг билан бошқаларга муҳтож этма.",
+    russian: "О Аллах! Сделай меня самодостаточным через Твоё дозволенное от запретного и обогати меня Своей милостью, избавив от зависимости от других.",
+    english: "O Allah! Make me sufficient with Your lawful from Your unlawful, and enrich me by Your favour above all others.",
     transliteration: "Allaahummak-finii bihalaalika 'an haraamika wa aghnii bifadlika 'amman siwaak",
+    source: "Tirmidhi",
   },
   {
     id: "u18",
@@ -219,7 +273,10 @@ export const DUAS: Dua[] = [
     titleEn: "For Paradise",
     arabic: "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْجَنَّةَ وَمَا قَرَّبَ إِلَيْهَا مِنْ قَوْلٍ أَوْ عَمَلٍ",
     uzbek: "Аллоҳим! Сендан жаннатни ва унга яқинлаштирувчи сўз ва амалларни сўрайман.",
+    russian: "О Аллах! Прошу Тебя о Рае и о словах и делах, приближающих к нему.",
+    english: "O Allah! I ask You for Paradise and for the words and deeds that bring one closer to it.",
     transliteration: "Allaahummaa innii as'alukal jannata wa maa qarraba ilayhaa min qawlin aw 'amal",
+    source: "Abu Dawud",
   },
   {
     id: "u19",
@@ -230,7 +287,10 @@ export const DUAS: Dua[] = [
     titleEn: "Protection from Hellfire",
     arabic: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ النَّارِ وَمَا قَرَّبَ إِلَيْهَا مِنْ قَوْلٍ أَوْ عَمَلٍ",
     uzbek: "Аллоҳим! Дўзахдан ва унга яқинлаштирувчи сўз ва амалларидан Сенинг паноҳингни оламан.",
+    russian: "О Аллах! Прибегаю к Твоей защите от Огня и от слов и дел, приближающих к нему.",
+    english: "O Allah! I seek refuge in You from the Fire and from the words and deeds that bring one closer to it.",
     transliteration: "Allaahummaa innii a'uuzu bika minan-naari wa maa qarraba ilayhaa min qawlin aw 'amal",
+    source: "Abu Dawud",
   },
   {
     id: "u20",
@@ -241,7 +301,10 @@ export const DUAS: Dua[] = [
     titleEn: "Blessing for the family",
     arabic: "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا",
     uzbek: "Раббимиз! Бизга жуфтлар ва фарзандлардан кўзимизнинг қувончини бергин ва бизни тақводорларнинг имоми қилгин.",
+    russian: "Господь наш! Даруй нам от наших супругов и потомков отраду очей и сделай нас предводителями для богобоязненных.",
+    english: "Our Lord! Grant us from our spouses and children comfort to our eyes and make us a leader for the righteous.",
     transliteration: "Rabbanaa hab lanaa min azwaajinaa wa zurriyyaatinaa qurrata a'yunin waj'alnaa lil-muttaqiina imaaman",
+    source: "Quran (25:74)",
   },
 
   // ============ ERTALAB ============
@@ -254,7 +317,10 @@ export const DUAS: Dua[] = [
     titleEn: "Upon waking up",
     arabic: "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ",
     uzbek: "Бизни ўлдиргандан сўнг тирилтирган Аллоҳга ҳамд бўлсин. Қайта тириш У зотники!",
+    russian: "Хвала Аллаху, Который оживил нас после того, как умертвил нас, и к Нему возвращение.",
+    english: "Praise be to Allah Who gave us life after causing us to die, and to Him is the resurrection.",
     transliteration: "Alhamdulillaahil-lazii ahyaanaa ba'da maa amaatanaa wa ilayhin-nushuur",
+    source: "Bukhari, Muslim",
   },
   {
     id: "e2",
@@ -265,7 +331,10 @@ export const DUAS: Dua[] = [
     titleEn: "Morning dhikr",
     arabic: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ عَدَدَ خَلْقِهِ وَرِضَا نَفْسِهِ وَزِنَةَ عَرْشِهِ وَمِدَادَ كَلِمَاتِهِ",
     uzbek: "Аллоҳни яратган нарсаларининг сони, ўзининг розилиги, Аршининг оғирлиги ва Калималарининг миқдори билан поклайман ва Унга ҳамд айтаман.",
+    russian: "Пречист Аллах и хвала Ему — столько раз, сколько число Его творений, по Его Благоволению, в соответствии с весом Его Трона и объёмом Его слов.",
+    english: "Glory and praise be to Allah as much as the number of His creation, His pleasure, the weight of His Throne, and the extent of His words.",
     transliteration: "Subhaanallaahi wa bihamdihii 'adada khalqihii wa ridaa nafsihii wa zinata 'arshihii wa midaada kalimaaatih",
+    source: "Muslim",
   },
   {
     id: "e3",
@@ -276,7 +345,10 @@ export const DUAS: Dua[] = [
     titleEn: "Sayyidul-Istighfar",
     arabic: "اللَّهُمَّ أَنْتَ رَبِّي لاَ إِلَهَ إِلاَّ أَنْتَ خَلَقْتَنِي وَأَنَا عَبْدُكَ",
     uzbek: "Аллоҳим! Сен менинг Раббимсан, Сендан бошqa илоҳ йўқ. Сен мени яратдинг ва мен Сенинг бандангман.",
+    russian: "О Аллах! Ты мой Господь, нет бога, кроме Тебя. Ты создал меня, и я — Твой раб.",
+    english: "O Allah! You are my Lord, there is no god but You. You created me and I am Your servant.",
     transliteration: "Allaahummaa anta rabbii laa ilaaha illaa anta khalaqtanii wa anaa 'abduk",
+    source: "Bukhari",
   },
   {
     id: "e4",
@@ -287,7 +359,10 @@ export const DUAS: Dua[] = [
     titleEn: "Morning protection",
     arabic: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
     uzbek: "Яратганларнинг yомонлигидан Аллоҳнинг комил сўзлари билан паноҳ тилайман.",
+    russian: "Прибегаю к совершенным словам Аллаха от зла того, что Он создал.",
+    english: "I seek refuge in the perfect words of Allah from the evil of what He has created.",
     transliteration: "A'uuzu bikalimaat-illaahit-taammaati min sharri maa khalaq",
+    source: "Muslim",
   },
   {
     id: "e5",
@@ -298,7 +373,10 @@ export const DUAS: Dua[] = [
     titleEn: "Morning dua",
     arabic: "اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا وَبِكَ نَحْيَا وَبِكَ نَمُوتُ وَإِلَيْكَ الْمَصِيرُ",
     uzbek: "Аллоҳим! Сенинг ёрдаминг билан тонг оттирдик, кечқурун кирдик, яшаймиз, ўламиз ва қайтиш ёлғиз Сенга.",
+    russian: "О Аллах! Благодаря Тебе мы встречаем утро и вечер, живём и умираем, и к Тебе возвращение.",
+    english: "O Allah! By You we reach morning and evening, live and die, and to You is the return.",
     transliteration: "Allaahummaa bika asbahnaa wa bika amsaynaa wa bika nahyaa wa bika namuutu wa ilaykal-masiir",
+    source: "Tirmidhi, Ibn Majah",
   },
   {
     id: "e6",
@@ -309,7 +387,10 @@ export const DUAS: Dua[] = [
     titleEn: "Word of negation",
     arabic: "لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
     uzbek: "Аллоҳдан бошqa илоҳ йўқ, У якка, шериксиз. Мулк Уники, ҳамд Уники ва У ҳар нарсага Қодирдир.",
+    russian: "Нет бога, кроме Аллаха, Единого, без сотоварища. Ему принадлежит власть и хвала, и Он над каждой вещью Всемогущ.",
+    english: "There is no god but Allah alone, without partner. To Him belongs all sovereignty and all praise, and He is over all things powerful.",
     transliteration: "Laa ilaaha illallaahu wahdahu laa shariika lah, lahul-mulku wa lahul-hamdu wa huwa 'alaa kulli shay'in qadiir",
+    source: "Bukhari, Muslim",
   },
   {
     id: "e7",
@@ -320,7 +401,10 @@ export const DUAS: Dua[] = [
     titleEn: "When getting dressed",
     arabic: "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ خَيْرِهِ وَخَيْرِ مَا هُوَ لَهُ وَأَعُوذُ بِكَ مِنْ شَرِّهِ وَشَرِّ مَا هُوَ لَهُ",
     uzbek: "Аллоҳим! Сендан бу нарсанинг хайрини ва у учун ҳасиллашган хайрни сўрайман, ёмонлигидан ва у учун ҳасиллашган ёмонликдан Сенинг паноҳингни оламан.",
+    russian: "О Аллах! Прошу Тебя о его благе и благе того, для чего он предназначен, и прибегаю к Твоей защите от его зла и зла того, для чего он предназначен.",
+    english: "O Allah! I ask You for the good of it and the good of what it was made for, and I seek refuge in You from the evil of it and the evil of what it was made for.",
     transliteration: "Allaahummaa innii as'aluka min khayrihi wa khayri maa huwa lahu wa a'uuzu bika min sharrihi wa sharri maa huwa lah",
+    source: "Abu Dawud, Tirmidhi",
   },
   {
     id: "e8",
@@ -331,7 +415,10 @@ export const DUAS: Dua[] = [
     titleEn: "At dawn",
     arabic: "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ وَالْحَمْدُ لِلَّهِ وَلَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ",
     uzbek: "Биз ва бутун мулк Аллоҳнинг ёрдамида тонг оттирдик. Ҳамд Аллоҳга, Унга бошqa илоҳ йўқ, У якка ва шериксиздир.",
+    russian: "Мы встретили утро и всё царство принадлежит Аллаху. Хвала Аллаху, нет бога, кроме Него, Единого, без сотоварища.",
+    english: "We have reached the morning and at this very time unto Allah belongs all sovereignty. All praise is for Allah, there is no god but Allah, alone, without partner.",
     transliteration: "Asbahnaa wa asbahal-mulku lillaahi walhamdu lillaahi wa laa ilaaha illallaahu wahdahu laa shariika lah",
+    source: "Muslim",
   },
   {
     id: "e9",
@@ -342,7 +429,10 @@ export const DUAS: Dua[] = [
     titleEn: "After Fajr prayer",
     arabic: "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا وَرِزْقًا طَيِّبًا وَعَمَلاً مُتَقَبَّلاً",
     uzbek: "Аллоҳим! Сендан фойдали илм, ҳалол ризқ ва қабул қилинадиган амал сўрайман.",
+    russian: "О Аллах! Прошу Тебя о полезных знаниях, праведном пропитании и принятом деянии.",
+    english: "O Allah! I ask You for beneficial knowledge, good provision and accepted deeds.",
     transliteration: "Allaahummaa innii as'aluka 'ilman naafi'an wa rizqan tayyiban wa 'amalan mutaqabbalan",
+    source: "Ibn Majah",
   },
   {
     id: "e10",
@@ -353,7 +443,10 @@ export const DUAS: Dua[] = [
     titleEn: "Start of a new day",
     arabic: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ عَلَيْكَ تَوَكَّلْتُ وَأَنْتَ رَبُّ الْعَرْشِ الْعَظِيمِ",
     uzbek: "Аллоҳим! Сен менинг Раббимсан. Сендан бошqa илоҳ йўқ. Сенга таваккал қилдим. Сен Улуғ Аршнинг Раббисан.",
+    russian: "О Аллах! Ты мой Господь, нет бога, кроме Тебя. На Тебя я полагаюсь. Ты — Господь Великого Трона.",
+    english: "O Allah! You are my Lord, there is no god but You. In You I put my trust. You are the Lord of the Great Throne.",
     transliteration: "Allaahummaa anta rabbii laa ilaaha illaa anta 'alayka tawakkaltu wa anta rabbul-'arshil-'aziim",
+    source: "Tirmidhi",
   },
 
   // ============ KECHQURUN ============
@@ -366,7 +459,10 @@ export const DUAS: Dua[] = [
     titleEn: "Evening dua",
     arabic: "اللَّهُمَّ بِكَ أَمْسَيْنَا وَبِكَ أَصْبَحْنَا وَبِكَ نَحْيَا وَبِكَ نَمُوتُ وَإِلَيْكَ الْمَصِيرُ",
     uzbek: "Аллоҳим! Сенинг ёрдаминг билан кечқурун кирдик, тонг оттирдик, яшаймиз, ўламиз ва қайтиш ёлғиз Сенга.",
+    russian: "О Аллах! Благодаря Тебе мы встречаем вечер и утро, живём и умираем, и к Тебе возвращение.",
+    english: "O Allah! By You we reach evening and morning, live and die, and to You is the return.",
     transliteration: "Allaahummaa bika amsaynaa wa bika asbahnaa wa bika nahyaa wa bika namuutu wa ilaykal-masiir",
+    source: "Tirmidhi, Ibn Majah",
   },
   {
     id: "k2",
@@ -377,7 +473,10 @@ export const DUAS: Dua[] = [
     titleEn: "Repentance from sins",
     arabic: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ وَمِنْ عَذَابِ النَّارِ",
     uzbek: "Аллоҳим! Қабр азобидан ва дўзах азобидан Сенинг паноҳингни оламан.",
+    russian: "О Аллах! Прибегаю к Твоей защите от наказания в могиле и от наказания в Огне.",
+    english: "O Allah! I seek refuge in You from the punishment of the grave and from the punishment of the Fire.",
     transliteration: "Allaahummaa innii a'uuzu bika min 'azaabil-qabri wa min 'azaabin-naar",
+    source: "Bukhari, Muslim",
   },
   {
     id: "k3",
@@ -388,7 +487,10 @@ export const DUAS: Dua[] = [
     titleEn: "Evening dhikr",
     arabic: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
     uzbek: "Аллоҳ поктир ва ҳамд У учундир. (100 марта)",
+    russian: "Пречист Аллах и хвала Ему. (100 раз)",
+    english: "Glory be to Allah and praise is due to Him. (100 times)",
     transliteration: "Subhaanallaahi wa bihamdih",
+    source: "Bukhari, Muslim",
   },
   {
     id: "k4",
@@ -399,7 +501,10 @@ export const DUAS: Dua[] = [
     titleEn: "Protection from all creation",
     arabic: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
     uzbek: "Яратганларнинг ёмонлигидан Аллоҳнинг комил сўзлари билан паноҳ тилайман.",
+    russian: "Прибегаю к совершенным словам Аллаха от зла того, что Он создал.",
+    english: "I seek refuge in the perfect words of Allah from the evil of what He has created.",
     transliteration: "A'uuzu bikalimaat-illaahit-taammaati min sharri maa khalaq",
+    source: "Muslim",
   },
   {
     id: "k5",
@@ -410,7 +515,10 @@ export const DUAS: Dua[] = [
     titleEn: "Protection from shaytan",
     arabic: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الشَّيْطَانِ الرَّجِيمِ",
     uzbek: "Аллоҳим! Қувилган шайтондан Сенинг паноҳингни оламан.",
+    russian: "О Аллах! Прибегаю к Твоей защите от проклятого шайтана.",
+    english: "O Allah! I seek refuge in You from the accursed shaytan.",
     transliteration: "Allaahummaa innii a'uuzu bika minash-shaytaanir-rajiim",
+    source: "Bukhari",
   },
   {
     id: "k6",
@@ -421,7 +529,10 @@ export const DUAS: Dua[] = [
     titleEn: "Safety through the night",
     arabic: "اللَّهُمَّ عَالِمَ الْغَيْبِ وَالشَّهَادَةِ فَاطِرَ السَّمَاوَاتِ وَالأَرْضِ",
     uzbek: "Аллоҳим! Ғайб ва ошкорни Билувчи, Осмонлар ва Ернинг Яратувчиси.",
+    russian: "О Аллах! Знающий сокровенное и явное, Творец небес и земли.",
+    english: "O Allah! Knower of the unseen and the visible, Creator of the heavens and the earth.",
     transliteration: "Allaahummaa 'aalimal-ghaybi wash-shahaadati faatiris-samaawaati wal-ard",
+    source: "Tirmidhi",
   },
   {
     id: "k7",
@@ -432,7 +543,10 @@ export const DUAS: Dua[] = [
     titleEn: "Gratitude of the heart",
     arabic: "اللَّهُمَّ مَا أَمْسَى بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ",
     uzbek: "Аллоҳим! Мен ёки бандаларингdan биriga тушган барча неъмат фақат Сендандир.",
+    russian: "О Аллах! Всякая милость, которая настигла меня или кого-либо из Твоих созданий, — только от Тебя одного.",
+    english: "O Allah! Whatever blessing I or any of Your creation has received, it is from You alone.",
     transliteration: "Allaahummaa maa amsaa bii min ni'matin aw bi-ahadin min khalqika faminka wahdak",
+    source: "Abu Dawud",
   },
   {
     id: "k8",
@@ -443,7 +557,10 @@ export const DUAS: Dua[] = [
     titleEn: "Dhikr before sleep",
     arabic: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
     uzbek: "Аллоҳ поктир ва ҳамд У учундир. (30 марта)",
+    russian: "Пречист Аллах и хвала Ему. (30 раз)",
+    english: "Glory be to Allah and praise is due to Him. (30 times)",
     transliteration: "Subhaanallaahi wa bihamdih",
+    source: "Bukhari, Muslim",
   },
 
   // ============ OVQAT ============
@@ -456,7 +573,10 @@ export const DUAS: Dua[] = [
     titleEn: "Before eating",
     arabic: "بِسْمِ اللَّهِ وَعَلَى بَرَكَةِ اللَّهِ",
     uzbek: "Аллоҳ номи ва Аллоҳнинг барака билан (бошлайман).",
+    russian: "С именем Аллаха и с благодатью Аллаха (начинаю).",
+    english: "In the name of Allah and with the blessings of Allah (I begin).",
     transliteration: "Bismillaahi wa 'alaa barakatillaah",
+    source: "Ibn Majah",
   },
   {
     id: "o2",
@@ -467,7 +587,10 @@ export const DUAS: Dua[] = [
     titleEn: "If forgot to say Bismillah",
     arabic: "بِسْمِ اللَّهِ فِي أَوَّلِهِ وَآخِرِهِ",
     uzbek: "Аллоҳ номи билан бошида ва охирида.",
+    russian: "С именем Аллаха в начале и в конце (приёма пищи).",
+    english: "In the name of Allah at its beginning and its end.",
     transliteration: "Bismillaahi fii awwalihi wa aakhirih",
+    source: "Abu Dawud, Tirmidhi",
   },
   {
     id: "o3",
@@ -478,7 +601,10 @@ export const DUAS: Dua[] = [
     titleEn: "After eating",
     arabic: "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مُسْلِمِينَ",
     uzbek: "Бизни таомлантирган, суғорган ва мусулмонлардан қилган Аллоҳга ҳамд бўлсин.",
+    russian: "Хвала Аллаху, Который накормил нас, напоил нас и сделал нас мусульманами.",
+    english: "Praise be to Allah Who fed us, gave us drink, and made us Muslims.",
     transliteration: "Alhamdulillaahil-lazii at'amanaa wa saqaanaa wa ja'alnaa muslimiin",
+    source: "Abu Dawud, Tirmidhi",
   },
   {
     id: "o4",
@@ -489,7 +615,10 @@ export const DUAS: Dua[] = [
     titleEn: "Breaking the fast",
     arabic: "اللَّهُمَّ لَكَ صُمْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ",
     uzbek: "Аллоҳим! Сен учун рўза тутдим ва Сенинг ризқинг билан ифтор қилдим.",
+    russian: "О Аллах! Для Тебя я постился и Твоим уделом разговелся.",
+    english: "O Allah! For You I fasted and with Your provision I break my fast.",
     transliteration: "Allaahummaa laka sumtu wa 'alaa rizqika aftart",
+    source: "Abu Dawud",
   },
   {
     id: "o5",
@@ -500,7 +629,10 @@ export const DUAS: Dua[] = [
     titleEn: "Seeing off a guest",
     arabic: "أَكَلَ طَعَامَكُمُ الأَبْرَارُ وَصَلَّتْ عَلَيْكُمُ الْمَلَائِكَةُ وَأَفْطَرَ عِنْدَكُمُ الصَّائِمُونَ",
     uzbek: "Яхшилар сизнинг таомингизни есин, фаришталар сизга салавот айтсин ва рўзадорлар сизникида ифтор қилсин.",
+    russian: "Пусть едят вашу пищу праведники, пусть ангелы молятся за вас и пусть постящиеся разговляются у вас.",
+    english: "May the righteous eat your food, may the angels pray for you and may the fasting break their fast with you.",
     transliteration: "Akala ta'aamakumul-abraaru wa sallat 'alaykumul-malaa'ikatu wa aftara 'indakumus-saa'imuun",
+    source: "Bukhari, Muslim",
   },
   {
     id: "o6",
@@ -511,7 +643,10 @@ export const DUAS: Dua[] = [
     titleEn: "When drinking water",
     arabic: "بِسْمِ اللَّهِ",
     uzbek: "Аллоҳ номи билан.",
+    russian: "С именем Аллаха.",
+    english: "In the name of Allah.",
     transliteration: "Bismillaah",
+    source: "General Sunnah",
   },
   {
     id: "o7",
@@ -522,7 +657,10 @@ export const DUAS: Dua[] = [
     titleEn: "Iftar dua",
     arabic: "ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ وَثَبَتَ الأَجْرُ إِنْ شَاءَ اللَّهُ",
     uzbek: "Чанқоқлик кетди, томирлар намланди ва ажр — Аллоҳ хоҳлаganда — собит бўлди.",
+    russian: "Ушла жажда, увлажнились жилы, и вознаграждение установлено, если пожелает Аллах.",
+    english: "The thirst has gone, the veins are moistened, and the reward is certain if Allah wills.",
     transliteration: "Zahabaz-zama'u wabtallatil-'uruuqu wa thabatal-ajru in-shaa'allaah",
+    source: "Abu Dawud",
   },
 
   // ============ UYQU ============
@@ -535,7 +673,10 @@ export const DUAS: Dua[] = [
     titleEn: "Before sleeping",
     arabic: "بِسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا",
     uzbek: "Аллоҳим! Сенинг номинг билан ўламан ва тириламан.",
+    russian: "О Аллах! Во имя Твоё умираю и живу.",
+    english: "O Allah! In Your name I die and I live.",
     transliteration: "Bismikallaahumma amuutu wa ahyaa",
+    source: "Bukhari, Muslim",
   },
   {
     id: "y2",
@@ -546,7 +687,10 @@ export const DUAS: Dua[] = [
     titleEn: "Lying on the right side",
     arabic: "اللَّهُمَّ إِنِّي أَسْلَمْتُ نَفْسِي إِلَيْكَ وَوَجَّهْتُ وَجْهِي إِلَيْكَ",
     uzbek: "Аллоҳим! Мен ўзимни Сенга топшира ва юзимни Сенга бурдим.",
+    russian: "О Аллах! Воистину, я покорился душой Тебе и обратил лицо к Тебе.",
+    english: "O Allah! I have submitted myself to You and turned my face to You.",
     transliteration: "Allaahummaa innii aslamtu nafsii ilayka wa wajjahtu wajhii ilayk",
+    source: "Bukhari, Muslim",
   },
   {
     id: "y3",
@@ -557,7 +701,10 @@ export const DUAS: Dua[] = [
     titleEn: "After a bad dream",
     arabic: "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ",
     uzbek: "Мен қувилган шайтондан Аллоҳнинг паноҳини тилайман.",
+    russian: "Прибегаю к защите Аллаха от проклятого шайтана.",
+    english: "I seek refuge in Allah from the accursed shaytan.",
     transliteration: "A'uuzu billaahi minash-shaytaanir-rajiim",
+    source: "Bukhari, Muslim",
   },
   {
     id: "y4",
@@ -568,7 +715,10 @@ export const DUAS: Dua[] = [
     titleEn: "Before sleep 3 times",
     arabic: "سُبْحَانَ اللَّهِ وَالْحَمْدُ لِلَّهِ وَاللَّهُ أَكْبَرُ",
     uzbek: "Аллоҳ поктир, ҳамд Аллоҳга ва Аллоҳ улуғдир. (33 марта)",
+    russian: "Пречист Аллах, хвала Аллаху, Аллах Велик. (33 раза)",
+    english: "Glory be to Allah, praise be to Allah, Allah is the Greatest. (33 times)",
     transliteration: "Subhaanallaahi walhamdu lillaahi wallaahu akbar",
+    source: "Bukhari, Muslim",
   },
   {
     id: "y5",
@@ -579,7 +729,10 @@ export const DUAS: Dua[] = [
     titleEn: "Surah Al-Mulk",
     arabic: "تَبَارَكَ الَّذِي بِيَدِهِ الْمُلْكُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
     uzbek: "Мулк Ўз қўлида бўлган ва ҳар нарсага Қодир бўлган Аллоҳ баракотлидир.",
+    russian: "Благословен Тот, в Чьей руке власть. Он над каждой вещью Всемогущ.",
+    english: "Blessed is He in Whose hand is dominion, and He is over all things powerful.",
     transliteration: "Tabaarakal-lazii biyadihil-mulku wa huwa 'alaa kulli shay'in qadiir",
+    source: "Quran (67:1)",
   },
   {
     id: "y6",
@@ -590,7 +743,10 @@ export const DUAS: Dua[] = [
     titleEn: "Waking up at night",
     arabic: "لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
     uzbek: "Аллоҳдан бошqa илоҳ йўқ, У якка ва шериксиз. Мулк Уники, ҳамд Уники ва У ҳар нарсага Қодирдир.",
+    russian: "Нет бога, кроме Аллаха, Единого, без сотоварища. Ему принадлежит власть и хвала, и Он над каждой вещью Всемогущ.",
+    english: "There is no god but Allah alone, without partner. To Him belongs all sovereignty and praise, and He is over all things powerful.",
     transliteration: "Laa ilaaha illallaahu wahdahu laa shariika lah, lahul-mulku wa lahul-hamdu wa huwa 'alaa kulli shay'in qadiir",
+    source: "Bukhari",
   },
   {
     id: "y7",
@@ -601,7 +757,10 @@ export const DUAS: Dua[] = [
     titleEn: "Ayatul-Kursi before sleep",
     arabic: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ",
     uzbek: "Аллоҳ — Ундан бошqa илоҳ йўқ, Тирик ва Барқарор Зот.",
+    russian: "Аллах — нет бога, кроме Него, Живого, Вечного.",
+    english: "Allah — there is no god but Him, the Ever-Living, the Sustainer.",
     transliteration: "Allaahu laa ilaaha illaa huwal-hayyul-qayyuum",
+    source: "Quran (2:255)",
   },
 
   // ============ SAFAR ============
@@ -614,7 +773,10 @@ export const DUAS: Dua[] = [
     titleEn: "Setting off on a journey",
     arabic: "اللَّهُمَّ إِنَّا نَسْأَلُكَ فِي سَفَرِنَا هَذَا الْبِرَّ وَالتَّقْوَى",
     uzbek: "Аллоҳим! Бу сафаримизда Сендан яхшилик ва тақво сўраймиз.",
+    russian: "О Аллах! Просим Тебя в этом нашем путешествии о праведности и богобоязненности.",
+    english: "O Allah! We ask You in this journey of ours for righteousness and piety.",
     transliteration: "Allaahummaa innaa nas'aluka fii safarinaa haazal-birra wat-taqwaa",
+    source: "Muslim",
   },
   {
     id: "s2",
@@ -625,7 +787,10 @@ export const DUAS: Dua[] = [
     titleEn: "Leaving the house",
     arabic: "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ",
     uzbek: "Аллоҳ номи билан, Аллоҳга таваккал қилдим, куч ва қувват фақат Аллоҳ биландир.",
+    russian: "С именем Аллаха, полагаюсь на Аллаха, нет силы и мощи ни у кого, кроме Аллаха.",
+    english: "In the name of Allah, I put my trust in Allah, there is no power and strength except with Allah.",
     transliteration: "Bismillaahi tawakkaltu 'alallaahi laa hawla wa laa quwwata illaa billaah",
+    source: "Abu Dawud, Tirmidhi",
   },
   {
     id: "s3",
@@ -635,8 +800,11 @@ export const DUAS: Dua[] = [
     titleRu: "При посадке в транспорт",
     titleEn: "Boarding transportation",
     arabic: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ",
-    uzbek: "Буни бизга бўйсундирган Аллоҳ поктир, биз уни бўйсундира олмаsdik. Биз Раббимизга қайтамиз.",
+    uzbek: "Буни бизга бўйсундирган Аллоҳ поктир, биз уни бўйсундира олмаsdик. Биз Раббимизга қайтамиз.",
+    russian: "Пречист Тот, Кто покорил нам это, тогда как мы не могли этого сделать. И поистине, мы возвращаемся к нашему Господу.",
+    english: "Glory be to Him Who has subjected this to us, and we were not capable of that. And verily, we are returning to our Lord.",
     transliteration: "Subhaanalazii sakhkhara lanaa haazaa wa maa kunnaa lahu muqriniina wa innaa ilaa rabbinaa lamunqalibuun",
+    source: "Quran (43:13-14)",
   },
   {
     id: "s4",
@@ -647,7 +815,10 @@ export const DUAS: Dua[] = [
     titleEn: "Entering a new city",
     arabic: "اللَّهُمَّ بَارِكْ لَنَا فِيهَا",
     uzbek: "Аллоҳим! Бу шаҳарда бизга барака бергин.",
+    russian: "О Аллах! Даруй нам благодать в нём.",
+    english: "O Allah! Bless us in it.",
     transliteration: "Allaahummaa baarik lanaa fiihaa",
+    source: "Muslim",
   },
   {
     id: "s5",
@@ -658,7 +829,10 @@ export const DUAS: Dua[] = [
     titleEn: "Upon returning",
     arabic: "آيِبُونَ تَائِبُونَ عَابِدُونَ لِرَبِّنَا حَامِدُونَ",
     uzbek: "Қайтувчимиз, тавбачимиз, ибодат қилувчимиз ва Раббимизга ҳамд айтувчимиз.",
+    russian: "Мы возвращаемся, каясь, поклоняясь и хваля нашего Господа.",
+    english: "We are returning, repenting, worshipping and praising our Lord.",
     transliteration: "Aa'ibuuna taa'ibuuna 'aabiduuna li-rabbinaa haamiduun",
+    source: "Bukhari, Muslim",
   },
   {
     id: "s6",
@@ -669,7 +843,10 @@ export const DUAS: Dua[] = [
     titleEn: "Getting into a car",
     arabic: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ",
     uzbek: "Буни бизга бўйсундирган Аллоҳ поктир, биз уни маҳкам ушлай олмасdик.",
+    russian: "Пречист Тот, Кто покорил нам это, тогда как мы не могли этого сделать.",
+    english: "Glory be to Him Who has subjected this to us, and we were not capable of that.",
     transliteration: "Subhaanallazii sakhkhara lanaa haazaa wa maa kunnaa lahu muqriniin",
+    source: "Quran (43:13)",
   },
   {
     id: "s7",
@@ -680,7 +857,10 @@ export const DUAS: Dua[] = [
     titleEn: "From hardships of travel",
     arabic: "اللَّهُمَّ إِنَّا نَعُوذُ بِكَ مِنْ وَعْثَاءِ السَّفَرِ وَكَآبَةِ الْمُنْقَلَبِ",
     uzbek: "Аллоҳим! Сафарнинг машаqqатидан ва қайтишнинг ғамгинлигидан Сенинг паноҳингни оламиз.",
+    russian: "О Аллах! Прибегаем к Твоей защите от тягот пути и безрадостного возвращения.",
+    english: "O Allah! We seek refuge in You from the hardships of travel and a sorrowful return.",
     transliteration: "Allaahummaa innaa na'uuzu bika min wa'saais-safari wa kaabatil-munqalab",
+    source: "Bukhari, Muslim",
   },
   {
     id: "s8",
@@ -691,6 +871,9 @@ export const DUAS: Dua[] = [
     titleEn: "For a blessed journey",
     arabic: "اللَّهُمَّ اجْعَلْ لَنَا فِي سَفَرِنَا هَذَا خَيْرًا",
     uzbek: "Аллоҳим! Бу сафаримизни хайрли қилгин.",
+    russian: "О Аллах! Сделай наше путешествие благословенным.",
+    english: "O Allah! Make this journey of ours blessed.",
     transliteration: "Allaahummaj'al lanaa fii safarinaa haazaa khayran",
+    source: "Tirmidhi",
   },
 ];

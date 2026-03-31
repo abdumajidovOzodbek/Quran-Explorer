@@ -87,9 +87,16 @@ export default function DuasScreen() {
                 {(language === "ru" || language === "uz_cyrillic") ? latinToRussianTranslit(item.transliteration) : item.transliteration}
               </Text>
             </View>
-            <Text style={[styles.duaUzbek, { color: c.textSecondary }]}>
-              {language === "uz_latin" ? cyrillicToLatin(item.uzbek) : item.uzbek}
+            <Text style={[styles.duaMeaning, { color: c.textSecondary }]}>
+              {language === "ru" ? item.russian :
+               language === "en" ? item.english :
+               language === "uz_latin" ? cyrillicToLatin(item.uzbek) :
+               item.uzbek}
             </Text>
+            <View style={styles.sourceRow}>
+              <Ionicons name="book-outline" size={11} color={c.textMuted} />
+              <Text style={[styles.sourceText, { color: c.textMuted }]}>{item.source}</Text>
+            </View>
           </>
         )}
       </Pressable>
@@ -267,10 +274,21 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontStyle: "italic",
   },
-  duaUzbek: {
+  duaMeaning: {
     fontSize: 13,
     fontFamily: "Inter_400Regular",
     lineHeight: 20,
+  },
+  sourceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 2,
+  },
+  sourceText: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    fontStyle: "italic",
   },
   empty: {
     alignItems: "center",
