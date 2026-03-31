@@ -81,7 +81,7 @@ export default function DuasScreen() {
             <View style={[styles.translitBox, { backgroundColor: c.background }]}>
               <Text style={[styles.translitLabel, { color: c.textMuted }]}>Translit</Text>
               <Text style={[styles.translitText, { color: c.textSecondary }]}>
-                {language === "ru" ? latinToRussianTranslit(item.transliteration) : item.transliteration}
+                {(language === "ru" || language === "uz_cyrillic") ? latinToRussianTranslit(item.transliteration) : item.transliteration}
               </Text>
             </View>
             <Text style={[styles.duaUzbek, { color: c.textSecondary }]}>

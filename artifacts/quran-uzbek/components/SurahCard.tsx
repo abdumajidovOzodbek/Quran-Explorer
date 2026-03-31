@@ -24,8 +24,7 @@ export function SurahCard({ surah, onPress, isLastRead, isCompleted }: SurahCard
   const rawName = UZBEK_NAMES[surah.surahNo] || surah.surahNameTranslation;
   const uzbekName =
     language === "uz_latin" ? cyrillicToLatin(rawName) :
-    language === "uz_cyrillic" ? rawName :
-    language === "ru" ? (RUSSIAN_NAMES[surah.surahNo] || surah.surahNameTranslation) :
+    language === "uz_cyrillic" || language === "ru" ? (RUSSIAN_NAMES[surah.surahNo] || surah.surahNameTranslation) :
     surah.surahNameTranslation;
   const juz = JUZ_START[surah.surahNo];
   const isMecca = surah.revelationPlace === "Makkah" || surah.revelationPlace === "Mecca";

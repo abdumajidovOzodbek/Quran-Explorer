@@ -74,9 +74,8 @@ function buildFlatJuzData(
 }
 
 function getLocalSurahName(surahNo: number, surahName: string, language: AppLanguage): string {
-  if (language === "uz_cyrillic") return UZBEK_NAMES[surahNo] || surahName;
   if (language === "uz_latin") return cyrillicToLatin(UZBEK_NAMES[surahNo] || "") || surahName;
-  if (language === "ru") return RUSSIAN_NAMES[surahNo] || surahName;
+  if (language === "uz_cyrillic" || language === "ru") return RUSSIAN_NAMES[surahNo] || surahName;
   return surahName;
 }
 

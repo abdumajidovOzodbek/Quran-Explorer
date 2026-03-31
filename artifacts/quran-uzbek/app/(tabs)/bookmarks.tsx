@@ -28,9 +28,8 @@ export default function BookmarksScreen() {
   const language = settings.language;
 
   const getBookmarkSurahName = (surahNo: number, surahName: string) => {
-    if (language === "uz_cyrillic") return UZBEK_NAMES[surahNo] || surahName;
     if (language === "uz_latin") return cyrillicToLatin(UZBEK_NAMES[surahNo] || "") || surahName;
-    if (language === "ru") return RUSSIAN_NAMES[surahNo] || surahName;
+    if (language === "uz_cyrillic" || language === "ru") return RUSSIAN_NAMES[surahNo] || surahName;
     return surahName;
   };
 

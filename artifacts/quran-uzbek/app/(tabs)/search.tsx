@@ -23,10 +23,10 @@ import { getStrings } from "@/constants/i18n";
 import { AppLanguage } from "@/types/quran";
 
 function getSurahDisplayName(s: SurahListItem, language: AppLanguage): string {
-  const raw = UZBEK_NAMES[s.surahNo ?? 0] || "";
-  if (language === "uz_cyrillic") return raw || s.surahName;
+  const no = s.surahNo ?? 0;
+  const raw = UZBEK_NAMES[no] || "";
   if (language === "uz_latin") return cyrillicToLatin(raw) || s.surahName;
-  if (language === "ru") return RUSSIAN_NAMES[s.surahNo ?? 0] || s.surahName;
+  if (language === "uz_cyrillic" || language === "ru") return RUSSIAN_NAMES[no] || s.surahName;
   return s.surahNameTranslation || s.surahName;
 }
 

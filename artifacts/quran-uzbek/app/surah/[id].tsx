@@ -88,9 +88,8 @@ export default function SurahScreen() {
 
   const getSurahDisplayName = () => {
     const lang = settings.language;
-    if (lang === "uz_cyrillic") return UZBEK_NAMES[surahNo] || data?.surahName || `Sura ${surahNo}`;
     if (lang === "uz_latin") return cyrillicToLatin(UZBEK_NAMES[surahNo] || "") || data?.surahName || `Surah ${surahNo}`;
-    if (lang === "ru") return RUSSIAN_NAMES[surahNo] || data?.surahName || `Sura ${surahNo}`;
+    if (lang === "uz_cyrillic" || lang === "ru") return RUSSIAN_NAMES[surahNo] || data?.surahName || `Sura ${surahNo}`;
     return data?.surahName || `Surah ${surahNo}`;
   };
 
@@ -269,7 +268,7 @@ export default function SurahScreen() {
                   بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                 </Text>
                 <Text style={[styles.bismillahTranslit, { color: c.textSecondary }]}>
-                  {settings.language === "ru"
+                  {(settings.language === "ru" || settings.language === "uz_cyrillic")
                     ? latinToRussianTranslit("Bismillahir Rohmanir Rohiym")
                     : "Bismillahir Rohmanir Rohiym"}
                 </Text>

@@ -185,7 +185,7 @@ export function VerseCard({
 
       {showTransliteration && transliteration && (
         <Text style={[styles.transliteration, { color: c.textSecondary, fontSize: translationFontSize - 1 }]}>
-          {language === "ru" ? latinToRussianTranslit(transliteration) : transliteration}
+          {(language === "ru" || language === "uz_cyrillic") ? latinToRussianTranslit(transliteration) : transliteration}
         </Text>
       )}
 
