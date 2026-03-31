@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { useQuran } from "@/context/QuranContext";
 import { RECITERS, TOTAL_SURAHS } from "@/constants/api";
-import { ReadingMode } from "@/types/quran";
+import { ReadingMode, ScriptMode } from "@/types/quran";
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
@@ -26,6 +26,11 @@ export default function SettingsScreen() {
     { value: "both", label: "Arabcha + Tarjima" },
     { value: "arabic-only", label: "Faqat Arabcha" },
     { value: "translation", label: "Faqat Tarjima" },
+  ];
+
+  const scriptModes: { value: ScriptMode; label: string; sub: string }[] = [
+    { value: "cyrillic", label: "Кирилл", sub: "Ўзбек кириллча (стандарт)" },
+    { value: "latin", label: "Lotin", sub: "O\u02bbzbek lotincha" },
   ];
 
   return (
@@ -155,6 +160,33 @@ export default function SettingsScreen() {
             </Pressable>
           </View>
           <Text style={[styles.sizeLabel, { color: c.textMuted }]}>{settings.translationFontSize}pt</Text>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>YOZUV (TARJIMA)</Text>
+        <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}>
+          {scriptModes.map((mode, idx) => (
+            <Pressable
+              key={mode.value}
+              onPress={() => {
+                Haptics.selectionAsync();
+                updateSettings({ scriptMode: mode.value });
+              }}
+              style={[
+                styles.option,
+                idx < scriptModes.length - 1 && { borderBottomWidth: 1, borderBottomColor: c.border },
+              ]}
+            >
+              <View>
+                <Text style={[styles.optionText, { color: c.text }]}>{mode.label}</Text>
+                <Text style={[styles.optionSub, { color: c.textSecondary }]}>{mode.sub}</Text>
+              </View>
+              {settings.scriptMode === mode.value && (
+                <Ionicons name="checkmark-circle" size={22} color={c.tint} />
+              )}
+            </Pressable>
+          ))}
         </View>
       </View>
 

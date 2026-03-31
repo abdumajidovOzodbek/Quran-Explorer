@@ -49,3 +49,4 @@ export interface Bookmark {
 
 export type ReadingMode = "arabic-only" | "translation" | "both";
 export type DisplayLanguage = "uzbek" | "english";
+export type ScriptMode = "cyrillic" | "latin";

@@ -25,6 +25,7 @@ import { DUAS } from "@/constants/duas";
 import { SurahCard } from "@/components/SurahCard";
 import { SurahListSkeleton } from "@/components/ShimmerSkeleton";
 import { useQuran } from "@/context/QuranContext";
+import { applyScript } from "@/constants/latinScript";
 
 type ViewMode = "surah" | "juz";
 
@@ -88,7 +89,10 @@ export default function HomeScreen() {
     showKhatmahModal,
     dismissKhatmahModal,
     resetKhatmah,
+    settings,
   } = useQuran();
+
+  const scriptMode = settings.scriptMode ?? "cyrillic";
 
   const { data: surahs, isLoading, isError, refetch } = useQuery<SurahListItem[]>({
     queryKey: ["surahList"],
@@ -191,7 +195,7 @@ export default function HomeScreen() {
               {verseOfDay.arabic}
             </Text>
             <Text style={[styles.vodTranslation, { color: c.textSecondary }]} numberOfLines={2}>
-              {verseOfDay.uzbek}
+              {applyScript(verseOfDay.uzbek, scriptMode)}
             </Text>
           </LinearGradient>
         </Pressable>

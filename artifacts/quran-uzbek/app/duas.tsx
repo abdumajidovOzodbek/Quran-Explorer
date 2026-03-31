@@ -14,10 +14,14 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { DUAS, DUA_CATEGORIES, DuaCategory, Dua } from "@/constants/duas";
+import { applyScript } from "@/constants/latinScript";
+import { useQuran } from "@/context/QuranContext";
 
 export default function DuasScreen() {
   const insets = useSafeAreaInsets();
   const c = Colors.dark;
+  const { settings } = useQuran();
+  const scriptMode = settings.scriptMode ?? "cyrillic";
   const [activeCategory, setActiveCategory] = useState<DuaCategory | "all">("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -69,7 +73,7 @@ export default function DuasScreen() {
               </Text>
             </View>
             <Text style={[styles.duaUzbek, { color: c.textSecondary }]}>
-              {item.uzbek}
+              {applyScript(item.uzbek, scriptMode)}
             </Text>
           </>
         )}

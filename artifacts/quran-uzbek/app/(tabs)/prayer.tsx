@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -14,18 +15,34 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { fetchPrayerTimes, PrayerTimes } from "@/constants/api";
+import {
+  cancelPrayerNotif,
+  getNotifPermissionStatus,
+  requestNotifPermissions,
+  rescheduleEnabledNotifs,
+  schedulePrayerNotif,
+} from "@/constants/notifications";
 
 const TASHKENT_LAT = 41.2995;
 const TASHKENT_LON = 69.2401;
+const NOTIF_ENABLED_KEY = "@quran_prayer_notif_enabled";
 
 const PRAYERS = [
-  { key: "Fajr", name: "Bomdod", icon: "moon-outline" as const, gradient: ["#1a1a3e", "#2d2d6e"] as [string, string] },
-  { key: "Sunrise", name: "Quyosh", icon: "sunny-outline" as const, gradient: ["#3d2b00", "#7c5900"] as [string, string] },
-  { key: "Dhuhr", name: "Peshin", icon: "partly-sunny-outline" as const, gradient: ["#0d2e3e", "#0d4a5e"] as [string, string] },
-  { key: "Asr", name: "Asr", icon: "cloud-outline" as const, gradient: ["#2e1a00", "#5c3500"] as [string, string] },
-  { key: "Maghrib", name: "Shom", icon: "cloudy-night-outline" as const, gradient: ["#3e0d0d", "#6e1515"] as [string, string] },
-  { key: "Isha", name: "Xufton", icon: "star-outline" as const, gradient: ["#1a0d3e", "#2e1a6e"] as [string, string] },
+  { key: "Fajr", name: "Bomdod", icon: "moon-outline" as const, gradient: ["#1a1a3e", "#2d2d6e"] as [string, string], hasNotif: true },
+  { key: "Sunrise", name: "Quyosh", icon: "sunny-outline" as const, gradient: ["#3d2b00", "#7c5900"] as [string, string], hasNotif: false },
+  { key: "Dhuhr", name: "Peshin", icon: "partly-sunny-outline" as const, gradient: ["#0d2e3e", "#0d4a5e"] as [string, string], hasNotif: true },
+  { key: "Asr", name: "Asr", icon: "cloud-outline" as const, gradient: ["#2e1a00", "#5c3500"] as [string, string], hasNotif: true },
+  { key: "Maghrib", name: "Shom", icon: "cloudy-night-outline" as const, gradient: ["#3e0d0d", "#6e1515"] as [string, string], hasNotif: true },
+  { key: "Isha", name: "Xufton", icon: "star-outline" as const, gradient: ["#1a0d3e", "#2e1a6e"] as [string, string], hasNotif: true },
 ];
+
+const PRAYER_NAMES: Record<string, string> = {
+  Fajr: "Bomdod",
+  Dhuhr: "Peshin",
+  Asr: "Asr",
+  Maghrib: "Shom",
+  Isha: "Xufton",
+};
 
 function parseTimeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
@@ -59,11 +76,36 @@ export default function PrayerScreen() {
   const [error, setError] = useState<string | null>(null);
   const [city, setCity] = useState("Toshkent");
   const [now, setNow] = useState(new Date());
+  const [enabledNotifs, setEnabledNotifs] = useState<Record<string, boolean>>({});
+  const [notifPermission, setNotifPermission] = useState<string>("undetermined");
+  const timesRef = useRef<PrayerTimes | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    loadNotifState();
+    if (Platform.OS !== "web") {
+      getNotifPermissionStatus().then(setNotifPermission);
+    }
+  }, []);
+
+  const loadNotifState = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(NOTIF_ENABLED_KEY);
+      if (stored) setEnabledNotifs(JSON.parse(stored));
+    } catch {
+    }
+  };
+
+  const saveNotifState = async (state: Record<string, boolean>) => {
+    try {
+      await AsyncStorage.setItem(NOTIF_ENABLED_KEY, JSON.stringify(state));
+    } catch {
+    }
+  };
 
   const loadTimes = async () => {
     setLoading(true);
@@ -90,6 +132,7 @@ export default function PrayerScreen() {
       setCity(cityName);
       const data = await fetchPrayerTimes(lat, lon, cityName);
       setTimes(data);
+      timesRef.current = data;
     } catch (e) {
       setError("Namoz vaqtlarini yuklashda xatolik yuz berdi.");
     } finally {
@@ -100,6 +143,46 @@ export default function PrayerScreen() {
   useEffect(() => {
     loadTimes();
   }, []);
+
+  useEffect(() => {
+    if (times && Platform.OS !== "web") {
+      const timesMap: Record<string, string> = {};
+      for (const p of PRAYERS) {
+        if (p.hasNotif) {
+          const t = times[p.key as keyof PrayerTimes] as string;
+          if (t) timesMap[p.key] = t;
+        }
+      }
+      rescheduleEnabledNotifs(timesMap, enabledNotifs, PRAYER_NAMES);
+    }
+  }, [times]);
+
+  const toggleNotif = async (prayerKey: string, prayerName: string) => {
+    if (Platform.OS === "web") return;
+
+    let permission = notifPermission;
+    if (permission !== "granted") {
+      const granted = await requestNotifPermissions();
+      permission = granted ? "granted" : "denied";
+      setNotifPermission(permission);
+    }
+    if (permission !== "granted") return;
+
+    const currentEnabled = enabledNotifs[prayerKey] ?? false;
+    const newEnabled = !currentEnabled;
+    const updated = { ...enabledNotifs, [prayerKey]: newEnabled };
+    setEnabledNotifs(updated);
+    await saveNotifState(updated);
+
+    if (newEnabled && timesRef.current) {
+      const timeStr = timesRef.current[prayerKey as keyof PrayerTimes] as string;
+      if (timeStr) {
+        await schedulePrayerNotif(prayerKey, prayerName, timeStr);
+      }
+    } else {
+      await cancelPrayerNotif(prayerKey);
+    }
+  };
 
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
   const nextPrayer = times ? getNextPrayer(times, nowMinutes) : null;
@@ -165,12 +248,22 @@ export default function PrayerScreen() {
             </View>
           )}
 
+          {Platform.OS !== "web" && (
+            <View style={[styles.notifHint, { backgroundColor: c.card, borderColor: c.border }]}>
+              <Ionicons name="notifications-outline" size={14} color={c.textMuted} />
+              <Text style={[styles.notifHintText, { color: c.textMuted }]}>
+                Qo'ng'iroq belgisini bosib bildirishnomani yoqing
+              </Text>
+            </View>
+          )}
+
           {PRAYERS.map((prayer) => {
             const timeStr = times[prayer.key as keyof PrayerTimes] as string;
             const isNext = prayer.key === nextPrayer;
             const isSunrise = prayer.key === "Sunrise";
             const prayerMins = parseTimeToMinutes(timeStr);
             const isPast = prayerMins < nowMinutes && !isNext;
+            const isNotifEnabled = enabledNotifs[prayer.key] ?? false;
 
             return (
               <LinearGradient
@@ -192,7 +285,7 @@ export default function PrayerScreen() {
                     <Text style={styles.prayerSubNote}>Namoz vaqti emas</Text>
                   )}
                 </View>
-                <View style={{ alignItems: "flex-end", gap: 2 }}>
+                <View style={{ alignItems: "flex-end", gap: 4 }}>
                   <Text style={[styles.prayerTime, { opacity: isPast ? 0.5 : 1 }]}>{timeStr}</Text>
                   {isNext && (
                     <Text style={styles.prayerCountdown}>{getCountdown(prayer.key)} qoldi</Text>
@@ -201,6 +294,22 @@ export default function PrayerScreen() {
                     <Text style={styles.prayerPast}>O'tdi</Text>
                   )}
                 </View>
+                {prayer.hasNotif && Platform.OS !== "web" && (
+                  <Pressable
+                    onPress={() => toggleNotif(prayer.key, prayer.name)}
+                    style={[
+                      styles.bellBtn,
+                      isNotifEnabled && { backgroundColor: "rgba(255,255,255,0.15)" },
+                    ]}
+                    hitSlop={8}
+                  >
+                    <Ionicons
+                      name={isNotifEnabled ? "notifications" : "notifications-outline"}
+                      size={20}
+                      color={isNotifEnabled ? "#fff" : "rgba(255,255,255,0.45)"}
+                    />
+                  </Pressable>
+                )}
               </LinearGradient>
             );
           })}
@@ -301,11 +410,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Inter_600SemiBold",
   },
+  notifHint: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 2,
+  },
+  notifHintText: {
+    flex: 1,
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+  },
   prayerCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 16,
     borderRadius: 16,
     borderWidth: 1,
@@ -343,6 +467,13 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: "Inter_400Regular",
     color: "rgba(255,255,255,0.4)",
+  },
+  bellBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
   refreshBtn: {
     flexDirection: "row",

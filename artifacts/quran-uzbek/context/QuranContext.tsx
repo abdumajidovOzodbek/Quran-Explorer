@@ -1,7 +1,7 @@
 import createContextHook from "@nkzw/create-context-hook";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Bookmark, ReadingMode, DisplayLanguage } from "@/types/quran";
+import { Bookmark, ReadingMode, DisplayLanguage, ScriptMode } from "@/types/quran";
 import { cacheAllSurahsInBackground, isCacheComplete, TOTAL_SURAHS } from "@/constants/api";
 
 const BOOKMARKS_KEY = "@quran_bookmarks";
@@ -24,6 +24,7 @@ interface Settings {
   reciterId: string;
   showTransliteration: boolean;
   showWordByWord: boolean;
+  scriptMode: ScriptMode;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -34,6 +35,7 @@ const DEFAULT_SETTINGS: Settings = {
   reciterId: "1",
   showTransliteration: false,
   showWordByWord: false,
+  scriptMode: "cyrillic",
 };
 
 function useQuranState() {

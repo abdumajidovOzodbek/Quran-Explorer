@@ -5,6 +5,8 @@ import { Platform, Pressable, Share, StyleSheet, Text, View } from "react-native
 import Colors from "@/constants/colors";
 import { ReadingMode } from "@/types/quran";
 import { parseWordByWord } from "@/constants/api";
+import { applyScript } from "@/constants/latinScript";
+import { useQuran } from "@/context/QuranContext";
 
 interface VerseCardProps {
   surahNo: number;
@@ -52,7 +54,9 @@ export function VerseCard({
   onPress,
 }: VerseCardProps) {
   const c = Colors.dark;
-  const displayText = uzbek || english;
+  const { settings } = useQuran();
+  const scriptMode = settings.scriptMode ?? "cyrillic";
+  const displayText = applyScript(uzbek || english, scriptMode);
   const [selectedWordIdx, setSelectedWordIdx] = useState<number | null>(null);
 
   const words = showWordByWord && wordByWord ? parseWordByWord(wordByWord) : [];

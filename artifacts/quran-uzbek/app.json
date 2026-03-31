@@ -34,7 +34,10 @@
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.POST_NOTIFICATIONS"
       ]
     },
     "web": {
@@ -59,6 +62,14 @@
         "expo-location",
         {
           "locationWhenInUsePermission": "Namoz vaqtlarini aniqlash uchun joylashuvingizga ruxsat bering"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#c5a55a",
+          "sounds": []
         }
       ]
     ],
