@@ -188,7 +188,7 @@ export default function HomeScreen() {
                 <Text style={[styles.vodBadgeText, { color: c.tint }]}>Kunning oyati</Text>
               </View>
               <Text style={[styles.vodRef, { color: c.textMuted }]}>
-                {UZBEK_NAMES[verseOfDay.surahNo] || verseOfDay.surahName} • {verseOfDay.ayahNo}-oyat
+                {applyScript(UZBEK_NAMES[verseOfDay.surahNo] || verseOfDay.surahName, scriptMode)} • {verseOfDay.ayahNo}-oyat
               </Text>
             </View>
             <Text style={[styles.vodArabic, { color: "#e8d5a3" }]} numberOfLines={2}>
@@ -219,7 +219,7 @@ export default function HomeScreen() {
           <View style={styles.continueInfo}>
             <Text style={[styles.continueLabel, { color: c.tint + "99" }]}>Davom etish</Text>
             <Text style={[styles.continueSurah, { color: c.tint }]}>
-              {UZBEK_NAMES[lastRead.surahNo] || lastRead.surahName}
+              {applyScript(UZBEK_NAMES[lastRead.surahNo] || lastRead.surahName, scriptMode)}
             </Text>
           </View>
           <Text style={[styles.continueVerse, { color: c.textSecondary }]}>
@@ -288,9 +288,9 @@ export default function HomeScreen() {
               {item.juzNo}-juz • {item.juzName}
             </Text>
             <Text style={[styles.juzRange, { color: c.textMuted }]} numberOfLines={1}>
-              {UZBEK_NAMES[firstSurah?.surahNo ?? 1] ?? firstSurah?.surahName ?? ""}
+              {applyScript(UZBEK_NAMES[firstSurah?.surahNo ?? 1] ?? firstSurah?.surahName ?? "", scriptMode)}
               {lastSurah && lastSurah.surahNo !== firstSurah?.surahNo
-                ? ` — ${UZBEK_NAMES[lastSurah.surahNo ?? 0] ?? lastSurah.surahName}`
+                ? ` — ${applyScript(UZBEK_NAMES[lastSurah.surahNo ?? 0] ?? lastSurah.surahName ?? "", scriptMode)}`
                 : ""}
               {" "}• {item.surahs.length} sura
             </Text>
