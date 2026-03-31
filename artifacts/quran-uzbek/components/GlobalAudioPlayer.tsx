@@ -14,6 +14,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { useAudio, AudioState } from "@/context/AudioContext";
+import { useQuran } from "@/context/QuranContext";
 
 const TAB_BAR_HEIGHT = Platform.OS === "web" ? 84 : 56;
 const FADE_STEPS = 50;
@@ -360,6 +361,17 @@ function NativePlayer({ audio }: { audio: AudioState }) {
 
 export function GlobalAudioPlayer() {
   const { audio } = useAudio();
+  const { saveLastRead } = useQuran();
+
+  useEffect(() => {
+    if (!audio) return;
+    saveLastRead({
+      surahNo: audio.surahNo,
+      surahName: audio.surahName,
+      ayahNo: audio.ayahNo,
+    });
+  }, [audio?.surahNo, audio?.ayahNo]);
+
   if (!audio) return null;
   if (Platform.OS === "web") return <WebPlayer audio={audio} />;
   return <NativePlayer audio={audio} />;
