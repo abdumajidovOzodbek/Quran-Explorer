@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "@nkzw/create-context-hook": "^1.1.0",
-    "expo-audio": "^55.0.9"
+    "expo-audio": "^55.0.9",
+    "expo-sensors": "^15.0.8"
   }
 }
