@@ -3,7 +3,7 @@ import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Tabs } from "expo-router";
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { SymbolView } from "expo-symbols";
-import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import Colors from "@/constants/colors";
@@ -28,7 +28,7 @@ function NativeTabLayout() {
         <Label>Namoz</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="tasbih">
-        <Icon sf={{ default: "sparkles", selected: "sparkles" }} />
+        <Icon sf={{ default: "circle.grid.cross", selected: "circle.grid.cross.fill" }} />
         <Label>Tasbih</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="settings">
@@ -124,9 +124,9 @@ function ClassicTabLayout() {
           title: "Tasbih",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="sparkles" tintColor={color} size={22} />
+              <SymbolView name="circle.grid.cross" tintColor={color} size={22} />
             ) : (
-              <MaterialCommunityIcons name="counter" size={22} color={color} />
+              <Ionicons name="apps-outline" size={22} color={color} />
             ),
         }}
       />

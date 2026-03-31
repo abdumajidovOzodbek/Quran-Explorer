@@ -29,7 +29,6 @@ const DHIKR_LIST = [
   { arabic: "اللّٰهُ أَكْبَرُ", name: "Allohu akbar", meaning: "Alloh ulugʻdir" },
   { arabic: "لَا إِلٰهَ إِلَّا اللّٰهُ", name: "La ilaha illalloh", meaning: "Allohdan oʻzga iloh yoʻq" },
   { arabic: "أَسْتَغْفِرُ اللّٰهَ", name: "Astaghfirulloh", meaning: "Allohdan magʻfirat" },
-  { arabic: "صَلَّى اللّٰهُ عَلَيْهِ وَسَلَّمَ", name: "Sallavot", meaning: "Payʼgʼambarga salovat" },
 ];
 
 type TabType = "tasbih" | "qibla";
