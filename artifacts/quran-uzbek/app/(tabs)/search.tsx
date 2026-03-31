@@ -49,9 +49,12 @@ export default function SearchScreen() {
     if (!search.trim() || !surahs) return [];
     const q = search.trim().toLowerCase();
     return surahs.filter((s) => {
-      const uzbekName = UZBEK_NAMES[s.surahNo] || "";
+      const no = s.surahNo ?? 0;
+      const uzbekName = UZBEK_NAMES[no] || "";
+      const russianName = RUSSIAN_NAMES[no] || "";
       return (
         uzbekName.toLowerCase().includes(q) ||
+        russianName.toLowerCase().includes(q) ||
         s.surahNameArabic.includes(search) ||
         s.surahNameTranslation.toLowerCase().includes(q) ||
         String(s.surahNo) === q.trim()

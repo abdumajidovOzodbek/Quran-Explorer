@@ -107,7 +107,7 @@ export default function BookmarksScreen() {
                   style={[styles.uzbekText, { color: c.uzbekText }]}
                   numberOfLines={2}
                 >
-                  {item.uzbek}
+                  {language === "uz_latin" ? cyrillicToLatin(item.uzbek) : item.uzbek}
                 </Text>
               )}
 

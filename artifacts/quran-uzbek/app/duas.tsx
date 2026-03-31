@@ -62,7 +62,10 @@ export default function DuasScreen() {
             </Text>
           </View>
           <Text style={[styles.duaTitle, { color: c.text }]} numberOfLines={1}>
-            {item.title}
+            {language === "uz_cyrillic" ? item.titleUz :
+             language === "ru" ? item.titleRu :
+             language === "en" ? item.titleEn :
+             item.title}
           </Text>
           <Ionicons
             name={isExpanded ? "chevron-up" : "chevron-down"}

@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { useQuran } from "@/context/QuranContext";
 import { getStrings } from "@/constants/i18n";
+import { latinToRussianTranslit } from "@/constants/russianTranslit";
 
 const MECCA_LAT = 21.4225;
 const MECCA_LON = 39.8262;
@@ -218,7 +219,9 @@ function TasbihView({ bottomInset }: { bottomInset: number }) {
                 { color: selectedDhikr === i ? c.tint : c.textSecondary },
               ]}
             >
-              {d.name}
+              {(settings.language === "ru" || settings.language === "uz_cyrillic")
+                ? latinToRussianTranslit(d.name)
+                : d.name}
             </Text>
           </Pressable>
         ))}

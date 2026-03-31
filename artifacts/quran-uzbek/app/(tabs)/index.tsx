@@ -120,10 +120,13 @@ export default function HomeScreen() {
   });
 
   const filtered = surahs?.filter((s) => {
-    const uzbekName = UZBEK_NAMES[s.surahNo ?? 0] || "";
+    const no = s.surahNo ?? 0;
+    const uzbekName = UZBEK_NAMES[no] || "";
+    const russianName = RUSSIAN_NAMES[no] || "";
     const matchesSearch =
       !search ||
       uzbekName.toLowerCase().includes(search.toLowerCase()) ||
+      russianName.toLowerCase().includes(search.toLowerCase()) ||
       s.surahNameArabic.includes(search) ||
       s.surahNameTranslation.toLowerCase().includes(search.toLowerCase()) ||
       String(s.surahNo).includes(search);
