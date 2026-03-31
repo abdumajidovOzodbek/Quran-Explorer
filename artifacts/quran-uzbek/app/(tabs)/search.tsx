@@ -65,7 +65,7 @@ export default function SearchScreen() {
       <View style={styles.resultInfo}>
         <Text style={[styles.resultName, { color: c.text }]}>{UZBEK_NAMES[s.surahNo] || s.surahName}</Text>
         <Text style={[styles.resultSub, { color: c.textSecondary }]}>
-          {s.revelationPlace === "Makkah" ? "Makka" : "Madina"} • {s.totalAyah} oyat
+          {(s.revelationPlace === "Makkah" || s.revelationPlace === "Mecca") ? "Makka" : "Madina"} • {s.totalAyah} oyat
         </Text>
       </View>
       <Text style={[styles.resultArabic, { color: c.tint }]}>{s.surahNameArabic}</Text>

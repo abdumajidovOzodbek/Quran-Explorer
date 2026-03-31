@@ -43,10 +43,11 @@ export default function HomeScreen() {
       s.surahNameTranslation.toLowerCase().includes(search.toLowerCase()) ||
       String(s.surahNo).includes(search);
 
+    const place = s.revelationPlace?.toLowerCase() ?? "";
     const matchesFilter =
       filter === "all" ||
-      (filter === "makka" && (s.revelationPlace === "Makkah" || s.revelationPlace === "Mecca")) ||
-      (filter === "madina" && (s.revelationPlace === "Madinah" || s.revelationPlace === "Medina"));
+      (filter === "makka" && (place === "mecca" || place === "makkah")) ||
+      (filter === "madina" && (place === "madina" || place === "madinah" || place === "medina"));
 
     return matchesSearch && matchesFilter;
   });
