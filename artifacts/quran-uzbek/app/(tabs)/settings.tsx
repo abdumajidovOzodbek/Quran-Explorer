@@ -107,18 +107,20 @@ export default function SettingsScreen() {
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>{t.recitationSettings}</Text>
         <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}>
-          <View style={[styles.toggleRow, { borderBottomWidth: 1, borderBottomColor: c.border }]}>
-            <View style={styles.toggleInfo}>
-              <Text style={[styles.optionText, { color: c.text }]}>{t.transliteration}</Text>
-              <Text style={[styles.optionSub, { color: c.textSecondary }]}>{t.transliterationDesc}</Text>
+          {(settings.language === "uz_latin" || settings.language === "en") && (
+            <View style={[styles.toggleRow, { borderBottomWidth: 1, borderBottomColor: c.border }]}>
+              <View style={styles.toggleInfo}>
+                <Text style={[styles.optionText, { color: c.text }]}>{t.transliteration}</Text>
+                <Text style={[styles.optionSub, { color: c.textSecondary }]}>{t.transliterationDesc}</Text>
+              </View>
+              <Switch
+                value={settings.showTransliteration}
+                onValueChange={(v) => { Haptics.selectionAsync(); updateSettings({ showTransliteration: v }); }}
+                trackColor={{ true: c.tint, false: c.border }}
+                thumbColor="#fff"
+              />
             </View>
-            <Switch
-              value={settings.showTransliteration}
-              onValueChange={(v) => { Haptics.selectionAsync(); updateSettings({ showTransliteration: v }); }}
-              trackColor={{ true: c.tint, false: c.border }}
-              thumbColor="#fff"
-            />
-          </View>
+          )}
           <View style={styles.toggleRow}>
             <View style={styles.toggleInfo}>
               <Text style={[styles.optionText, { color: c.text }]}>{t.wordByWord}</Text>

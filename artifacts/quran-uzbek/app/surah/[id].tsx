@@ -265,9 +265,11 @@ export default function SurahScreen() {
                 <Text style={[styles.bismillahText, { color: c.tint }]}>
                   بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                 </Text>
-                <Text style={[styles.bismillahTranslit, { color: c.textSecondary }]}>
-                  Bismillahir Rohmanir Rohiym
-                </Text>
+                {(settings.language === "uz_latin" || settings.language === "en") && (
+                  <Text style={[styles.bismillahTranslit, { color: c.textSecondary }]}>
+                    Bismillahir Rohmanir Rohiym
+                  </Text>
+                )}
               </View>
             ) : null
           }
