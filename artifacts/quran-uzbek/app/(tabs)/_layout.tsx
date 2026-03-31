@@ -7,33 +7,38 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import Colors from "@/constants/colors";
+import { useQuran } from "@/context/QuranContext";
+import { getStrings } from "@/constants/i18n";
 
 function NativeTabLayout() {
+  const { settings } = useQuran();
+  const t = getStrings(settings.language);
+
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
         <Icon sf={{ default: "book", selected: "book.fill" }} />
-        <Label>Qur'on</Label>
+        <Label>{t.tabQuran}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="search">
         <Icon sf={{ default: "magnifyingglass", selected: "magnifyingglass" }} />
-        <Label>Qidirish</Label>
+        <Label>{t.tabSearch}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="bookmarks">
         <Icon sf={{ default: "bookmark", selected: "bookmark.fill" }} />
-        <Label>Xatcho'p</Label>
+        <Label>{t.tabBookmarks}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="prayer">
         <Icon sf={{ default: "moon.stars", selected: "moon.stars.fill" }} />
-        <Label>Namoz</Label>
+        <Label>{t.tabPrayer}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="tasbih">
         <Icon sf={{ default: "circle.grid.cross", selected: "circle.grid.cross.fill" }} />
-        <Label>Tasbih</Label>
+        <Label>{t.tabTasbih}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="settings">
         <Icon sf={{ default: "gear", selected: "gear" }} />
-        <Label>Sozlamalar</Label>
+        <Label>{t.tabSettings}</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -43,6 +48,8 @@ function ClassicTabLayout() {
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
   const c = Colors.dark;
+  const { settings } = useQuran();
+  const t = getStrings(settings.language);
 
   return (
     <Tabs
@@ -73,7 +80,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Qur'on",
+          title: t.tabQuran,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="book" tintColor={color} size={22} />
@@ -85,7 +92,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="search"
         options={{
-          title: "Qidirish",
+          title: t.tabSearch,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="magnifyingglass" tintColor={color} size={22} />
@@ -97,7 +104,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="bookmarks"
         options={{
-          title: "Xatcho'p",
+          title: t.tabBookmarks,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="bookmark" tintColor={color} size={22} />
@@ -109,7 +116,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="prayer"
         options={{
-          title: "Namoz",
+          title: t.tabPrayer,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="moon.stars" tintColor={color} size={22} />
@@ -121,7 +128,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="tasbih"
         options={{
-          title: "Tasbih",
+          title: t.tabTasbih,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="circle.grid.cross" tintColor={color} size={22} />
@@ -133,7 +140,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Sozlamalar",
+          title: t.tabSettings,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="gear" tintColor={color} size={22} />

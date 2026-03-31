@@ -14,14 +14,16 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { DUAS, DUA_CATEGORIES, DuaCategory, Dua } from "@/constants/duas";
-import { applyScript } from "@/constants/latinScript";
+import { cyrillicToLatin } from "@/constants/latinScript";
 import { useQuran } from "@/context/QuranContext";
+import { getStrings } from "@/constants/i18n";
 
 export default function DuasScreen() {
   const insets = useSafeAreaInsets();
   const c = Colors.dark;
   const { settings } = useQuran();
-  const scriptMode = settings.scriptMode ?? "cyrillic";
+  const t = getStrings(settings.language);
+  const language = settings.language;
   const [activeCategory, setActiveCategory] = useState<DuaCategory | "all">("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -73,7 +75,7 @@ export default function DuasScreen() {
               </Text>
             </View>
             <Text style={[styles.duaUzbek, { color: c.textSecondary }]}>
-              {applyScript(item.uzbek, scriptMode)}
+              {language === "uz_latin" ? cyrillicToLatin(item.uzbek) : item.uzbek}
             </Text>
           </>
         )}
@@ -89,8 +91,8 @@ export default function DuasScreen() {
             <Ionicons name="arrow-back" size={22} color={c.text} />
           </Pressable>
           <View style={styles.headerTitle}>
-            <Text style={[styles.title, { color: c.text }]}>Duolar</Text>
-            <Text style={[styles.subtitle, { color: c.textMuted }]}>{filtered.length} ta dua</Text>
+            <Text style={[styles.title, { color: c.text }]}>{t.duas}</Text>
+            <Text style={[styles.subtitle, { color: c.textMuted }]}>{filtered.length}</Text>
           </View>
         </View>
 
@@ -110,7 +112,7 @@ export default function DuasScreen() {
             ]}
           >
             <Text style={[styles.chipText, { color: activeCategory === "all" ? "#000" : c.textSecondary }]}>
-              Barchasi
+              {t.allFilter}
             </Text>
           </Pressable>
           {DUA_CATEGORIES.map((cat) => (
@@ -142,7 +144,7 @@ export default function DuasScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Ionicons name="book-outline" size={48} color={c.textMuted} />
-            <Text style={[styles.emptyText, { color: c.textSecondary }]}>Hech narsa topilmadi</Text>
+            <Text style={[styles.emptyText, { color: c.textSecondary }]}>{t.notFound}</Text>
           </View>
         }
       />

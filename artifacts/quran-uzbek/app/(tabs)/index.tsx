@@ -25,7 +25,9 @@ import { DUAS } from "@/constants/duas";
 import { SurahCard } from "@/components/SurahCard";
 import { SurahListSkeleton } from "@/components/ShimmerSkeleton";
 import { useQuran } from "@/context/QuranContext";
-import { applyScript } from "@/constants/latinScript";
+import { cyrillicToLatin } from "@/constants/latinScript";
+import { getStrings } from "@/constants/i18n";
+import { AppLanguage } from "@/types/quran";
 
 type ViewMode = "surah" | "juz";
 
@@ -49,7 +51,6 @@ function buildFlatJuzData(
   expandedJuz: Set<number>
 ): JuzRow[] {
   const rows: JuzRow[] = [];
-
   for (const juzInfo of JUZ_DATA) {
     const { juzNo, name } = juzInfo;
     const juzSurahSet = new Set(juzInfo.surahs);
@@ -59,7 +60,6 @@ function buildFlatJuzData(
         surah: s,
         navAyah: getJuzNavAyah(juzNo, s.surahNo ?? 0),
       }));
-
     if (juzSurahs.length === 0) continue;
     const isExpanded = expandedJuz.has(juzNo);
     rows.push({ type: "juz-header", juzNo, juzName: name, surahs: juzSurahs, isExpanded });
@@ -69,8 +69,20 @@ function buildFlatJuzData(
       }
     }
   }
-
   return rows;
+}
+
+function getLocalSurahName(surahNo: number, surahName: string, language: AppLanguage): string {
+  if (language === "uz_cyrillic") return UZBEK_NAMES[surahNo] || surahName;
+  if (language === "uz_latin") return cyrillicToLatin(UZBEK_NAMES[surahNo] || "") || surahName;
+  return surahName;
+}
+
+function getVodTranslation(vod: VerseOfDay, language: AppLanguage): string {
+  if (language === "uz_cyrillic") return vod.uzbek || vod.english;
+  if (language === "uz_latin") return cyrillicToLatin(vod.uzbek) || vod.english;
+  if (language === "ru") return vod.russian || vod.english;
+  return vod.english;
 }
 
 export default function HomeScreen() {
@@ -92,7 +104,8 @@ export default function HomeScreen() {
     settings,
   } = useQuran();
 
-  const scriptMode = settings.scriptMode ?? "cyrillic";
+  const t = getStrings(settings.language);
+  const language = settings.language;
 
   const { data: surahs, isLoading, isError, refetch } = useQuery<SurahListItem[]>({
     queryKey: ["surahList"],
@@ -143,7 +156,7 @@ export default function HomeScreen() {
       <View style={[styles.progressContainer, { backgroundColor: c.card, borderColor: c.border }]}>
         <View style={styles.progressRow}>
           <Ionicons name="trending-up-outline" size={14} color={c.tint} />
-          <Text style={[styles.progressLabel, { color: c.textSecondary }]}>O'qish taraqqiyoti</Text>
+          <Text style={[styles.progressLabel, { color: c.textSecondary }]}>{t.readingProgress}</Text>
           <View style={styles.progressRight}>
             <Text style={[styles.progressValue, { color: c.tint }]}>
               {completedSurahs.length}/114
@@ -152,7 +165,7 @@ export default function HomeScreen() {
               <View style={[styles.khatmahBadge, { backgroundColor: c.tint + "20", borderColor: c.tint + "40" }]}>
                 <Ionicons name="checkmark-circle" size={11} color={c.tint} />
                 <Text style={[styles.khatmahBadgeText, { color: c.tint }]}>
-                  {khatmahCount} xatm
+                  {khatmahCount} {t.khatmah}
                 </Text>
               </View>
             )}
@@ -185,17 +198,17 @@ export default function HomeScreen() {
             <View style={styles.vodHeader}>
               <View style={[styles.vodBadge, { backgroundColor: c.tint + "20", borderColor: c.tint + "40" }]}>
                 <Ionicons name="sunny-outline" size={11} color={c.tint} />
-                <Text style={[styles.vodBadgeText, { color: c.tint }]}>Kunning oyati</Text>
+                <Text style={[styles.vodBadgeText, { color: c.tint }]}>{t.verseOfDay}</Text>
               </View>
               <Text style={[styles.vodRef, { color: c.textMuted }]}>
-                {applyScript(UZBEK_NAMES[verseOfDay.surahNo] || verseOfDay.surahName, scriptMode)} • {verseOfDay.ayahNo}-oyat
+                {getLocalSurahName(verseOfDay.surahNo, verseOfDay.surahName, language)} • {verseOfDay.ayahNo} {t.verse}
               </Text>
             </View>
             <Text style={[styles.vodArabic, { color: "#e8d5a3" }]} numberOfLines={2}>
               {verseOfDay.arabic}
             </Text>
             <Text style={[styles.vodTranslation, { color: c.textSecondary }]} numberOfLines={2}>
-              {applyScript(verseOfDay.uzbek, scriptMode)}
+              {getVodTranslation(verseOfDay, language)}
             </Text>
           </LinearGradient>
         </Pressable>
@@ -217,13 +230,13 @@ export default function HomeScreen() {
             <Ionicons name="book" size={18} color={c.tint} />
           </View>
           <View style={styles.continueInfo}>
-            <Text style={[styles.continueLabel, { color: c.tint + "99" }]}>Davom etish</Text>
+            <Text style={[styles.continueLabel, { color: c.tint + "99" }]}>{t.continueReading}</Text>
             <Text style={[styles.continueSurah, { color: c.tint }]}>
-              {applyScript(UZBEK_NAMES[lastRead.surahNo] || lastRead.surahName, scriptMode)}
+              {getLocalSurahName(lastRead.surahNo, lastRead.surahName, language)}
             </Text>
           </View>
           <Text style={[styles.continueVerse, { color: c.textSecondary }]}>
-            {lastRead.ayahNo}-oyat
+            {lastRead.ayahNo} {t.verse}
           </Text>
           <Ionicons name="chevron-forward" size={18} color={c.tint} />
         </Pressable>
@@ -244,19 +257,19 @@ export default function HomeScreen() {
           <Ionicons name="hand-left-outline" size={18} color="#4caf76" />
         </View>
         <View style={styles.continueInfo}>
-          <Text style={[styles.continueLabel, { color: "#4caf7699" }]}>KUTUBXONA</Text>
-          <Text style={[styles.continueSurah, { color: "#4caf76" }]}>Duolar</Text>
+          <Text style={[styles.continueLabel, { color: "#4caf7699" }]}>{t.library.toUpperCase()}</Text>
+          <Text style={[styles.continueSurah, { color: "#4caf76" }]}>{t.duas}</Text>
         </View>
-        <Text style={[styles.duaCount, { color: "#4caf7680" }]}>{DUAS.length} ta</Text>
+        <Text style={[styles.duaCount, { color: "#4caf7680" }]}>{DUAS.length}</Text>
         <Ionicons name="chevron-forward" size={18} color="#4caf76" />
       </Pressable>
 
       <View style={[styles.sectionLabel, { borderBottomColor: c.border }]}>
         <Text style={[styles.sectionLabelText, { color: c.textSecondary }]}>
-          {viewMode === "surah" ? "BARCHA SURALAR" : "JUZLAR BO'YICHA"}
+          {viewMode === "surah" ? t.allSurahs : t.byJuz}
         </Text>
         <Text style={[styles.sectionCount, { color: c.textMuted }]}>
-          {viewMode === "surah" ? `${filtered?.length ?? 0} / 114` : "30 juz"}
+          {viewMode === "surah" ? `${filtered?.length ?? 0} / 114` : `30 ${t.juzs}`}
         </Text>
       </View>
     </View>
@@ -285,14 +298,14 @@ export default function HomeScreen() {
           </View>
           <View style={styles.juzInfo}>
             <Text style={[styles.juzName, { color: c.text }]}>
-              {item.juzNo}-juz • {item.juzName}
+              {item.juzNo} {t.juz} • {item.juzName}
             </Text>
             <Text style={[styles.juzRange, { color: c.textMuted }]} numberOfLines={1}>
-              {applyScript(UZBEK_NAMES[firstSurah?.surahNo ?? 1] ?? firstSurah?.surahName ?? "", scriptMode)}
+              {getLocalSurahName(firstSurah?.surahNo ?? 1, firstSurah?.surahName ?? "", language)}
               {lastSurah && lastSurah.surahNo !== firstSurah?.surahNo
-                ? ` — ${applyScript(UZBEK_NAMES[lastSurah.surahNo ?? 0] ?? lastSurah.surahName ?? "", scriptMode)}`
+                ? ` — ${getLocalSurahName(lastSurah.surahNo ?? 0, lastSurah.surahName ?? "", language)}`
                 : ""}
-              {" "}• {item.surahs.length} sura
+              {" "}• {item.surahs.length} {t.surahs}
             </Text>
           </View>
           <View style={styles.juzRight}>
@@ -338,7 +351,7 @@ export default function HomeScreen() {
       <View style={[styles.stickyHeader, { paddingTop: topPadding + 8, backgroundColor: c.background }]}>
         <View style={styles.titleRow}>
           <View>
-            <Text style={[styles.greeting, { color: c.textSecondary }]}>Assalomu alaykum</Text>
+            <Text style={[styles.greeting, { color: c.textSecondary }]}>{t.greeting}</Text>
             <Text style={[styles.title, { color: c.tint }]}>القرآن الكريم</Text>
           </View>
           <View style={[styles.quranBadge, { backgroundColor: c.card, borderColor: c.border }]}>
@@ -352,7 +365,7 @@ export default function HomeScreen() {
           <TextInput
             value={search}
             onChangeText={setSearch}
-            placeholder="Sura nomi yoki raqami..."
+            placeholder={t.searchPlaceholder}
             placeholderTextColor={c.textMuted}
             style={[styles.searchInput, { color: c.text }]}
             returnKeyType="search"
@@ -391,7 +404,7 @@ export default function HomeScreen() {
               color={viewMode === "juz" ? "#7ab0e0" : c.textSecondary}
             />
             <Text style={[styles.filterText, { color: viewMode === "juz" ? "#7ab0e0" : c.textSecondary }]}>
-              {viewMode === "juz" ? "Juzlar" : "Suralar"}
+              {viewMode === "juz" ? t.byJuz : t.allSurahs}
             </Text>
           </Pressable>
 
@@ -408,7 +421,7 @@ export default function HomeScreen() {
               ]}
             >
               <Text style={[styles.filterText, { color: filter === f ? "#000" : c.textSecondary }]}>
-                {f === "all" ? "Barchasi" : f === "makka" ? "Makka" : "Madina"}
+                {f === "all" ? t.allFilter : f === "makka" ? t.makkah : t.madinah}
               </Text>
             </Pressable>
           ))}
@@ -420,9 +433,9 @@ export default function HomeScreen() {
       ) : isError ? (
         <View style={styles.errorContainer}>
           <Ionicons name="wifi-outline" size={48} color={c.textMuted} />
-          <Text style={[styles.errorText, { color: c.textSecondary }]}>Internetga ulanishda xatolik</Text>
+          <Text style={[styles.errorText, { color: c.textSecondary }]}>{t.networkError}</Text>
           <Pressable onPress={() => refetch()} style={[styles.retryBtn, { backgroundColor: c.tint }]}>
-            <Text style={styles.retryText}>Qayta urinish</Text>
+            <Text style={styles.retryText}>{t.retry}</Text>
           </Pressable>
         </View>
       ) : viewMode === "surah" ? (
@@ -457,7 +470,7 @@ export default function HomeScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="book-outline" size={48} color={c.textMuted} />
-              <Text style={[styles.emptyText, { color: c.textSecondary }]}>Hech narsa topilmadi</Text>
+              <Text style={[styles.emptyText, { color: c.textSecondary }]}>{t.notFound}</Text>
             </View>
           }
         />
@@ -491,10 +504,10 @@ export default function HomeScreen() {
             onPress={(e) => e.stopPropagation()}
           >
             <Text style={styles.khatmahEmoji}>🎉</Text>
-            <Text style={[styles.khatmahTitle, { color: c.tint }]}>Muborak bo'lsin!</Text>
+            <Text style={[styles.khatmahTitle, { color: c.tint }]}>{t.khatmahTitle}</Text>
             <Text style={[styles.khatmahDesc, { color: c.textSecondary }]}>
-              Siz butun Qur'onni xatm qildingiz.{"\n"}
-              <Text style={[styles.khatmahCount, { color: c.tint }]}>{khatmahCount}-xatm</Text> mubоrak bo'lsin!
+              {t.khatmahMessage}{"\n"}
+              <Text style={[styles.khatmahCount, { color: c.tint }]}>{khatmahCount} {t.khatmah}</Text>
             </Text>
             <Text style={[styles.khatmahArabic, { color: "#e8d5a3" }]}>
               خَتَمَ اللَّهُ لَنَا وَلَكُمْ بِالْخَيْرِ
@@ -504,7 +517,7 @@ export default function HomeScreen() {
                 onPress={dismissKhatmahModal}
                 style={[styles.modalBtn, { backgroundColor: c.border }]}
               >
-                <Text style={[styles.modalBtnText, { color: c.textSecondary }]}>Yopish</Text>
+                <Text style={[styles.modalBtnText, { color: c.textSecondary }]}>{t.close}</Text>
               </Pressable>
               <Pressable
                 onPress={() => {
@@ -513,7 +526,7 @@ export default function HomeScreen() {
                 }}
                 style={[styles.modalBtn, { backgroundColor: c.tint }]}
               >
-                <Text style={[styles.modalBtnText, { color: "#000" }]}>Yangi xatm boshlash</Text>
+                <Text style={[styles.modalBtnText, { color: "#000" }]}>{t.newKhatmah}</Text>
               </Pressable>
             </View>
           </Pressable>

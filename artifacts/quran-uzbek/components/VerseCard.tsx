@@ -5,7 +5,7 @@ import { Platform, Pressable, Share, StyleSheet, Text, View } from "react-native
 import Colors from "@/constants/colors";
 import { ReadingMode } from "@/types/quran";
 import { parseWordByWord } from "@/constants/api";
-import { applyScript } from "@/constants/latinScript";
+import { cyrillicToLatin } from "@/constants/latinScript";
 import { useQuran } from "@/context/QuranContext";
 
 interface VerseCardProps {
@@ -14,6 +14,7 @@ interface VerseCardProps {
   arabic: string;
   english: string;
   uzbek?: string;
+  russian?: string;
   transliteration?: string;
   wordByWord?: string;
   surahName?: string;
@@ -37,6 +38,7 @@ export function VerseCard({
   arabic,
   english,
   uzbek,
+  russian,
   transliteration,
   wordByWord,
   surahName,
@@ -55,9 +57,19 @@ export function VerseCard({
 }: VerseCardProps) {
   const c = Colors.dark;
   const { settings } = useQuran();
-  const scriptMode = settings.scriptMode ?? "cyrillic";
-  const displayText = applyScript(uzbek || english, scriptMode);
   const [selectedWordIdx, setSelectedWordIdx] = useState<number | null>(null);
+
+  const language = settings.language ?? "uz_latin";
+  let displayText: string;
+  if (language === "uz_cyrillic") {
+    displayText = uzbek || english;
+  } else if (language === "uz_latin") {
+    displayText = uzbek ? cyrillicToLatin(uzbek) : english;
+  } else if (language === "ru") {
+    displayText = russian || english;
+  } else {
+    displayText = english;
+  }
 
   const words = showWordByWord && wordByWord ? parseWordByWord(wordByWord) : [];
 
@@ -74,7 +86,7 @@ export function VerseCard({
   const handleShare = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
-      const label = surahName ? `Qur'on, ${surahName} surasi, ${ayahNo}-oyat` : `Qur'on ${surahNo}:${ayahNo}`;
+      const label = surahName ? `${surahName}, ${ayahNo}` : `${surahNo}:${ayahNo}`;
       await Share.share({
         message: `${arabic}\n\n${displayText}\n\n— ${label}`,
       });

@@ -17,6 +17,8 @@ import {
 import Svg, { Circle, G } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
+import { useQuran } from "@/context/QuranContext";
+import { getStrings } from "@/constants/i18n";
 
 const MECCA_LAT = 21.4225;
 const MECCA_LON = 39.8262;
@@ -24,11 +26,11 @@ const TASHKENT_LAT = 41.2995;
 const TASHKENT_LON = 69.2401;
 
 const DHIKR_LIST = [
-  { arabic: "سُبْحَانَ اللّٰهِ", name: "Subhanalloh", meaning: "Alloh pokdir" },
-  { arabic: "الْحَمْدُ لِلّٰهِ", name: "Alhamdulilloh", meaning: "Allohga hamd" },
-  { arabic: "اللّٰهُ أَكْبَرُ", name: "Allohu akbar", meaning: "Alloh ulugʻdir" },
-  { arabic: "لَا إِلٰهَ إِلَّا اللّٰهُ", name: "La ilaha illalloh", meaning: "Allohdan oʻzga iloh yoʻq" },
-  { arabic: "أَسْتَغْفِرُ اللّٰهَ", name: "Astaghfirulloh", meaning: "Allohdan magʻfirat" },
+  { arabic: "سُبْحَانَ اللّٰهِ", name: "Subhanalloh", key: "dhikrSubhanallah" as const },
+  { arabic: "الْحَمْدُ لِلّٰهِ", name: "Alhamdulilloh", key: "dhikrAlhamdulillah" as const },
+  { arabic: "اللّٰهُ أَكْبَرُ", name: "Allohu akbar", key: "dhikrAllahuAkbar" as const },
+  { arabic: "لَا إِلٰهَ إِلَّا اللّٰهُ", name: "La ilaha illalloh", key: "dhikrLaIlaha" as const },
+  { arabic: "أَسْتَغْفِرُ اللّٰهَ", name: "Astaghfirulloh", key: "dhikrAstaghfirullah" as const },
 ];
 
 type TabType = "tasbih" | "qibla";
@@ -94,6 +96,8 @@ function ProgressRing({
 
 function TasbihView({ bottomInset }: { bottomInset: number }) {
   const c = Colors.dark;
+  const { settings } = useQuran();
+  const t = getStrings(settings.language);
   const [selectedDhikr, setSelectedDhikr] = useState(0);
   const [count, setCount] = useState(0);
   const [target, setTarget] = useState(33);
@@ -136,12 +140,12 @@ function TasbihView({ bottomInset }: { bottomInset: number }) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     }
     Alert.alert(
-      "Hisoblagichni nolga qaytarish",
-      "Joriy hisobni nolga qaytarasizmi?",
+      t.resetCounter,
+      t.resetConfirm,
       [
-        { text: "Bekor qilish", style: "cancel" },
+        { text: t.cancel, style: "cancel" },
         {
-          text: "Ha, nolga qaytarish",
+          text: t.confirmReset,
           style: "destructive",
           onPress: () => {
             setCount(0);
@@ -150,10 +154,10 @@ function TasbihView({ bottomInset }: { bottomInset: number }) {
         },
       ]
     );
-  }, []);
+  }, [t]);
 
-  const setTargetOption = useCallback((t: number) => {
-    setTarget(t);
+  const setTargetOption = useCallback((val: number) => {
+    setTarget(val);
     setCount(0);
     setShowCustom(false);
   }, []);
@@ -203,10 +207,8 @@ function TasbihView({ bottomInset }: { bottomInset: number }) {
             style={[
               styles.dhikrChip,
               {
-                backgroundColor:
-                  selectedDhikr === i ? c.tint + "22" : c.card,
-                borderColor:
-                  selectedDhikr === i ? c.tint : c.border,
+                backgroundColor: selectedDhikr === i ? c.tint + "22" : c.card,
+                borderColor: selectedDhikr === i ? c.tint : c.border,
               },
             ]}
           >
@@ -227,7 +229,7 @@ function TasbihView({ bottomInset }: { bottomInset: number }) {
           {dhikr.arabic}
         </Text>
         <Text style={[styles.meaningText, { color: c.textMuted }]}>
-          {dhikr.meaning}
+          {t[dhikr.key]}
         </Text>
       </View>
 
@@ -250,12 +252,12 @@ function TasbihView({ bottomInset }: { bottomInset: number }) {
             ]}
           >
             <Text style={[styles.countNumber, { color: c.text }]}>{count}</Text>
-            <Text style={[styles.tapHint, { color: c.textMuted }]}>bosing</Text>
+            <Text style={[styles.tapHint, { color: c.textMuted }]}>{t.tap}</Text>
           </Pressable>
         </Animated.View>
 
         <Animated.View style={[styles.celebBadge, celebStyle]}>
-          <Text style={styles.celebText}>✓ {target} marta!</Text>
+          <Text style={styles.celebText}>✓ {target} {t.times}!</Text>
         </Animated.View>
       </View>
 
@@ -263,32 +265,32 @@ function TasbihView({ bottomInset }: { bottomInset: number }) {
         <View style={[styles.completedRow, { backgroundColor: c.card, borderColor: c.border }]}>
           <Ionicons name="checkmark-circle" size={16} color={c.accent} />
           <Text style={[styles.completedText, { color: c.accent }]}>
-            {completed} × {target} = {completed * target} marta takrorlandı
+            {t.tasbihRepeated(completed, target)}
           </Text>
         </View>
       )}
 
       <View style={styles.targetRow}>
-        <Text style={[styles.targetLabel, { color: c.textMuted }]}>Maqsad:</Text>
-        {[33, 99].map((t) => (
+        <Text style={[styles.targetLabel, { color: c.textMuted }]}>{t.target}:</Text>
+        {[33, 99].map((val) => (
           <Pressable
-            key={t}
-            onPress={() => setTargetOption(t)}
+            key={val}
+            onPress={() => setTargetOption(val)}
             style={[
               styles.targetBtn,
               {
-                backgroundColor: target === t ? c.tint : c.card,
-                borderColor: target === t ? c.tint : c.border,
+                backgroundColor: target === val ? c.tint : c.card,
+                borderColor: target === val ? c.tint : c.border,
               },
             ]}
           >
             <Text
               style={[
                 styles.targetBtnText,
-                { color: target === t ? "#000" : c.textSecondary },
+                { color: target === val ? "#000" : c.textSecondary },
               ]}
             >
-              {t}
+              {val}
             </Text>
           </Pressable>
         ))}
@@ -315,7 +317,7 @@ function TasbihView({ bottomInset }: { bottomInset: number }) {
               },
             ]}
           >
-            {target !== 33 && target !== 99 ? `${target}` : "Boshqa"}
+            {target !== 33 && target !== 99 ? `${target}` : t.other}
           </Text>
         </Pressable>
       </View>
@@ -325,7 +327,7 @@ function TasbihView({ bottomInset }: { bottomInset: number }) {
           <TextInput
             value={customTarget}
             onChangeText={setCustomTarget}
-            placeholder="Raqam kiriting"
+            placeholder={t.enterNumber}
             placeholderTextColor={c.textMuted}
             keyboardType="number-pad"
             style={[
@@ -351,6 +353,8 @@ function TasbihView({ bottomInset }: { bottomInset: number }) {
 
 function QiblaView() {
   const c = Colors.dark;
+  const { settings } = useQuran();
+  const t = getStrings(settings.language);
   const [bearing, setBearing] = useState<number | null>(null);
   const [heading, setHeading] = useState<number>(0);
   const [hasSensor, setHasSensor] = useState(true);
@@ -423,12 +427,13 @@ function QiblaView() {
   });
 
   const displayBearing = bearing !== null ? Math.round(bearing) : 0;
+  const compassDirs = [t.compassN, t.compassE, t.compassS, t.compassW];
 
   return (
     <View style={styles.qiblaContainer}>
       <View style={[styles.compassOuter, { borderColor: c.border, backgroundColor: c.card }]}>
         <View style={[styles.compassRing, { borderColor: c.tint + "30" }]}>
-          {["Sh", "Sr", "J", "G"].map((dir, i) => {
+          {compassDirs.map((dir, i) => {
             const angle = i * 90;
             const rad = (angle - 90) * (Math.PI / 180);
             const r = 90;
@@ -440,7 +445,7 @@ function QiblaView() {
                 style={[
                   styles.compassDir,
                   {
-                    color: dir === "Sh" ? c.tint : c.textMuted,
+                    color: i === 0 ? c.tint : c.textMuted,
                     transform: [
                       { translateX: x },
                       { translateY: y },
@@ -463,16 +468,16 @@ function QiblaView() {
         </View>
       </View>
 
-      <Text style={[styles.qiblaLabel, { color: c.text }]}>Makka tomoni</Text>
+      <Text style={[styles.qiblaLabel, { color: c.text }]}>{t.qiblaDirection}</Text>
       <Text style={[styles.qiblaDegrees, { color: c.tint }]}>
-        Shimoldan {displayBearing}° (qibla yo'nalishi)
+        {t.compassN}: {displayBearing}° ({t.qibla})
       </Text>
 
       {usingFallback && (
         <View style={[styles.fallbackNote, { backgroundColor: c.card, borderColor: c.border }]}>
           <Ionicons name="location-outline" size={14} color={c.textMuted} />
           <Text style={[styles.fallbackText, { color: c.textMuted }]}>
-            Toshkent koordinatasidan hisoblandi
+            {t.qiblaPermission}
           </Text>
         </View>
       )}
@@ -481,7 +486,7 @@ function QiblaView() {
         <View style={[styles.fallbackNote, { backgroundColor: c.card, borderColor: c.border }]}>
           <Ionicons name="information-circle-outline" size={14} color={c.textMuted} />
           <Text style={[styles.fallbackText, { color: c.textMuted }]}>
-            Kompas sensori mavjud emas — statik yo'nalish ko'rsatilmoqda
+            {t.networkError}
           </Text>
         </View>
       )}
@@ -490,7 +495,7 @@ function QiblaView() {
         <View style={[styles.fallbackNote, { backgroundColor: c.card, borderColor: c.border }]}>
           <Ionicons name="refresh-circle-outline" size={14} color={c.textMuted} />
           <Text style={[styles.fallbackText, { color: c.textMuted }]}>
-            Aniqlik uchun telefoningizni "8" shakli bo'ylab aylantiring
+            {t.enableNotif}
           </Text>
         </View>
       )}
@@ -501,6 +506,8 @@ function QiblaView() {
 export default function TasbihScreen() {
   const insets = useSafeAreaInsets();
   const c = Colors.dark;
+  const { settings } = useQuran();
+  const t = getStrings(settings.language);
   const [activeTab, setActiveTab] = useState<TabType>("tasbih");
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
   const bottomInset = Platform.OS === "web" ? 0 : insets.bottom;
@@ -508,7 +515,7 @@ export default function TasbihScreen() {
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
       <View style={{ paddingTop: topPadding + 12, paddingHorizontal: 16, marginBottom: 12 }}>
-        <Text style={[styles.screenTitle, { color: c.text }]}>Tasbih</Text>
+        <Text style={[styles.screenTitle, { color: c.text }]}>{t.tasbih}</Text>
 
         <View style={[styles.tabRow, { backgroundColor: c.card, borderColor: c.border }]}>
           <Pressable
@@ -529,7 +536,7 @@ export default function TasbihScreen() {
                 { color: activeTab === "tasbih" ? "#000" : c.textSecondary },
               ]}
             >
-              Hisoblagich
+              {t.tasbih}
             </Text>
           </Pressable>
           <Pressable
@@ -550,7 +557,7 @@ export default function TasbihScreen() {
                 { color: activeTab === "qibla" ? "#000" : c.textSecondary },
               ]}
             >
-              Qibla
+              {t.qibla}
             </Text>
           </Pressable>
         </View>

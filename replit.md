@@ -21,8 +21,9 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 ### Quran Uzbek Mobile App (`artifacts/quran-uzbek`)
 - Expo React Native app with Expo Router file-based routing
 - Full Quran reading app for Uzbek audience
-- Data source: quranapi.pages.dev API (Arabic + English) + alquran.cloud (uz.sodik Uzbek translation, transliteration, word-by-word)
-- Tabs: Qur'on (home), Qidirish (search), Xatcho'p (bookmarks), Namoz (prayer times), Sozlamalar (settings)
+- Data source: quranapi.pages.dev API (Arabic + English + Uzbek) + alquran.cloud (ru.kuliev Russian + uz.sodik Uzbek + transliteration)
+- Language system: 4 languages — uz_cyrillic, uz_latin, ru, en — via unified i18n system (constants/i18n.ts, 100+ keys)
+- Tabs: Qur'on (home), Qidirish (search), Xatcho'p (bookmarks), Namoz (prayer times), Tasbih, Sozlamalar (settings)
 - State: AsyncStorage via @nkzw/create-context-hook for bookmarks, last read, settings, completed surahs
 - Audio: GlobalAudioPlayer at root layout (persistent across tabs), expo-audio for verse playback with 5 reciters
 - Features implemented:

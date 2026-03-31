@@ -16,6 +16,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { fetchSurahList, SurahListItem } from "@/constants/api";
 import { UZBEK_NAMES } from "@/constants/uzbekNames";
+import { useQuran } from "@/context/QuranContext";
+import { getStrings } from "@/constants/i18n";
 
 const POPULAR_SURAHS = [1, 2, 18, 36, 55, 67, 112, 113, 114];
 
@@ -23,6 +25,8 @@ export default function SearchScreen() {
   const insets = useSafeAreaInsets();
   const c = Colors.dark;
   const [search, setSearch] = useState("");
+  const { settings } = useQuran();
+  const t = getStrings(settings.language);
 
   const { data: surahs } = useQuery<SurahListItem[]>({
     queryKey: ["surahList"],
@@ -65,7 +69,7 @@ export default function SearchScreen() {
       <View style={styles.resultInfo}>
         <Text style={[styles.resultName, { color: c.text }]}>{UZBEK_NAMES[s.surahNo] || s.surahName}</Text>
         <Text style={[styles.resultSub, { color: c.textSecondary }]}>
-          {(s.revelationPlace === "Makkah" || s.revelationPlace === "Mecca") ? "Makka" : "Madina"} • {s.totalAyah} oyat
+          {(s.revelationPlace === "Makkah" || s.revelationPlace === "Mecca") ? t.makkah : t.madinah} • {s.totalAyah} {t.verse}
         </Text>
       </View>
       <Text style={[styles.resultArabic, { color: c.tint }]}>{s.surahNameArabic}</Text>
@@ -75,13 +79,13 @@ export default function SearchScreen() {
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
       <View style={[styles.header, { paddingTop: topPadding + 12 }]}>
-        <Text style={[styles.title, { color: c.text }]}>Qidirish</Text>
+        <Text style={[styles.title, { color: c.text }]}>{t.searchTitle}</Text>
         <View style={[styles.searchBar, { backgroundColor: c.card, borderColor: c.border }]}>
           <Ionicons name="search" size={18} color={c.textMuted} />
           <TextInput
             value={search}
             onChangeText={setSearch}
-            placeholder="Sura nomi, raqami yoki arabcha..."
+            placeholder={t.searchInputPlaceholder}
             placeholderTextColor={c.textMuted}
             style={[styles.searchInput, { color: c.text }]}
             autoFocus
@@ -97,15 +101,15 @@ export default function SearchScreen() {
 
       {!search ? (
         <View style={styles.popularContainer}>
-          <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>Mashhur Suralar</Text>
+          <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>{t.popularSurahs}</Text>
           {popularSurahs.map(renderSurah)}
         </View>
       ) : results.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="search-outline" size={48} color={c.textMuted} />
-          <Text style={[styles.emptyTitle, { color: c.text }]}>Topilmadi</Text>
+          <Text style={[styles.emptyTitle, { color: c.text }]}>{t.notFound}</Text>
           <Text style={[styles.emptyText, { color: c.textSecondary }]}>
-            "{search}" so'zi bo'yicha hech narsa topilmadi
+            {t.notFoundDesc(search)}
           </Text>
         </View>
       ) : (

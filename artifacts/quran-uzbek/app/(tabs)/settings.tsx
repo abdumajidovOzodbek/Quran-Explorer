@@ -14,23 +14,27 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { useQuran } from "@/context/QuranContext";
 import { RECITERS, TOTAL_SURAHS } from "@/constants/api";
-import { ReadingMode, ScriptMode } from "@/types/quran";
+import { ReadingMode, AppLanguage } from "@/types/quran";
+import { getStrings } from "@/constants/i18n";
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const c = Colors.dark;
   const { settings, updateSettings, completedSurahs, cacheProgress, isCacheDownloading, isCacheDone } = useQuran();
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
+  const t = getStrings(settings.language);
 
   const readingModes: { value: ReadingMode; label: string }[] = [
-    { value: "both", label: "Arabcha + Tarjima" },
-    { value: "arabic-only", label: "Faqat Arabcha" },
-    { value: "translation", label: "Faqat Tarjima" },
+    { value: "both", label: t.readingModeBoth },
+    { value: "arabic-only", label: t.readingModeArabicOnly },
+    { value: "translation", label: t.readingModeTranslationOnly },
   ];
 
-  const scriptModes: { value: ScriptMode; label: string; sub: string }[] = [
-    { value: "cyrillic", label: "Кирилл", sub: "Ўзбек кириллча (стандарт)" },
-    { value: "latin", label: "Lotin", sub: "O\u02bbzbek lotincha" },
+  const languages: { value: AppLanguage; label: string; sub: string }[] = [
+    { value: "uz_cyrillic", label: "Кирилл", sub: "Ўзбек кириллча" },
+    { value: "uz_latin", label: "Lotin", sub: "O\u02bbzbek lotincha" },
+    { value: "ru", label: "Русский", sub: "Russian" },
+    { value: "en", label: "English", sub: "English" },
   ];
 
   return (
@@ -43,14 +47,41 @@ export default function SettingsScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={{ paddingTop: topPadding + 12, paddingHorizontal: 16, marginBottom: 24 }}>
-        <Text style={[styles.title, { color: c.text }]}>Sozlamalar</Text>
+        <Text style={[styles.title, { color: c.text }]}>{t.settingsTitle}</Text>
         <Text style={[styles.subtitle, { color: c.textSecondary }]}>
-          {completedSurahs.length}/114 sura o'qildi
+          {t.surahsRead(completedSurahs.length)}
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>O'QISH REJIMI</Text>
+        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>{t.language}</Text>
+        <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}>
+          {languages.map((lang, idx) => (
+            <Pressable
+              key={lang.value}
+              onPress={() => {
+                Haptics.selectionAsync();
+                updateSettings({ language: lang.value });
+              }}
+              style={[
+                styles.option,
+                idx < languages.length - 1 && { borderBottomWidth: 1, borderBottomColor: c.border },
+              ]}
+            >
+              <View>
+                <Text style={[styles.optionText, { color: c.text }]}>{lang.label}</Text>
+                <Text style={[styles.optionSub, { color: c.textSecondary }]}>{lang.sub}</Text>
+              </View>
+              {settings.language === lang.value && (
+                <Ionicons name="checkmark-circle" size={22} color={c.tint} />
+              )}
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>{t.readingMode}</Text>
         <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}>
           {readingModes.map((mode, idx) => (
             <Pressable
@@ -74,12 +105,12 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>QIROAT SOZLAMALARI</Text>
+        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>{t.recitationSettings}</Text>
         <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}>
           <View style={[styles.toggleRow, { borderBottomWidth: 1, borderBottomColor: c.border }]}>
             <View style={styles.toggleInfo}>
-              <Text style={[styles.optionText, { color: c.text }]}>Transliteratsiya</Text>
-              <Text style={[styles.optionSub, { color: c.textSecondary }]}>Arabcha so'zlarning lotin talaffuzi</Text>
+              <Text style={[styles.optionText, { color: c.text }]}>{t.transliteration}</Text>
+              <Text style={[styles.optionSub, { color: c.textSecondary }]}>{t.transliterationDesc}</Text>
             </View>
             <Switch
               value={settings.showTransliteration}
@@ -90,8 +121,8 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.toggleRow}>
             <View style={styles.toggleInfo}>
-              <Text style={[styles.optionText, { color: c.text }]}>So'z bo'yicha tarjima</Text>
-              <Text style={[styles.optionSub, { color: c.textSecondary }]}>Har bir so'zga bosing (Inglizcha)</Text>
+              <Text style={[styles.optionText, { color: c.text }]}>{t.wordByWord}</Text>
+              <Text style={[styles.optionSub, { color: c.textSecondary }]}>{t.wordByWordDesc}</Text>
             </View>
             <Switch
               value={settings.showWordByWord}
@@ -104,7 +135,7 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>ARABCHA SHRIFT O'LCHAMI</Text>
+        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>{t.arabicFontSize}</Text>
         <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}>
           <View style={styles.sliderRow}>
             <Pressable
@@ -134,7 +165,7 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>TARJIMA SHRIFT O'LCHAMI</Text>
+        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>{t.translationFontSize}</Text>
         <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}>
           <View style={styles.sliderRow}>
             <Pressable
@@ -164,34 +195,7 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>YOZUV (TARJIMA)</Text>
-        <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}>
-          {scriptModes.map((mode, idx) => (
-            <Pressable
-              key={mode.value}
-              onPress={() => {
-                Haptics.selectionAsync();
-                updateSettings({ scriptMode: mode.value });
-              }}
-              style={[
-                styles.option,
-                idx < scriptModes.length - 1 && { borderBottomWidth: 1, borderBottomColor: c.border },
-              ]}
-            >
-              <View>
-                <Text style={[styles.optionText, { color: c.text }]}>{mode.label}</Text>
-                <Text style={[styles.optionSub, { color: c.textSecondary }]}>{mode.sub}</Text>
-              </View>
-              {settings.scriptMode === mode.value && (
-                <Ionicons name="checkmark-circle" size={22} color={c.tint} />
-              )}
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>QORI TANLASH</Text>
+        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>{t.reciterTitle}</Text>
         <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}>
           {RECITERS.map((reciter, idx) => (
             <Pressable
@@ -218,7 +222,7 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>OFFLINE KESH</Text>
+        <Text style={[styles.sectionTitle, { color: c.textSecondary }]}>{t.offlineCache}</Text>
         <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}>
           {isCacheDone ? (
             <View style={styles.cacheRow}>
@@ -226,9 +230,9 @@ export default function SettingsScreen() {
                 <Ionicons name="checkmark-circle" size={22} color="#22c55e" />
               </View>
               <View style={styles.cacheInfo}>
-                <Text style={[styles.optionText, { color: c.text }]}>Offline tayyor</Text>
+                <Text style={[styles.optionText, { color: c.text }]}>{t.offlineReady}</Text>
                 <Text style={[styles.optionSub, { color: c.textSecondary }]}>
-                  Barcha 114 sura qurilmada saqlangan
+                  {t.offlineReadyDesc}
                 </Text>
               </View>
             </View>
@@ -239,11 +243,11 @@ export default function SettingsScreen() {
               </View>
               <View style={styles.cacheInfo}>
                 <View style={styles.cacheProgressHeader}>
-                  <Text style={[styles.optionText, { color: c.text }]}>Yuklanmoqda...</Text>
+                  <Text style={[styles.optionText, { color: c.text }]}>{t.downloading}</Text>
                   <Text style={[styles.cachePercent, { color: c.tint }]}>{cacheProgress}%</Text>
                 </View>
                 <Text style={[styles.optionSub, { color: c.textSecondary }]}>
-                  {Math.round((cacheProgress / 100) * TOTAL_SURAHS)}/{TOTAL_SURAHS} sura saqlandi
+                  {t.downloadingDesc(Math.round((cacheProgress / 100) * TOTAL_SURAHS))}
                 </Text>
                 <View style={[styles.cacheTrack, { backgroundColor: c.background }]}>
                   <View
@@ -261,9 +265,9 @@ export default function SettingsScreen() {
                 <Ionicons name="cloud-outline" size={22} color={c.textMuted} />
               </View>
               <View style={styles.cacheInfo}>
-                <Text style={[styles.optionText, { color: c.text }]}>Internet kutilmoqda</Text>
+                <Text style={[styles.optionText, { color: c.text }]}>{t.waitingNetwork}</Text>
                 <Text style={[styles.optionSub, { color: c.textSecondary }]}>
-                  Tarmoqqa ulanganingizda yuklanadi
+                  {t.waitingNetworkDesc}
                 </Text>
               </View>
             </View>
@@ -276,7 +280,7 @@ export default function SettingsScreen() {
           <View style={styles.infoRow}>
             <Ionicons name="information-circle-outline" size={18} color={c.textSecondary} />
             <Text style={[styles.infoText, { color: c.textSecondary }]}>
-              Ma'lumotlar quranapi.pages.dev dan olinadi
+              {t.dataSource}
             </Text>
           </View>
         </View>

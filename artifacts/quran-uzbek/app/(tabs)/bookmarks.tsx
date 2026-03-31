@@ -15,12 +15,14 @@ import Colors from "@/constants/colors";
 import { useQuran } from "@/context/QuranContext";
 import { Bookmark } from "@/types/quran";
 import { UZBEK_NAMES } from "@/constants/uzbekNames";
+import { getStrings } from "@/constants/i18n";
 
 export default function BookmarksScreen() {
   const insets = useSafeAreaInsets();
   const c = Colors.dark;
-  const { bookmarks, removeBookmark } = useQuran();
+  const { bookmarks, removeBookmark, settings } = useQuran();
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
+  const t = getStrings(settings.language);
 
   const handleDelete = (bk: Bookmark) => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -35,18 +37,18 @@ export default function BookmarksScreen() {
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
       <View style={[styles.header, { paddingTop: topPadding + 12 }]}>
-        <Text style={[styles.title, { color: c.text }]}>Xatcho'plar</Text>
+        <Text style={[styles.title, { color: c.text }]}>{t.bookmarksTitle}</Text>
         <Text style={[styles.subtitle, { color: c.textSecondary }]}>
-          {bookmarks.length} ta saqlangan oyat
+          {t.savedVerses(bookmarks.length)}
         </Text>
       </View>
 
       {bookmarks.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="bookmark-outline" size={56} color={c.textMuted} />
-          <Text style={[styles.emptyTitle, { color: c.text }]}>Xatcho'p yo'q</Text>
+          <Text style={[styles.emptyTitle, { color: c.text }]}>{t.noBookmarks}</Text>
           <Text style={[styles.emptyText, { color: c.textSecondary }]}>
-            Sura o'qiyotganda oyatlarni xatcho'p qilib saqlashingiz mumkin
+            {t.noBookmarksDesc}
           </Text>
         </View>
       ) : (

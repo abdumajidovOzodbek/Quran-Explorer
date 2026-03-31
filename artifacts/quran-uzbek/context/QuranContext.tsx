@@ -1,7 +1,7 @@
 import createContextHook from "@nkzw/create-context-hook";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Bookmark, ReadingMode, DisplayLanguage, ScriptMode } from "@/types/quran";
+import { Bookmark, ReadingMode, AppLanguage } from "@/types/quran";
 import { cacheAllSurahsInBackground, isCacheComplete, TOTAL_SURAHS } from "@/constants/api";
 
 const BOOKMARKS_KEY = "@quran_bookmarks";
@@ -18,25 +18,41 @@ interface LastRead {
 
 interface Settings {
   readingMode: ReadingMode;
-  displayLanguage: DisplayLanguage;
+  language: AppLanguage;
   arabicFontSize: number;
   translationFontSize: number;
   reciterId: string;
   showTransliteration: boolean;
   showWordByWord: boolean;
-  scriptMode: ScriptMode;
 }
 
 const DEFAULT_SETTINGS: Settings = {
   readingMode: "both",
-  displayLanguage: "uzbek",
+  language: "uz_latin",
   arabicFontSize: 28,
   translationFontSize: 15,
   reciterId: "1",
   showTransliteration: false,
   showWordByWord: false,
-  scriptMode: "cyrillic",
 };
+
+function migrateSettings(raw: Record<string, unknown>): Partial<Settings> {
+  const result: Partial<Settings> = {};
+  if (raw.readingMode) result.readingMode = raw.readingMode as ReadingMode;
+  if (raw.arabicFontSize) result.arabicFontSize = raw.arabicFontSize as number;
+  if (raw.translationFontSize) result.translationFontSize = raw.translationFontSize as number;
+  if (raw.reciterId) result.reciterId = raw.reciterId as string;
+  if (typeof raw.showTransliteration === "boolean") result.showTransliteration = raw.showTransliteration;
+  if (typeof raw.showWordByWord === "boolean") result.showWordByWord = raw.showWordByWord;
+  if (raw.language && ["uz_cyrillic", "uz_latin", "ru", "en"].includes(raw.language as string)) {
+    result.language = raw.language as AppLanguage;
+  } else if (raw.scriptMode === "latin") {
+    result.language = "uz_latin";
+  } else if (raw.scriptMode === "cyrillic") {
+    result.language = "uz_cyrillic";
+  }
+  return result;
+}
 
 function useQuranState() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
@@ -96,7 +112,10 @@ function useQuranState() {
       ]);
       if (bkData) setBookmarks(JSON.parse(bkData));
       if (lrData) setLastRead(JSON.parse(lrData));
-      if (settingsData) setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(settingsData) });
+      if (settingsData) {
+        const raw = JSON.parse(settingsData);
+        setSettings({ ...DEFAULT_SETTINGS, ...migrateSettings(raw) });
+      }
       if (completedData) setCompletedSurahs(JSON.parse(completedData));
       if (khatmahData) setKhatmahCount(parseInt(khatmahData, 10) || 0);
     } catch (e) {

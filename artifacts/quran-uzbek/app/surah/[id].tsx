@@ -16,9 +16,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { fetchSurah, fetchWordByWord, getVerseAudioUrl, RECITERS, SurahApiData } from "@/constants/api";
 import { UZBEK_NAMES } from "@/constants/uzbekNames";
+import { cyrillicToLatin } from "@/constants/latinScript";
 import { VerseCard } from "@/components/VerseCard";
 import { useQuran } from "@/context/QuranContext";
 import { useAudio } from "@/context/AudioContext";
+import { getStrings } from "@/constants/i18n";
 
 interface VerseItem {
   ayahNo: number;
@@ -26,6 +28,7 @@ interface VerseItem {
   arabic2?: string;
   english: string;
   uzbek?: string;
+  russian?: string;
   transliteration?: string;
 }
 
@@ -45,6 +48,7 @@ export default function SurahScreen() {
     unmarkSurahComplete,
   } = useQuran();
   const { audio, playVerse, stopAudio } = useAudio();
+  const t = getStrings(settings.language);
 
   const playingAyah = audio?.surahNo === surahNo ? audio.ayahNo : null;
   const listRef = useRef<FlatList>(null);
@@ -73,28 +77,38 @@ export default function SurahScreen() {
         arabic2: data.arabic2?.[idx] || "",
         english,
         uzbek: data.uzbek?.[idx],
+        russian: data.russian?.[idx],
         transliteration: data.transliteration?.[idx],
       }))
     : [];
 
   const reciter = RECITERS.find((r) => r.id === settings.reciterId) || RECITERS[0];
 
+  const getSurahDisplayName = () => {
+    const lang = settings.language;
+    if (lang === "uz_cyrillic") return UZBEK_NAMES[surahNo] || data?.surahName || `Sura ${surahNo}`;
+    if (lang === "uz_latin") return cyrillicToLatin(UZBEK_NAMES[surahNo] || "") || data?.surahName || `Surah ${surahNo}`;
+    return data?.surahName || UZBEK_NAMES[surahNo] || `Surah ${surahNo}`;
+  };
+
+  const surahName = getSurahDisplayName();
+
   const handlePlay = useCallback((ayahNo: number) => {
     if (playingAyah === ayahNo) {
       stopAudio();
       return;
     }
-    const surahName = UZBEK_NAMES[surahNo] || data?.surahName || "";
+    const sName = UZBEK_NAMES[surahNo] || data?.surahName || "";
     playVerse({
       surahNo,
       ayahNo,
-      surahName,
+      surahName: sName,
       totalVerses: verses.length,
       reciterId: settings.reciterId,
       reciterName: reciter.name,
       audioUrl: getVerseAudioUrl(surahNo, ayahNo, settings.reciterId),
     });
-    saveLastRead({ surahNo, surahName, ayahNo });
+    saveLastRead({ surahNo, surahName: sName, ayahNo });
   }, [playingAyah, surahNo, settings.reciterId, data?.surahName, verses.length, reciter.name, playVerse, stopAudio, saveLastRead]);
 
   useEffect(() => {
@@ -137,7 +151,12 @@ export default function SurahScreen() {
     }
   }, [surahNo, isBookmarked, addBookmark, removeBookmark, data?.surahName]);
 
-  const surahName = UZBEK_NAMES[surahNo] || data?.surahName || `Sura ${surahNo}`;
+  const revelationLabel = () => {
+    const rp = data?.revelationPlace ?? "";
+    if (rp === "Mecca" || rp === "Makkah") return t.makkah;
+    if (rp === "Medina" || rp === "Madinah") return t.madinah;
+    return rp;
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
@@ -159,8 +178,7 @@ export default function SurahScreen() {
         <View style={styles.headerInfo}>
           <Text style={[styles.headerTitle, { color: c.text }]}>{surahName}</Text>
           <Text style={[styles.headerSub, { color: c.textSecondary }]}>
-            {data?.revelationPlace === "Mecca" ? "Makka" : data?.revelationPlace === "Medina" ? "Madina" : data?.revelationPlace ?? ""}
-            {" "}• {data?.totalAyah ?? verses.length} oyat
+            {revelationLabel()} • {data?.totalAyah ?? verses.length} {t.verse}
           </Text>
         </View>
 
@@ -188,7 +206,7 @@ export default function SurahScreen() {
             color={isComplete ? "#22c55e" : c.tint}
           />
           <Text style={[styles.headerCompleteBtnText, { color: isComplete ? "#22c55e" : c.tint }]}>
-            {isComplete ? "O'qildi" : "Tugatdim"}
+            {isComplete ? t.markCompleted : t.markComplete}
           </Text>
         </Pressable>
       </View>
@@ -196,19 +214,17 @@ export default function SurahScreen() {
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={c.tint} />
-          <Text style={[styles.loadingText, { color: c.textSecondary }]}>Yuklanmoqda...</Text>
+          <Text style={[styles.loadingText, { color: c.textSecondary }]}>{t.loading}</Text>
         </View>
       ) : isError ? (
         <View style={styles.errorContainer}>
           <Ionicons name="wifi-outline" size={48} color={c.textMuted} />
-          <Text style={[styles.errorText, { color: c.textSecondary }]}>
-            Internetga ulanishda xatolik
-          </Text>
+          <Text style={[styles.errorText, { color: c.textSecondary }]}>{t.networkError}</Text>
           <Pressable
             onPress={() => refetch()}
             style={[styles.retryBtn, { backgroundColor: c.tint }]}
           >
-            <Text style={styles.retryText}>Qayta urinish</Text>
+            <Text style={styles.retryText}>{t.retry}</Text>
           </Pressable>
         </View>
       ) : (
@@ -263,6 +279,7 @@ export default function SurahScreen() {
               arabic={item.arabic}
               english={item.english}
               uzbek={item.uzbek}
+              russian={item.russian}
               transliteration={item.transliteration}
               wordByWord={wordByWordData?.[item.ayahNo - 1]}
               surahName={surahName}

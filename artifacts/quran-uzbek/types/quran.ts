@@ -16,6 +16,7 @@ export interface Verse {
   arabic2?: string;
   english: string;
   uzbek?: string;
+  russian?: string;
   sajda?: boolean;
 }
 
@@ -48,5 +49,4 @@ export interface Bookmark {
 }
 
 export type ReadingMode = "arabic-only" | "translation" | "both";
-export type DisplayLanguage = "uzbek" | "english";
-export type ScriptMode = "cyrillic" | "latin";
+export type AppLanguage = "uz_cyrillic" | "uz_latin" | "ru" | "en";

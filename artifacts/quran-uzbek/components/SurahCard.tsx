@@ -4,8 +4,9 @@ import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import Colors from "@/constants/colors";
 import { SurahListItem } from "@/constants/api";
 import { UZBEK_NAMES, JUZ_START } from "@/constants/uzbekNames";
-import { applyScript } from "@/constants/latinScript";
+import { cyrillicToLatin } from "@/constants/latinScript";
 import { useQuran } from "@/context/QuranContext";
+import { getStrings } from "@/constants/i18n";
 
 interface SurahCardProps {
   surah: SurahListItem;
@@ -17,9 +18,13 @@ interface SurahCardProps {
 export function SurahCard({ surah, onPress, isLastRead, isCompleted }: SurahCardProps) {
   const c = Colors.dark;
   const { settings } = useQuran();
-  const scriptMode = settings.scriptMode ?? "cyrillic";
+  const t = getStrings(settings.language);
+  const language = settings.language;
   const rawName = UZBEK_NAMES[surah.surahNo] || surah.surahNameTranslation;
-  const uzbekName = applyScript(rawName, scriptMode);
+  const uzbekName =
+    language === "uz_latin" ? cyrillicToLatin(rawName) :
+    language === "uz_cyrillic" ? rawName :
+    surah.surahNameTranslation;
   const juz = JUZ_START[surah.surahNo];
   const isMecca = surah.revelationPlace === "Makkah" || surah.revelationPlace === "Mecca";
 
@@ -48,17 +53,17 @@ export function SurahCard({ surah, onPress, isLastRead, isCompleted }: SurahCard
           <Text style={[styles.surahName, { color: c.text }]}>{uzbekName}</Text>
           {isLastRead && (
             <View style={[styles.badge, { backgroundColor: c.tint + "33" }]}>
-              <Text style={[styles.badgeText, { color: c.tint }]}>Oxirgi</Text>
+              <Text style={[styles.badgeText, { color: c.tint }]}>{t.lastReadBadge}</Text>
             </View>
           )}
           {isCompleted && (
             <View style={[styles.badge, { backgroundColor: "#22c55e22" }]}>
-              <Text style={[styles.badgeText, { color: "#22c55e" }]}>O'qildi</Text>
+              <Text style={[styles.badgeText, { color: "#22c55e" }]}>{t.markCompleted}</Text>
             </View>
           )}
         </View>
         <Text style={[styles.translationText, { color: c.textSecondary }]}>
-          {isMecca ? "Makka" : "Madina"} • {surah.totalAyah} oyat • {juz}-juz
+          {isMecca ? t.makkah : t.madinah} • {surah.totalAyah} {t.verse} • {juz} {t.juz}
         </Text>
       </View>
 

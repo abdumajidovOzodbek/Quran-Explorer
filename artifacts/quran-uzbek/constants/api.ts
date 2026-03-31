@@ -23,6 +23,7 @@ export interface SurahApiData {
   surahNo?: number;
   english: string[];
   uzbek?: string[];
+  russian?: string[];
   transliteration?: string[];
   wordByWord?: string[];
   arabic1: string[];
@@ -45,11 +46,13 @@ export interface VerseOfDay {
   ayahNo: number;
   arabic: string;
   uzbek: string;
+  russian?: string;
+  english: string;
   surahName: string;
 }
 
 const SURAH_LIST_CACHE = "@surah_list_v2";
-const surahCacheKey = (n: number) => `@surah_v2_${n}`;
+const surahCacheKey = (n: number) => `@surah_v3_${n}`;
 export const CACHE_COMPLETE_KEY = "@quran_cache_complete_v2";
 export const TOTAL_SURAHS = 114;
 
@@ -98,9 +101,10 @@ export async function fetchSurahList(): Promise<SurahListItem[]> {
 
 export async function fetchSurah(surahNumber: number): Promise<SurahApiData> {
   try {
-    const [mainRes, uzbekRes, translitRes] = await Promise.all([
+    const [mainRes, uzbekRes, russianRes, translitRes] = await Promise.all([
       fetch(`${QURAN_API_BASE}/${surahNumber}.json`),
       fetch(`${ALQURAN_CLOUD_BASE}/surah/${surahNumber}/uz.sodik`),
+      fetch(`${ALQURAN_CLOUD_BASE}/surah/${surahNumber}/ru.kuliev`),
       fetch(`${ALQURAN_CLOUD_BASE}/surah/${surahNumber}/en.transliteration`),
     ]);
 
@@ -114,6 +118,13 @@ export async function fetchSurah(surahNumber: number): Promise<SurahApiData> {
       uzbek = ayahs.map((a) => a.text);
     }
 
+    let russian: string[] | undefined;
+    if (russianRes.ok) {
+      const russianData = await russianRes.json();
+      const ayahs: Array<{ text: string }> = russianData?.data?.ayahs ?? [];
+      russian = ayahs.map((a) => a.text);
+    }
+
     let transliteration: string[] | undefined;
     if (translitRes.ok) {
       const translitData = await translitRes.json();
@@ -121,7 +132,7 @@ export async function fetchSurah(surahNumber: number): Promise<SurahApiData> {
       transliteration = ayahs.map((a) => a.text);
     }
 
-    const result: SurahApiData = { ...data, surahNo: surahNumber, uzbek, transliteration };
+    const result: SurahApiData = { ...data, surahNo: surahNumber, uzbek, russian, transliteration };
     AsyncStorage.setItem(surahCacheKey(surahNumber), JSON.stringify(result)).catch(() => {});
     return result;
   } catch (err) {
@@ -177,7 +188,9 @@ export async function fetchVerseOfDay(): Promise<VerseOfDay> {
     surahNo,
     ayahNo,
     arabic: data.arabic1[verseIdx] ?? "",
-    uzbek: data.uzbek?.[verseIdx] ?? data.english[verseIdx] ?? "",
+    uzbek: data.uzbek?.[verseIdx] ?? "",
+    russian: data.russian?.[verseIdx],
+    english: data.english[verseIdx] ?? "",
     surahName: data.surahName,
   };
 }

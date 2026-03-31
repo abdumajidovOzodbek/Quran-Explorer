@@ -22,27 +22,21 @@ import {
   rescheduleEnabledNotifs,
   schedulePrayerNotif,
 } from "@/constants/notifications";
+import { useQuran } from "@/context/QuranContext";
+import { getStrings } from "@/constants/i18n";
 
 const TASHKENT_LAT = 41.2995;
 const TASHKENT_LON = 69.2401;
 const NOTIF_ENABLED_KEY = "@quran_prayer_notif_enabled";
 
-const PRAYERS = [
-  { key: "Fajr", name: "Bomdod", icon: "moon-outline" as const, gradient: ["#1a1a3e", "#2d2d6e"] as [string, string], hasNotif: true },
-  { key: "Sunrise", name: "Quyosh", icon: "sunny-outline" as const, gradient: ["#3d2b00", "#7c5900"] as [string, string], hasNotif: false },
-  { key: "Dhuhr", name: "Peshin", icon: "partly-sunny-outline" as const, gradient: ["#0d2e3e", "#0d4a5e"] as [string, string], hasNotif: true },
-  { key: "Asr", name: "Asr", icon: "cloud-outline" as const, gradient: ["#2e1a00", "#5c3500"] as [string, string], hasNotif: true },
-  { key: "Maghrib", name: "Shom", icon: "cloudy-night-outline" as const, gradient: ["#3e0d0d", "#6e1515"] as [string, string], hasNotif: true },
-  { key: "Isha", name: "Xufton", icon: "star-outline" as const, gradient: ["#1a0d3e", "#2e1a6e"] as [string, string], hasNotif: true },
+const PRAYER_STATIC = [
+  { key: "Fajr", icon: "moon-outline" as const, gradient: ["#1a1a3e", "#2d2d6e"] as [string, string], hasNotif: true },
+  { key: "Sunrise", icon: "sunny-outline" as const, gradient: ["#3d2b00", "#7c5900"] as [string, string], hasNotif: false },
+  { key: "Dhuhr", icon: "partly-sunny-outline" as const, gradient: ["#0d2e3e", "#0d4a5e"] as [string, string], hasNotif: true },
+  { key: "Asr", icon: "cloud-outline" as const, gradient: ["#2e1a00", "#5c3500"] as [string, string], hasNotif: true },
+  { key: "Maghrib", icon: "cloudy-night-outline" as const, gradient: ["#3e0d0d", "#6e1515"] as [string, string], hasNotif: true },
+  { key: "Isha", icon: "star-outline" as const, gradient: ["#1a0d3e", "#2e1a6e"] as [string, string], hasNotif: true },
 ];
-
-const PRAYER_NAMES: Record<string, string> = {
-  Fajr: "Bomdod",
-  Dhuhr: "Peshin",
-  Asr: "Asr",
-  Maghrib: "Shom",
-  Isha: "Xufton",
-};
 
 function parseTimeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
@@ -58,18 +52,12 @@ function getNextPrayer(times: PrayerTimes, nowMinutes: number): string {
   return "Fajr";
 }
 
-function formatCountdown(diffMinutes: number): string {
-  if (diffMinutes < 0) diffMinutes += 24 * 60;
-  const h = Math.floor(diffMinutes / 60);
-  const m = diffMinutes % 60;
-  if (h > 0) return `${h} soat ${m} daqiqa`;
-  return `${m} daqiqa`;
-}
-
 export default function PrayerScreen() {
   const insets = useSafeAreaInsets();
   const c = Colors.dark;
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
+  const { settings } = useQuran();
+  const t = getStrings(settings.language);
 
   const [times, setTimes] = useState<PrayerTimes | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,6 +67,34 @@ export default function PrayerScreen() {
   const [enabledNotifs, setEnabledNotifs] = useState<Record<string, boolean>>({});
   const [notifPermission, setNotifPermission] = useState<string>("undetermined");
   const timesRef = useRef<PrayerTimes | null>(null);
+
+  const getPrayerName = (key: string): string => {
+    const map: Record<string, string> = {
+      Fajr: t.fajr,
+      Sunrise: t.sunrise,
+      Dhuhr: t.dhuhr,
+      Asr: t.asr,
+      Maghrib: t.maghrib,
+      Isha: t.isha,
+    };
+    return map[key] ?? key;
+  };
+
+  const formatCountdown = (diffMinutes: number): string => {
+    if (diffMinutes < 0) diffMinutes += 24 * 60;
+    const h = Math.floor(diffMinutes / 60);
+    const m = diffMinutes % 60;
+    if (h > 0) return `${h} ${t.hours} ${m} ${t.minutes}`;
+    return `${m} ${t.minutes}`;
+  };
+
+  const PRAYER_NAMES: Record<string, string> = {
+    Fajr: t.fajr,
+    Dhuhr: t.dhuhr,
+    Asr: t.asr,
+    Maghrib: t.maghrib,
+    Isha: t.isha,
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 30000);
@@ -134,7 +150,7 @@ export default function PrayerScreen() {
       setTimes(data);
       timesRef.current = data;
     } catch (e) {
-      setError("Namoz vaqtlarini yuklashda xatolik yuz berdi.");
+      setError(t.prayerError);
     } finally {
       setLoading(false);
     }
@@ -147,17 +163,17 @@ export default function PrayerScreen() {
   useEffect(() => {
     if (times && Platform.OS !== "web") {
       const timesMap: Record<string, string> = {};
-      for (const p of PRAYERS) {
+      for (const p of PRAYER_STATIC) {
         if (p.hasNotif) {
-          const t = times[p.key as keyof PrayerTimes] as string;
-          if (t) timesMap[p.key] = t;
+          const time = times[p.key as keyof PrayerTimes] as string;
+          if (time) timesMap[p.key] = time;
         }
       }
       rescheduleEnabledNotifs(timesMap, enabledNotifs, PRAYER_NAMES);
     }
   }, [times, enabledNotifs]);
 
-  const toggleNotif = async (prayerKey: string, prayerName: string) => {
+  const toggleNotif = async (prayerKey: string) => {
     if (Platform.OS === "web") return;
 
     let permission = notifPermission;
@@ -174,6 +190,7 @@ export default function PrayerScreen() {
     setEnabledNotifs(updated);
     await saveNotifState(updated);
 
+    const prayerName = getPrayerName(prayerKey);
     if (newEnabled && timesRef.current) {
       const timeStr = timesRef.current[prayerKey as keyof PrayerTimes] as string;
       if (timeStr) {
@@ -189,8 +206,8 @@ export default function PrayerScreen() {
 
   const getCountdown = (key: string): string => {
     if (!times) return "";
-    const t = times[key as keyof PrayerTimes] as string;
-    const prayerMins = parseTimeToMinutes(t);
+    const prayerTime = times[key as keyof PrayerTimes] as string;
+    const prayerMins = parseTimeToMinutes(prayerTime);
     let diff = prayerMins - nowMinutes;
     if (diff < 0) diff += 24 * 60;
     return formatCountdown(diff);
@@ -213,24 +230,24 @@ export default function PrayerScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={{ paddingTop: topPadding + 12, paddingHorizontal: 16, marginBottom: 20 }}>
-        <Text style={[styles.title, { color: c.text }]}>Namoz vaqtlari</Text>
+        <Text style={[styles.title, { color: c.text }]}>{t.prayerTitle}</Text>
         <Text style={[styles.subtitle, { color: c.textSecondary }]}>{city} • {today}</Text>
         {times?.hijriDate ? (
-          <Text style={[styles.hijriDate, { color: c.tint }]}>{times.hijriDate} (Hijriy)</Text>
+          <Text style={[styles.hijriDate, { color: c.tint }]}>{times.hijriDate} ({t.hijri})</Text>
         ) : null}
       </View>
 
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color={c.tint} />
-          <Text style={[styles.loadingText, { color: c.textSecondary }]}>Yuklanmoqda...</Text>
+          <Text style={[styles.loadingText, { color: c.textSecondary }]}>{t.loading}</Text>
         </View>
       ) : error ? (
         <View style={styles.center}>
           <Ionicons name="wifi-outline" size={48} color={c.textMuted} />
           <Text style={[styles.errorText, { color: c.textSecondary }]}>{error}</Text>
           <Pressable onPress={loadTimes} style={[styles.retryBtn, { backgroundColor: c.tint }]}>
-            <Text style={styles.retryText}>Qayta urinish</Text>
+            <Text style={styles.retryText}>{t.retry}</Text>
           </Pressable>
         </View>
       ) : times ? (
@@ -239,9 +256,9 @@ export default function PrayerScreen() {
             <View style={[styles.nextCard, { backgroundColor: c.card, borderColor: c.tint + "40" }]}>
               <Ionicons name="time-outline" size={18} color={c.tint} />
               <View style={{ flex: 1 }}>
-                <Text style={[styles.nextLabel, { color: c.textSecondary }]}>Keyingi namoz</Text>
+                <Text style={[styles.nextLabel, { color: c.textSecondary }]}>{t.nextPrayer}</Text>
                 <Text style={[styles.nextName, { color: c.tint }]}>
-                  {PRAYERS.find(p => p.key === nextPrayer)?.name ?? nextPrayer}
+                  {getPrayerName(nextPrayer)}
                 </Text>
               </View>
               <Text style={[styles.nextCountdown, { color: c.text }]}>{getCountdown(nextPrayer)}</Text>
@@ -252,12 +269,12 @@ export default function PrayerScreen() {
             <View style={[styles.notifHint, { backgroundColor: c.card, borderColor: c.border }]}>
               <Ionicons name="notifications-outline" size={14} color={c.textMuted} />
               <Text style={[styles.notifHintText, { color: c.textMuted }]}>
-                Qo'ng'iroq belgisini bosib bildirishnomani yoqing
+                {t.enableNotif}
               </Text>
             </View>
           )}
 
-          {PRAYERS.map((prayer) => {
+          {PRAYER_STATIC.map((prayer) => {
             const timeStr = times[prayer.key as keyof PrayerTimes] as string;
             const isNext = prayer.key === nextPrayer;
             const isSunrise = prayer.key === "Sunrise";
@@ -280,23 +297,23 @@ export default function PrayerScreen() {
                   <Ionicons name={prayer.icon} size={22} color={isPast ? "#ffffff50" : "#fff"} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.prayerName, { opacity: isPast ? 0.5 : 1 }]}>{prayer.name}</Text>
+                  <Text style={[styles.prayerName, { opacity: isPast ? 0.5 : 1 }]}>{getPrayerName(prayer.key)}</Text>
                   {isSunrise && (
-                    <Text style={styles.prayerSubNote}>Namoz vaqti emas</Text>
+                    <Text style={styles.prayerSubNote}>{t.notPrayerTime}</Text>
                   )}
                 </View>
                 <View style={{ alignItems: "flex-end", gap: 4 }}>
                   <Text style={[styles.prayerTime, { opacity: isPast ? 0.5 : 1 }]}>{timeStr}</Text>
                   {isNext && (
-                    <Text style={styles.prayerCountdown}>{getCountdown(prayer.key)} qoldi</Text>
+                    <Text style={styles.prayerCountdown}>{getCountdown(prayer.key)} {t.remaining}</Text>
                   )}
                   {isPast && !isSunrise && (
-                    <Text style={styles.prayerPast}>O'tdi</Text>
+                    <Text style={styles.prayerPast}>{t.prayerPast}</Text>
                   )}
                 </View>
                 {prayer.hasNotif && Platform.OS !== "web" && (
                   <Pressable
-                    onPress={() => toggleNotif(prayer.key, prayer.name)}
+                    onPress={() => toggleNotif(prayer.key)}
                     style={[
                       styles.bellBtn,
                       isNotifEnabled && { backgroundColor: "rgba(255,255,255,0.15)" },
@@ -323,13 +340,13 @@ export default function PrayerScreen() {
             ]}
           >
             <Ionicons name="refresh-outline" size={18} color={c.textSecondary} />
-            <Text style={[styles.refreshText, { color: c.textSecondary }]}>Yangilash</Text>
+            <Text style={[styles.refreshText, { color: c.textSecondary }]}>{t.refresh}</Text>
           </Pressable>
 
           <View style={[styles.methodNote, { backgroundColor: c.card, borderColor: c.border }]}>
             <Ionicons name="information-circle-outline" size={16} color={c.textMuted} />
             <Text style={[styles.methodNoteText, { color: c.textMuted }]}>
-              Hisob usuli: Hanafiy (method 4) • Manba: aladhan.com
+              {t.methodNote}
             </Text>
           </View>
         </View>
