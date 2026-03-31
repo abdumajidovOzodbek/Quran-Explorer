@@ -178,7 +178,7 @@ export default function SettingsScreen() {
               <Ionicons name="remove" size={20} color={c.text} />
             </Pressable>
             <Text style={[styles.translationPreview, { color: c.uzbekText, fontSize: settings.translationFontSize }]}>
-              Bismillahir Rohmanir Rohiym
+              {t.translationPreviewText}
             </Text>
             <Pressable
               onPress={() => {
@@ -211,7 +211,7 @@ export default function SettingsScreen() {
             >
               <View>
                 <Text style={[styles.optionText, { color: c.text }]}>{reciter.name}</Text>
-                <Text style={[styles.optionSub, { color: c.textSecondary }]}>{reciter.style}</Text>
+                <Text style={[styles.optionSub, { color: c.textSecondary }]}>{t.reciterStyle}</Text>
               </View>
               {settings.reciterId === reciter.id && (
                 <Ionicons name="checkmark-circle" size={22} color={c.tint} />

@@ -85,6 +85,8 @@ export interface I18nStrings {
   translationFontSize: string;
   language: string;
   reciterTitle: string;
+  reciterStyle: string;
+  translationPreviewText: string;
   offlineCache: string;
   offlineReady: string;
   offlineReadyDesc: string;
@@ -203,6 +205,8 @@ const uz_cyrillic: I18nStrings = {
   translationFontSize: "ТАРЖИМА ШРИФТ ЎЛЧАМИ",
   language: "ТИЛ",
   reciterTitle: "ҚОРИ ТАНЛАШ",
+  reciterStyle: "Мурроттал",
+  translationPreviewText: "Бисмиллаҳир Роҳманир Роҳийм",
   offlineCache: "ОФФЛАЙН КЕШ",
   offlineReady: "Офлайн тайёр",
   offlineReadyDesc: "Барча 114 сура ва дуолар офлайн режимда мавжуд",
@@ -321,6 +325,8 @@ const uz_latin: I18nStrings = {
   translationFontSize: "TARJIMA SHRIFT O'LCHAMI",
   language: "TIL",
   reciterTitle: "QORI TANLASH",
+  reciterStyle: "Murattal",
+  translationPreviewText: "Bismillahir Rohmanir Rohiym",
   offlineCache: "OFFLINE KESH",
   offlineReady: "Offline tayyor",
   offlineReadyDesc: "Barcha 114 sura va duolar offline rejimda mavjud",
@@ -439,6 +445,8 @@ const ru: I18nStrings = {
   translationFontSize: "РАЗМЕР ШРИФТА ПЕРЕВОДА",
   language: "ЯЗЫК",
   reciterTitle: "ВЫБОР ЧТЕЦА",
+  reciterStyle: "Муратталь",
+  translationPreviewText: "Бисмиллахир Рахманир Рахим",
   offlineCache: "ОФФЛАЙН КЭШ",
   offlineReady: "Готово к работе офлайн",
   offlineReadyDesc: "Все 114 сур и дуа доступны без интернета",
@@ -557,6 +565,8 @@ const en: I18nStrings = {
   translationFontSize: "TRANSLATION FONT SIZE",
   language: "LANGUAGE",
   reciterTitle: "SELECT RECITER",
+  reciterStyle: "Murattal",
+  translationPreviewText: "Bismillah ir-Rahman ir-Raheem",
   offlineCache: "OFFLINE CACHE",
   offlineReady: "Ready for offline",
   offlineReadyDesc: "All 114 surahs and du'as available offline",
