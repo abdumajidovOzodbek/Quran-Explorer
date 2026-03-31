@@ -49,8 +49,16 @@ export function getJuzNavAyah(juzNo: number, surahNo: number): number {
 export function getJuzSurahRange(juzNo: number): { startSurah: number; endSurah: number } {
   const juz = JUZ_DATA[juzNo - 1];
   const nextJuz = JUZ_DATA[juzNo];
+  let endSurah: number;
+  if (!nextJuz) {
+    endSurah = 114;
+  } else if (nextJuz.startAyah > 1) {
+    endSurah = nextJuz.startSurah;
+  } else {
+    endSurah = nextJuz.startSurah - 1;
+  }
   return {
     startSurah: juz?.startSurah ?? 1,
-    endSurah: nextJuz ? nextJuz.startSurah : 114,
+    endSurah,
   };
 }
