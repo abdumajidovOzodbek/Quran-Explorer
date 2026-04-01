@@ -2,7 +2,7 @@
   "expo": {
     "name": "Qur'on Uzbek",
     "slug": "quran-uzbek",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "quran-uzbek",
@@ -44,6 +44,7 @@
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
+      "./plugins/withAdhanSound",
       [
         "expo-router",
         {
