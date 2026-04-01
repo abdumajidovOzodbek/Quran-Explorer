@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
-import { fetchPrayerTimes, PrayerTimes } from "@/constants/api";
+import { fetchPrayerTimes, getCachedPrayerTimes, PrayerTimes } from "@/constants/api";
 import {
   cancelPrayerNotif,
   getNotifPermissionStatus,
@@ -122,8 +122,20 @@ export default function PrayerScreen() {
   };
 
   const loadTimes = async () => {
-    setLoading(true);
     setError(null);
+
+    // Show cached data immediately so the screen is never blank offline
+    const cached = await getCachedPrayerTimes();
+    if (cached) {
+      setTimes(cached);
+      timesRef.current = cached;
+      setCity(cached.city ?? "Toshkent");
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+
+    // Fetch fresh data in background
     try {
       let lat = TASHKENT_LAT;
       let lon = TASHKENT_LON;
@@ -147,7 +159,8 @@ export default function PrayerScreen() {
       setTimes(data);
       timesRef.current = data;
     } catch {
-      setError(t.prayerError);
+      // Only show error if we have no cached data to fall back on
+      if (!cached) setError(t.prayerError);
     } finally {
       setLoading(false);
     }

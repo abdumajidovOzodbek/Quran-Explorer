@@ -6,7 +6,9 @@ import type { AppLanguage } from "@/types/quran";
 
 const NOTIF_IDS_KEY = "@quran_notif_ids";
 const SETTINGS_KEY = "@quran_settings";
-const ADHAN_SOUND = "adhan.mp3";
+// iOS uses filename with extension; Android channel uses name WITHOUT extension
+const ADHAN_SOUND_IOS = "adhan.mp3";
+const ADHAN_SOUND_ANDROID_CHANNEL = "adhan"; // must match res/raw/adhan.mp3
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -22,7 +24,7 @@ if (Platform.OS === "android") {
   Notifications.setNotificationChannelAsync("prayer-times", {
     name: "Namoz vaqtlari",
     importance: Notifications.AndroidImportance.MAX,
-    sound: ADHAN_SOUND,
+    sound: ADHAN_SOUND_ANDROID_CHANNEL,
     vibrationPattern: [0, 250, 250, 250],
     lightColor: "#c5a55a",
   }).catch(() => {});
@@ -84,7 +86,7 @@ export async function schedulePrayerNotif(
       await Notifications.cancelScheduledNotificationAsync(ids[`${prayerKey}_before`]).catch(() => {});
     }
 
-    const soundRef = Platform.OS === "ios" ? ADHAN_SOUND : undefined;
+    const soundRef = Platform.OS === "ios" ? ADHAN_SOUND_IOS : undefined;
     const androidChannel = Platform.OS === "android" ? { channelId: "prayer-times" } : {};
 
     const atTimeId = await Notifications.scheduleNotificationAsync({

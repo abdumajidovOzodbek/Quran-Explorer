@@ -361,6 +361,24 @@ export interface PrayerTimes {
   city: string;
 }
 
+const PRAYER_CACHE_KEY = "@prayer_times_cache_v2";
+
+export async function getCachedPrayerTimes(): Promise<PrayerTimes | null> {
+  try {
+    const stored = await AsyncStorage.getItem(PRAYER_CACHE_KEY);
+    if (!stored) return null;
+    return JSON.parse(stored) as PrayerTimes;
+  } catch {
+    return null;
+  }
+}
+
+async function savePrayerTimesCache(data: PrayerTimes): Promise<void> {
+  try {
+    await AsyncStorage.setItem(PRAYER_CACHE_KEY, JSON.stringify(data));
+  } catch {}
+}
+
 export async function fetchPrayerTimes(lat: number, lon: number, city?: string): Promise<PrayerTimes> {
   const date = new Date();
   const day = date.getDate();
@@ -381,7 +399,7 @@ export async function fetchPrayerTimes(lat: number, lon: number, city?: string):
   const timings = json?.data?.timings;
   const hijri = json?.data?.date?.hijri;
 
-  return {
+  const result: PrayerTimes = {
     Fajr: timings.Fajr,
     Sunrise: timings.Sunrise,
     Dhuhr: timings.Dhuhr,
@@ -392,6 +410,9 @@ export async function fetchPrayerTimes(lat: number, lon: number, city?: string):
     hijriDate: hijri ? `${hijri.day} ${hijri.month.en} ${hijri.year}` : "",
     city: city ?? "Toshkent",
   };
+
+  await savePrayerTimesCache(result);
+  return result;
 }
 
 export function getVerseAudioUrl(
