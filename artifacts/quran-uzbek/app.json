@@ -78,10 +78,7 @@
       "reactCompiler": true
     },
     "extra": {
-      "eas": {
-        "projectId": "f038ec6b-d7fd-416c-a537-ea272c0f85e5"
-      }
-    },
-    "owner": "uzhost4"
+      "eas": {}
+    }
   }
 }
