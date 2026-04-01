@@ -2,7 +2,7 @@
   "expo": {
     "name": "Qur'on Uzbek",
     "slug": "quran-uzbek",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "quran-uzbek",
@@ -69,7 +69,9 @@
         {
           "icon": "./assets/images/icon.png",
           "color": "#c5a55a",
-          "sounds": ["./assets/sounds/adhan.mp3"]
+          "sounds": [
+            "./assets/sounds/adhan.mp3"
+          ]
         }
       ]
     ],
@@ -78,7 +80,10 @@
       "reactCompiler": true
     },
     "extra": {
-      "eas": {}
-    }
+      "eas": {
+        "projectId": "2970128d-37e1-4e9e-9d06-6d1325e64fc1"
+      }
+    },
+    "owner": "uzhost5"
   }
 }

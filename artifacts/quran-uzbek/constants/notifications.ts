@@ -6,9 +6,12 @@ import type { AppLanguage } from "@/types/quran";
 
 const NOTIF_IDS_KEY = "@quran_notif_ids";
 const SETTINGS_KEY = "@quran_settings";
-// iOS uses filename with extension; Android channel uses name WITHOUT extension
+
+// Android: channel sound = filename WITHOUT extension, must match res/raw/adhan.mp3
+// iOS: notification content sound = filename WITH extension
 const ADHAN_SOUND_IOS = "adhan.mp3";
-const ADHAN_SOUND_ANDROID_CHANNEL = "adhan"; // must match res/raw/adhan.mp3
+const ANDROID_CHANNEL_ID = "prayer-times-v2"; // bumped to force fresh channel with adhan sound
+const OLD_CHANNEL_ID = "prayer-times";        // will be deleted on startup
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -20,13 +23,17 @@ Notifications.setNotificationHandler({
   }),
 });
 
+// Run once on module load: delete old channel (locked with wrong sound), create fresh one
 if (Platform.OS === "android") {
-  Notifications.setNotificationChannelAsync("prayer-times", {
+  Notifications.deleteNotificationChannelAsync(OLD_CHANNEL_ID).catch(() => {});
+  Notifications.setNotificationChannelAsync(ANDROID_CHANNEL_ID, {
     name: "Namoz vaqtlari",
     importance: Notifications.AndroidImportance.MAX,
-    sound: ADHAN_SOUND_ANDROID_CHANNEL,
+    sound: "adhan",        // matches res/raw/adhan.mp3 (no extension)
     vibrationPattern: [0, 250, 250, 250],
     lightColor: "#c5a55a",
+    enableLights: true,
+    enableVibrate: true,
   }).catch(() => {});
 }
 
@@ -86,15 +93,16 @@ export async function schedulePrayerNotif(
       await Notifications.cancelScheduledNotificationAsync(ids[`${prayerKey}_before`]).catch(() => {});
     }
 
-    const soundRef = Platform.OS === "ios" ? ADHAN_SOUND_IOS : undefined;
-    const androidChannel = Platform.OS === "android" ? { channelId: "prayer-times" } : {};
+    // Android uses channel (channel carries the sound); iOS sets sound directly in content
+    const channelProp = Platform.OS === "android" ? { channelId: ANDROID_CHANNEL_ID } : {};
+    const soundProp = Platform.OS === "ios" ? { sound: ADHAN_SOUND_IOS } : {};
 
     const atTimeId = await Notifications.scheduleNotificationAsync({
       content: {
         title: t.prayerTimeNotifTitle,
         body: t.prayerTimeNotifBody.replace("{prayer}", prayerName),
-        sound: soundRef ?? true,
-        ...androidChannel,
+        ...soundProp,
+        ...channelProp,
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DAILY,
@@ -116,8 +124,8 @@ export async function schedulePrayerNotif(
       content: {
         title: t.prayerBeforeNotifTitle,
         body: t.prayerBeforeNotifBody.replace("{prayer}", prayerName),
-        sound: soundRef ?? true,
-        ...androidChannel,
+        ...soundProp,
+        ...channelProp,
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DAILY,
