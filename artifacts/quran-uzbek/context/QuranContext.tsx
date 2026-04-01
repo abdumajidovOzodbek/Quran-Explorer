@@ -1,8 +1,8 @@
 import createContextHook from "@nkzw/create-context-hook";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Bookmark, ReadingMode, AppLanguage } from "@/types/quran";
-import { cacheAllSurahsInBackground, isCacheComplete, TOTAL_SURAHS } from "@/constants/api";
+import { cacheAllSurahsInBackground, TOTAL_SURAHS } from "@/constants/api";
 
 const BOOKMARKS_KEY = "@quran_bookmarks";
 const LAST_READ_KEY = "@quran_last_read";
@@ -65,13 +65,8 @@ function useQuranState() {
   const [cacheProgress, setCacheProgress] = useState(0);
   const [isCacheDownloading, setIsCacheDownloading] = useState(false);
   const [isCacheDone, setIsCacheDone] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
-
   useEffect(() => {
     loadData();
-    return () => {
-      abortRef.current?.abort();
-    };
   }, []);
 
   useEffect(() => {
@@ -80,25 +75,12 @@ function useQuranState() {
   }, [isLoaded]);
 
   const startBackgroundCache = async () => {
-    const complete = await isCacheComplete();
-    if (complete) {
-      setIsCacheDone(true);
-      return;
-    }
-    const controller = new AbortController();
-    abortRef.current = controller;
-    setIsCacheDownloading(true);
-    setCacheProgress(0);
-    try {
-      await cacheAllSurahsInBackground((cached, total) => {
-        setCacheProgress(Math.round((cached / total) * 100));
-      }, controller.signal);
-      if (!controller.signal.aborted) {
-        setIsCacheDone(true);
-      }
-    } finally {
-      setIsCacheDownloading(false);
-    }
+    // All surah data is bundled inside the APK — always instantly complete.
+    await cacheAllSurahsInBackground((cached, total) => {
+      setCacheProgress(Math.round((cached / total) * 100));
+    });
+    setIsCacheDone(true);
+    setIsCacheDownloading(false);
   };
 
   const loadData = async () => {

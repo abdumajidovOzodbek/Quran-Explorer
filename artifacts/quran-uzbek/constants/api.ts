@@ -1,5 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// All 114 surahs are bundled directly into the APK — no network or caching needed.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const QURAN_BUNDLE = require("../assets/data/quran_all.json") as {
+  surahList: SurahListItem[];
+  surahs: Record<string, SurahApiData>;
+};
+
 export const QURAN_API_BASE = "https://quranapi.pages.dev/api";
 export const ALQURAN_CLOUD_BASE = "https://api.alquran.cloud/v1";
 
@@ -58,7 +65,6 @@ export interface SurahApiData {
   wordByWord?: string[];
   arabic1: string[];
   arabic2?: string[];
-  audio: Record<string, { reciter: string; url: string; originalUrl: string }>;
 }
 
 export interface SurahListItem {
@@ -81,220 +87,33 @@ export interface VerseOfDay {
   surahName: string;
 }
 
-const SURAH_LIST_CACHE = "@surah_list_v2";
-const surahCacheKey = (n: number) => `@surah_v6_${n}`;
-export const CACHE_COMPLETE_KEY = "@quran_cache_complete_v6";
 export const TOTAL_SURAHS = 114;
 
-function isCachedDataComplete(raw: string): boolean {
-  try {
-    const parsed = JSON.parse(raw);
-    return (
-      Array.isArray(parsed.arabic1) &&
-      Array.isArray(parsed.uzbek) &&
-      Array.isArray(parsed.russian) &&
-      Array.isArray(parsed.transliteration)
-    );
-  } catch {
-    return false;
-  }
+// ─── Bundled data access ────────────────────────────────────────────────────
+
+/** All surah data is bundled — always complete, always instant. */
+export function isCacheComplete(): Promise<boolean> {
+  return Promise.resolve(true);
 }
 
-export async function isCacheComplete(): Promise<boolean> {
-  try {
-    const val = await AsyncStorage.getItem(CACHE_COMPLETE_KEY);
-    return val === "1";
-  } catch {
-    return false;
-  }
-}
-
-const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
-
-async function fetchWithBackoff(
-  url: string,
-  signal?: AbortSignal,
-  maxAttempts = 6,
-): Promise<Response | null> {
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    if (signal?.aborted) return null;
-    try {
-      const res = await fetch(url, { signal });
-      if (res.status === 429) {
-        const backoff = Math.min(3000 * Math.pow(2, attempt), 60000);
-        await sleep(backoff);
-        continue;
-      }
-      return res;
-    } catch {
-      if (signal?.aborted) return null;
-      if (attempt < maxAttempts - 1) await sleep(1000 * (attempt + 1));
-    }
-  }
-  return null;
-}
-
-async function fetchSurahForCache(n: number, signal?: AbortSignal): Promise<boolean> {
-  if (signal?.aborted) return false;
-  try {
-    const mainRes = await fetchWithBackoff(`${QURAN_API_BASE}/${n}.json`, signal);
-    if (!mainRes || !mainRes.ok) return false;
-    const data = await mainRes.json();
-
-    if (signal?.aborted) return false;
-    await sleep(350);
-
-    const uzbekRes = await fetchWithBackoff(`${ALQURAN_CLOUD_BASE}/surah/${n}/uz.sodik`, signal);
-    let uzbek: string[] | undefined;
-    if (uzbekRes?.ok) {
-      const d = await uzbekRes.json();
-      uzbek = ((d?.data?.ayahs ?? []) as Array<{ text: string }>).map((a) => a.text);
-    }
-
-    if (signal?.aborted) return false;
-    await sleep(350);
-
-    const russianRes = await fetchWithBackoff(`${ALQURAN_CLOUD_BASE}/surah/${n}/ru.kuliev`, signal);
-    let russian: string[] | undefined;
-    if (russianRes?.ok) {
-      const d = await russianRes.json();
-      russian = ((d?.data?.ayahs ?? []) as Array<{ text: string }>).map((a) => a.text);
-    }
-
-    if (signal?.aborted) return false;
-    await sleep(350);
-
-    const translitRes = await fetchWithBackoff(
-      `${ALQURAN_CLOUD_BASE}/surah/${n}/en.transliteration`,
-      signal,
-    );
-    let transliteration: string[] | undefined;
-    if (translitRes?.ok) {
-      const d = await translitRes.json();
-      transliteration = ((d?.data?.ayahs ?? []) as Array<{ text: string }>).map((a) => a.text);
-    }
-
-    if (signal?.aborted) return false;
-
-    const result: SurahApiData = { ...data, surahNo: n, uzbek, russian, transliteration };
-    await AsyncStorage.setItem(surahCacheKey(n), JSON.stringify(result)).catch(() => {});
-    return isCachedDataComplete(JSON.stringify(result));
-  } catch {
-    return false;
-  }
-}
-
+/** No-op: data is already bundled inside the APK. */
 export async function cacheAllSurahsInBackground(
   onProgress: (downloaded: number, total: number) => void,
-  signal?: AbortSignal,
 ): Promise<void> {
-  const needed: number[] = [];
-  let completed = 0;
-
-  for (let n = 1; n <= TOTAL_SURAHS; n++) {
-    const existing = await AsyncStorage.getItem(surahCacheKey(n)).catch(() => null);
-    if (existing && isCachedDataComplete(existing)) {
-      completed++;
-      onProgress(completed, TOTAL_SURAHS);
-    } else {
-      needed.push(n);
-    }
-  }
-
-  const CONCURRENCY = 2;
-  for (let i = 0; i < needed.length; i += CONCURRENCY) {
-    if (signal?.aborted) return;
-    const batch = needed.slice(i, i + CONCURRENCY);
-    await Promise.all(batch.map((n) => fetchSurahForCache(n, signal)));
-    completed += batch.length;
-    onProgress(Math.min(completed, TOTAL_SURAHS), TOTAL_SURAHS);
-    if (i + CONCURRENCY < needed.length) await sleep(600);
-  }
-
-  const stillFailed: number[] = [];
-  for (let n = 1; n <= TOTAL_SURAHS; n++) {
-    const data = await AsyncStorage.getItem(surahCacheKey(n)).catch(() => null);
-    if (!data || !isCachedDataComplete(data)) stillFailed.push(n);
-  }
-
-  if (stillFailed.length > 0 && !signal?.aborted) {
-    await sleep(3000);
-    for (const n of stillFailed) {
-      if (signal?.aborted) return;
-      await fetchSurahForCache(n, signal);
-      await sleep(800);
-    }
-  }
-
-  let allOk = true;
-  for (let n = 1; n <= TOTAL_SURAHS; n++) {
-    if (signal?.aborted) return;
-    const data = await AsyncStorage.getItem(surahCacheKey(n)).catch(() => null);
-    if (!data || !isCachedDataComplete(data)) { allOk = false; break; }
-  }
-
-  if (allOk && !signal?.aborted) {
-    await AsyncStorage.setItem(CACHE_COMPLETE_KEY, "1").catch(() => {});
-  }
+  onProgress(TOTAL_SURAHS, TOTAL_SURAHS);
 }
 
 export async function fetchSurahList(): Promise<SurahListItem[]> {
-  try {
-    const response = await fetch(`${QURAN_API_BASE}/surah.json`);
-    if (!response.ok) throw new Error("Failed to fetch surah list");
-    const data: SurahListItem[] = await response.json();
-    const result = data.map((s, idx) => ({ ...s, surahNo: idx + 1 }));
-    AsyncStorage.setItem(SURAH_LIST_CACHE, JSON.stringify(result)).catch(() => {});
-    return result;
-  } catch (err) {
-    const cached = await AsyncStorage.getItem(SURAH_LIST_CACHE).catch(() => null);
-    if (cached) return JSON.parse(cached);
-    throw err;
-  }
+  return QURAN_BUNDLE.surahList;
 }
 
 export async function fetchSurah(surahNumber: number): Promise<SurahApiData> {
-  try {
-    const [mainRes, uzbekRes, russianRes, translitRes] = await Promise.all([
-      fetch(`${QURAN_API_BASE}/${surahNumber}.json`),
-      fetch(`${ALQURAN_CLOUD_BASE}/surah/${surahNumber}/uz.sodik`),
-      fetch(`${ALQURAN_CLOUD_BASE}/surah/${surahNumber}/ru.kuliev`),
-      fetch(`${ALQURAN_CLOUD_BASE}/surah/${surahNumber}/en.transliteration`),
-    ]);
-
-    if (!mainRes.ok) throw new Error(`Failed to fetch surah ${surahNumber}`);
-    const data = await mainRes.json();
-
-    let uzbek: string[] | undefined;
-    if (uzbekRes.ok) {
-      const uzbekData = await uzbekRes.json();
-      const ayahs: Array<{ text: string }> = uzbekData?.data?.ayahs ?? [];
-      uzbek = ayahs.map((a) => a.text);
-    }
-
-    let russian: string[] | undefined;
-    if (russianRes.ok) {
-      const russianData = await russianRes.json();
-      const ayahs: Array<{ text: string }> = russianData?.data?.ayahs ?? [];
-      russian = ayahs.map((a) => a.text);
-    }
-
-    let transliteration: string[] | undefined;
-    if (translitRes.ok) {
-      const translitData = await translitRes.json();
-      const ayahs: Array<{ text: string }> = translitData?.data?.ayahs ?? [];
-      transliteration = ayahs.map((a) => a.text);
-    }
-
-    const result: SurahApiData = { ...data, surahNo: surahNumber, uzbek, russian, transliteration };
-    AsyncStorage.setItem(surahCacheKey(surahNumber), JSON.stringify(result)).catch(() => {});
-    return result;
-  } catch (err) {
-    const cached = await AsyncStorage.getItem(surahCacheKey(surahNumber)).catch(() => null);
-    if (cached) return JSON.parse(cached);
-    throw err;
-  }
+  const data = QURAN_BUNDLE.surahs[String(surahNumber)];
+  if (!data) throw new Error(`Surah ${surahNumber} not found in bundle`);
+  return data;
 }
+
+// ─── Word-by-word (not bundled — fetched on demand) ─────────────────────────
 
 export async function fetchWordByWord(surahNumber: number): Promise<string[]> {
   try {
@@ -318,6 +137,8 @@ export function parseWordByWord(text: string): { arabic: string; english: string
     })
     .filter((w) => w.arabic.trim());
 }
+
+// ─── Verse of the Day (uses bundled surah data) ──────────────────────────────
 
 const DAILY_VERSES: [number, number][] = [
   [2, 255], [36, 1], [67, 1], [112, 1], [55, 13], [2, 286], [3, 26],
@@ -348,6 +169,21 @@ export async function fetchVerseOfDay(): Promise<VerseOfDay> {
     surahName: data.surahName,
   };
 }
+
+// ─── Audio URL helper ────────────────────────────────────────────────────────
+
+export function getVerseAudioUrl(
+  surahNumber: number,
+  verseNumber: number,
+  reciterId: string = "1"
+): string {
+  const reciter = RECITERS.find((r) => r.id === reciterId) || RECITERS[0];
+  const paddedSurah = String(surahNumber).padStart(3, "0");
+  const paddedVerse = String(verseNumber).padStart(3, "0");
+  return `https://everyayah.com/data/${reciter!.everyayahPath}/${paddedSurah}${paddedVerse}.mp3`;
+}
+
+// ─── Prayer times (requires network, cached locally) ─────────────────────────
 
 export interface PrayerTimes {
   Fajr: string;
@@ -415,13 +251,5 @@ export async function fetchPrayerTimes(lat: number, lon: number, city?: string):
   return result;
 }
 
-export function getVerseAudioUrl(
-  surahNumber: number,
-  verseNumber: number,
-  reciterId: string = "1"
-): string {
-  const reciter = RECITERS.find((r) => r.id === reciterId) || RECITERS[0];
-  const paddedSurah = String(surahNumber).padStart(3, "0");
-  const paddedVerse = String(verseNumber).padStart(3, "0");
-  return `https://everyayah.com/data/${reciter.everyayahPath}/${paddedSurah}${paddedVerse}.mp3`;
-}
+// Legacy export — kept so existing import sites compile without changes
+export const CACHE_COMPLETE_KEY = "@quran_cache_complete_v6";
