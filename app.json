@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "e101fcb0-fbd4-4a16-866c-faf3027f2a31"
+      }
+    },
+    "android": {
+      "package": "com.uzhost4.workspace"
+    }
+  }
+}
