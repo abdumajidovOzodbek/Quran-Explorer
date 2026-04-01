@@ -44,7 +44,6 @@
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
-      "./plugins/withAdhanSound",
       [
         "expo-router",
         {
